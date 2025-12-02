@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CropperJS */
+@import "cropperjs/dist/cropper.css";
+
+/* ---------- Suas classes ---------- */
+.home-gradient {
+    background: linear-gradient(180deg, #00837b 0%, #ffffff 100%);
+    height: clamp(420px, 62vh, 720px);
+}
+
+/* Utilitário para respeitar áreas seguras (notch) quando precisar */
+.safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------- Viewport robusto (sem “buraco branco” no mobile) ---------- */
+html,
+body {
+    height: 100%;
+}
+body {
+    min-height: 100dvh;
+}
+
+@supports not (height: 100dvh) {
+    html {
+        height: -webkit-fill-available;
+    }
+    body {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* ===================================================================== */
+/*  Banner Destaque: Cropper sem UI + imagem preenchendo o frame         */
+/*  (ESCOPADO aos previews para não afetar outros usos do Cropper)       */
+/*  -> deixe ESTE BLOCO por último no app.css                             */
+/* ===================================================================== */
+/* ==== Banner Destaque: Cropper sem UI + imagem preenchendo o frame ==== */
+/* ==== Banner Destaque: frame fill + sem UI do cropper ==== */
+#preview-desktop,
+#preview-mobile {
+    position: relative;
+    overflow: hidden;
+}
+
+#preview-desktop .cropper-container,
+#preview-mobile .cropper-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+#preview-desktop .cropper-crop-box,
+#preview-mobile .cropper-crop-box {
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+#preview-desktop .cropper-modal,
+#preview-mobile .cropper-modal,
+#preview-desktop .cropper-view-box,
+#preview-mobile .cropper-view-box,
+#preview-desktop .cropper-dashed,
+#preview-mobile .cropper-dashed,
+#preview-desktop .cropper-line,
+#preview-mobile .cropper-line,
+#preview-desktop .cropper-point,
+#preview-mobile .cropper-point,
+#preview-desktop .cropper-center,
+#preview-mobile .cropper-center {
+    display: none !important;
+    opacity: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border: 0 !important;
+}
