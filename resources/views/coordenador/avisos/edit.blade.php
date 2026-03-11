@@ -11,5 +11,16 @@
     @csrf @method('PUT')
     @include('coordenador.avisos._form', ['aviso'=>$aviso, 'mode'=>'edit'])
   </form>
+
+  @if($aviso->exists && !empty($aviso->imagem_path))
+    <form id="aviso-remove-imagem-form"
+            action="{{ route('coordenador.avisos.imagem.remover',$aviso) }}"
+            method="post"
+            class="hidden">
+        @csrf
+        @method('DELETE')
+    </form>
+    @endif
+
 </div>
 @endsection

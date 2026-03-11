@@ -386,7 +386,15 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
         Route::post('edicoes/{edicao}/midias',                    [EventoController::class,'midiasStore'])->name('edicoes.midias.store');
         Route::delete('midias/{midia}',                           [EventoController::class,'midiasDestroy'])->name('midias.destroy');
         Route::post('edicoes/{edicao}/midias/reordenar',          [EventoController::class,'midiasReordenar'])->name('edicoes.midias.reordenar');
-       // Relatórios
+
+        Route::get('/secretaria', [SecretariaController::class, 'edit'])
+          ->name('secretaria.edit');
+
+        Route::put('/secretaria', [SecretariaController::class, 'update'])
+            ->name('secretaria.update');
+
+
+        // Relatórios
         Route::get('/relatorios', [RelatorioController::class, 'index'])
             ->middleware('permission:relatorios.view')
             ->name('coord.relatorios.index');

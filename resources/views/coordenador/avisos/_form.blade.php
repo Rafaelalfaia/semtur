@@ -87,13 +87,18 @@
     @if(($aviso->exists ?? false) && !empty($aviso->imagem_path))
       <div class="mt-2 flex items-center gap-3">
         <img src="{{ Storage::url($aviso->imagem_path) }}" alt="" class="h-24 w-40 rounded-lg border border-white/10 object-cover">
-        <form action="{{ route('coordenador.avisos.imagem.remover',$aviso) }}" method="post"
-              onsubmit="return confirm('Remover imagem atual?');">
-          @csrf @method('DELETE')
-          <button class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 hover:bg-white/10">
+        @if(($aviso->exists ?? false) && !empty($aviso->imagem_path))
+        <div class="mt-2 flex items-center gap-3">
+            <img src="{{ Storage::url($aviso->imagem_path) }}" alt=""
+                class="h-24 w-40 rounded-lg border border-white/10 object-cover">
+
+            <button type="button"
+                    onclick="if(confirm('Remover imagem atual?')) document.getElementById('aviso-remove-imagem-form').submit();"
+                    class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-100 hover:bg-white/10">
             Remover imagem
-          </button>
-        </form>
+            </button>
+        </div>
+        @endif
       </div>
     @endif
   </div>
