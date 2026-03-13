@@ -3,7 +3,7 @@
 @section('title','Banners — Console')
 @section('page.title','Banners')
 
-@section('content')
+@section('content')m
 @php
   $u = auth()->user();
   $canManage = $u->can('banners.manage');

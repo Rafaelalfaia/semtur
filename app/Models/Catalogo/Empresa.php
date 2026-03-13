@@ -217,6 +217,20 @@ class Empresa extends Model
         return $this->hasMany(EmpresaRecomendacao::class);
     }
 
+    public function scopeComRecomendacaoGlobalAtiva($q)
+    {
+        return $q->whereHas('recomendacoes', function($r){
+            $r->whereNull('categoria_id')->ativas();
+        });
+    }
+
+    public function scopeComRecomendacaoCategoriaAtiva($q, int $categoriaId)
+    {
+        return $q->whereHas('recomendacoes', function($r) use ($categoriaId){
+            $r->where('categoria_id', $categoriaId)->ativas();
+        });
+    }
+
     // Helpers de URL
     public function fotoPerfilUrl(): ?string
     {

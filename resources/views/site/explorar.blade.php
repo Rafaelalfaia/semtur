@@ -40,18 +40,44 @@
 
   {{-- título + voltar/compartilhar --}}
   <div class="{{ $container }} pt-3 text-white">
-    <div class="flex items-center justify-between">
-      <button onclick="history.back()" class="rounded-full bg-black/20 p-2">
-        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="m15 18l-6-6l6-6"/></svg>
-      </button>
-      <h1 class="text-lg font-semibold truncate">
-        Explorar{!! $currentCat ? ' — '.$currentCat->nome : '' !!}
-      </h1>
-      <button onclick="navigator.share ? navigator.share({title:document.title, url: location.href}) : (navigator.clipboard?.writeText(location.href), alert('Link copiado'))"
-              class="rounded-full bg-black/20 p-2">
-        <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.27 3.27 0 0 0 0-1.39l7.02-4.11A2.99 2.99 0 1 0 14 5a3 3 0 0 0 .06.58L7.03 9.69a3 3 0 1 0 0 4.62l7.03 4.1c-.04.19-.06.39-.06.59a3 3 0 1 0 3-3Z"/></svg>
-      </button>
-    </div>
+    <div class="flex items-start justify-between gap-3">
+        <button onclick="history.back()" class="rounded-full bg-black/20 p-2 shrink-0">
+            <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="m15 18l-6-6l6-6"/></svg>
+        </button>
+
+        <div class="flex-1 min-w-0 text-center">
+            <p class="text-[11px] uppercase tracking-[0.18em] text-white/75">
+            Explorar
+            </p>
+
+            @if($currentCat)
+            <div class="mt-1 inline-flex max-w-full items-center gap-2 rounded-2xl bg-white px-4 py-2 text-[#00837B] shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+                @if(!empty($currentCat->icone_path))
+                <img
+                    src="{{ \Illuminate\Support\Facades\Storage::url($currentCat->icone_path) }}"
+                    alt="{{ $currentCat->nome }}"
+                    class="w-5 h-5 object-contain shrink-0"
+                >
+                @endif
+
+                <span class="text-lg md:text-xl font-bold truncate">
+                {{ $currentCat->nome }}
+                </span>
+            </div>
+            @else
+            <h1 class="text-lg font-semibold truncate">
+                Explorar
+            </h1>
+            @endif
+        </div>
+
+  <button
+    onclick="navigator.share ? navigator.share({title:document.title, url: location.href}) : (navigator.clipboard?.writeText(location.href), alert('Link copiado'))"
+    class="rounded-full bg-black/20 p-2 shrink-0"
+  >
+    <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.27 3.27 0 0 0 0-1.39l7.02-4.11A2.99 2.99 0 1 0 14 5a3 3 0 0 0 .06.58L7.03 9.69a3 3 0 1 0 0 4.62l7.03 4.1c-.04.19-.06.39-.06.59a3 3 0 1 0 3-3Z"/></svg>
+  </button>
+</div>
   </div>
 
   {{-- busca --}}
@@ -94,12 +120,12 @@
   @if($categorias->isNotEmpty())
     <div class="{{ $container }}">
       @includeIf('site.partials._categories_top', [
-        'categorias' => $categorias,
-        // Preferimos slug para URL amigável: /explorar?categoria=slug
-        'href' => function($cat) {
-          return route('site.explorar', ['categoria' => $cat->slug]);
-        }
-      ])
+    'categorias' => $categorias,
+    'currentCat' => $currentCat,
+    'href' => function($cat) {
+        return route('site.explorar', ['categoria' => $cat->slug]);
+    }
+    ])
     </div>
   @endif
 </section>
@@ -140,7 +166,7 @@
    || ($empresas instanceof \Illuminate\Contracts\Pagination\Paginator && $empresas->count()))
 <section class="bg-gradient-to-b from-white to-[#F5F7F7] py-3 md:py-5">
   <div class="{{ $container }}">
-    <h2 class="text-[16px] md:text-lg font-semibold text-[#2B3536] mb-3">Parceiros</h2>
+    <h2 class="text-[16px] md:text-lg font-semibold text-[#2B3536] mb-3">Empresas</h2>
 
     <div class="space-y-3">
       @foreach($empresas as $e)

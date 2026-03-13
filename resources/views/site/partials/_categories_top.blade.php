@@ -1,4 +1,3 @@
-{{-- resources/views/site/partials/_categories_top.blade.php --}}
 @php
   // tokens visuais
   $titleClass = 'text-[22px] leading-6 font-semibold';
@@ -8,6 +7,17 @@
 
   // containers responsivos (alinha com a Home)
   $container = 'mx-auto w-full max-w-[420px] md:max-w-[1024px] lg:max-w-[1200px] px-4 md:px-6';
+@endphp
+
+@php
+  $titleClass = 'text-[22px] leading-6 font-semibold';
+  $chipSizeMb = 'w-14 h-14';
+  $iconSizeMb = 'w-7 h-7';
+
+  $container = 'mx-auto w-full max-w-[420px] md:max-w-[1024px] lg:max-w-[1200px] px-4 md:px-6';
+
+  $activeSlug = request('categoria') ?? request('cat') ?? ($currentCat->slug ?? null);
+  $linkFor = $href ?? fn($cat) => route('site.explorar', ['categoria' => $cat->slug]);
 @endphp
 
 {{-- estilo local p/ esconder scrollbar dos chips no mobile --}}
@@ -24,32 +34,37 @@
 
   {{-- MOBILE/TABLET: chips roláveis --}}
   <div class="{{ $container }} mt-3 md:hidden">
-    <div class="flex gap-4 overflow-x-auto pb-1 snap-x snap-mandatory hide-scrollbar">
-      @forelse($categorias as $c)
-        <a href="{{ route('site.explorar',['categoria'=>$c->slug]) }}"
-           class="shrink-0 flex flex-col items-center gap-2 snap-start w-[70px]"
-           aria-label="Categoria {{ $c->nome }}">
-          <div class="{{ $chipSizeMb }} rounded-full bg-white
-                      shadow-[0_3px_10px_rgba(0,0,0,0.12)]
-                      grid place-items-center">
-            @if($c->icone_path)
-              <img src="{{ Storage::url($c->icone_path) }}"
-                   alt="{{ $c->nome }}"
-                   class="{{ $iconSizeMb }} object-contain"
-                   loading="lazy" decoding="async">
-            @else
-              <span class="text-lg">🏷️</span>
-            @endif
-          </div>
-          <span class="text-center {{ $labelClass }} truncate w-full">
-            {{ $c->nome }}
-          </span>
-        </a>
-      @empty
-        <div class="text-white/85 text-sm">Sem categorias publicadas</div>
-      @endforelse
-    </div>
+  <div class="flex gap-4 overflow-x-auto pb-1 snap-x snap-mandatory hide-scrollbar">
+    @forelse($categorias as $c)
+      @php $isActive = $activeSlug === $c->slug; @endphp
+
+      <a href="{{ $linkFor($c) }}"
+         class="shrink-0 flex flex-col items-center gap-2 snap-start w-[82px]"
+         aria-label="Categoria {{ $c->nome }}">
+        <div class="{{ $chipSizeMb }} rounded-full grid place-items-center transition-all duration-200
+                    {{ $isActive
+                        ? 'bg-[#FFF4D9] ring-4 ring-white/25 shadow-[0_10px_24px_rgba(0,0,0,0.22)] scale-105'
+                        : 'bg-white shadow-[0_3px_10px_rgba(0,0,0,0.12)]' }}">
+          @if($c->icone_path)
+            <img src="{{ \Illuminate\Support\Facades\Storage::url($c->icone_path) }}"
+                 alt="{{ $c->nome }}"
+                 class="{{ $iconSizeMb }} object-contain"
+                 loading="lazy" decoding="async">
+          @else
+            <span class="text-lg">🏷️</span>
+          @endif
+        </div>
+
+        <span class="text-center text-[12px] leading-[14px] w-full min-h-[28px]
+                    {{ $isActive ? 'font-semibold text-white' : 'text-white/95' }}">
+          {{ $c->nome }}
+        </span>
+      </a>
+    @empty
+      <div class="text-white/85 text-sm">Sem categorias publicadas</div>
+    @endforelse
   </div>
+</div>
 
   {{-- DESKTOP: carrossel com setas (mobile/tablet continuam iguais) --}}
 <div class="{{ $container }} hidden md:block mt-4">

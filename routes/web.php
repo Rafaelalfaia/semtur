@@ -53,7 +53,7 @@ use App\Http\Controllers\Coordenador\EventoController;
 use App\Http\Controllers\System\MaintenanceController;
 use App\Http\Controllers\Coordenador\RelatorioController;
 use App\Http\Controllers\Coordenador\TecnicoController;
-
+use App\Http\Controllers\Coordenador\EspacoCulturalController;
 
 // =========================
 /* SITE – PÚBLICO (WEB) */
@@ -318,8 +318,8 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
 
   // ---- Banners principais
         Route::resource('banners-destaque', BannerDestaqueController::class)
-             ->parameters(['banners-destaque' => 'banner'])
-             ->except(['show']);
+            ->parameters(['banners-destaque' => 'banner'])
+            ->except(['show']);
 
         Route::put('banners-destaque/{banner}/toggle', [BannerDestaqueController::class,'toggle'])
             ->name('banners-destaque.toggle');
@@ -327,17 +327,10 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
         Route::post('banners-destaque/reordenar', [BannerDestaqueController::class,'reordenar'])
             ->name('banners-destaque.reordenar');
 
-
-        Route::put('banners-destaque/{banner}/toggle', [BannerDestaqueController::class,'toggle'])
-            ->name('banners-destaque.toggle');
-
-        Route::post('banners-destaque/reordenar', [BannerDestaqueController::class,'reordenar'])
-            ->name('banners-destaque.reordenar');
-
-        // Secretaria (singleton): editar/atualizar
         Route::get('secretaria', [SecretariaController::class,'edit'])
             ->middleware('permission:secretaria.edit')
             ->name('secretaria.edit');
+
         Route::put('secretaria', [SecretariaController::class,'update'])
             ->middleware('permission:secretaria.edit')
             ->name('secretaria.update');
@@ -380,6 +373,21 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
         Route::put('atrativos/{atrativo}',                        [EventoController::class,'atrativosUpdate'])->name('atrativos.update');
         Route::delete('atrativos/{atrativo}',                     [EventoController::class,'atrativosDestroy'])->name('atrativos.destroy');
         Route::post('edicoes/{edicao}/atrativos/reordenar',       [EventoController::class,'atrativosReordenar'])->name('edicoes.atrativos.reordenar');
+
+        //ESPAÇO CULTURAL
+        Route::resource('espacos-culturais', EspacoCulturalController::class)
+            ->parameters(['espacos-culturais' => 'espaco'])
+            ->except(['show']);
+
+        Route::patch('espacos-culturais/{espaco}/publicar', [EspacoCulturalController::class, 'publicar'])
+            ->name('espacos-culturais.publicar');
+
+        Route::patch('espacos-culturais/{espaco}/arquivar', [EspacoCulturalController::class, 'arquivar'])
+            ->name('espacos-culturais.arquivar');
+
+        Route::patch('espacos-culturais/{espaco}/rascunho', [EspacoCulturalController::class, 'rascunho'])
+            ->name('espacos-culturais.rascunho');
+
 
         // GALERIA
         Route::get('edicoes/{edicao}/midias',                     [EventoController::class,'midiasIndex'])->name('edicoes.midias.index');

@@ -158,6 +158,20 @@ class PontoTuristico extends Model
         return $this->hasMany(PontoRecomendacao::class, 'ponto_turistico_id');
     }
 
+    public function scopeComRecomendacaoGlobalAtiva($q)
+    {
+        return $q->whereHas('recomendacoes', function($r){
+            $r->whereNull('categoria_id')->ativas();
+        });
+    }
+
+    public function scopeComRecomendacaoCategoriaAtiva($q, int $categoriaId)
+    {
+        return $q->whereHas('recomendacoes', function($r) use ($categoriaId){
+            $r->where('categoria_id', $categoriaId)->ativas();
+        });
+    }
+
     // ---------- Helpers/Accessors ----------
     public function capaUrl(): ?string
     {

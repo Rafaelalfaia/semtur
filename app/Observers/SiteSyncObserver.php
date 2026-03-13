@@ -11,6 +11,8 @@ class SiteSyncObserver
     {
         Cache::forget('home:categorias');
         Cache::forget('home:recomendados:pontos:q='.md5(''));
+        Cache::forget('home:recomendados:mix:q='.md5(''));
+        Cache::forget('home:recomendados:mix:q='.md5(''));
         Cache::forget('home:pontos:q='.md5('').':l=6');
         Cache::forget('home:empresas:hoteis:q='.md5('').':l=6');
         Cache::forget('home:empresas:turismo:q='.md5('').':l=6');

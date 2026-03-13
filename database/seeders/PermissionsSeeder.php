@@ -51,6 +51,9 @@ class PermissionsSeeder extends Seeder
 
             // Gestão de técnicos pelo coordenador
             'tecnicos'          => ['manage'],
+
+            //ESPAÇO CULTURAL
+            'espacos_culturais' => ['view','create','update','delete','publicar','arquivar','rascunho'],
         ];
 
         // Flatten: gera lista "grupo.acao" (ou "grupo.sub.acao")
@@ -134,9 +137,11 @@ class PermissionsSeeder extends Seeder
             'eventos.view',
             'eventos.edicoes.manage',
             'eventos.midias.manage',
+            'espacos_culturais.view',
+            'espacos_culturais.create',
+            'espacos_culturais.update',
         ];
-       $roleTecnico->syncPermissions([]);
-
+        $roleTecnico->syncPermissions($tecnicoAllow);
         // ------------------------------------------------------------
         // 5) Finalização
         // ------------------------------------------------------------

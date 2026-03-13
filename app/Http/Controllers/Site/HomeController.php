@@ -47,117 +47,81 @@ class HomeController extends Controller
                     : (Schema::hasColumn('ponto_recomendacoes', 'ponto_id') ? 'ponto_id' : null);
         }
 
-        $pontosRecQ = PontoTuristico::query()
-            ->when(method_exists(PontoTuristico::class, 'scopePublicados'),
-                fn($q)=>$q->publicados(),
-                fn($q)=>$q->where('status','publicado')
-            )
-            ->when($q !== '', fn($qq)=>$qq->where(function($w) use($q,$like){
-                $w->where('nome',$like,"%{$q}%")
-                ->orWhere('descricao',$like,"%{$q}%");
-            }))
-            // evita N+1: pega só 1 mídia de capa
-            ->with(['midias' => fn($m) => $m->orderBy('ordem')->limit(1)]);
+       $pontosRec = collect();
 
         if ($temTabelaRecPontos && $fkPonto) {
-            // recomendações globais, ativas agora ou forçadas
-            $pontosRecQ->whereExists(function($sb) use ($fkPonto, $now){
-                $sb->select(DB::raw(1))
-                ->from('ponto_recomendacoes')
-                ->whereColumn('pontos_turisticos.id',"ponto_recomendacoes.$fkPonto")
-                ->whereNull('categoria_id')
-                ->where(function($w) use ($now){
-                    $w->where('ativo_forcado', true)
-                        ->orWhere(function($p) use ($now){
-                            $p->where(function($d) use ($now){
-                                $d->whereNull('inicio_em')->orWhere('inicio_em','<=', $now);
-                            })
-                            ->where(function($d) use ($now){
-                                $d->whereNull('fim_em')->orWhere('fim_em','>=', $now);
-                            });
-                        });
-                });
-            });
-        } elseif ($temColRecomendado) {
-            // fallback booleano
-            $pontosRecQ->where('recomendado', true);
-        }
-
-        // captura pontos e aplica imagem + link
-        $pontosRec = $pontosRecQ
-            ->orderBy('ordem')->orderBy('nome')
-            ->limit(6)->get()
-            ->map(function($p){
-                $img = $p->capa_url
-                    ?? $p->foto_capa_url
-                    ?? optional($p->midias->first())->url
-                    ?? null;
-                return [
-                    'id'       => $p->id,
-                    'type'     => 'ponto',
-                    'title'    => $p->nome,
-                    'subtitle' => $p->cidade ?? 'Altamira',
-                    'image'    => $img,
-                    'href'     => route('site.ponto', ['ponto' => $p->id]),
-                    'ordem'    => 999999,
-                ];
-            });
-
-        // aplica ordens oficiais se existirem (e estiverem ativas)
-        if ($temTabelaRecPontos && $fkPonto) {
-            $ordens = DB::table('ponto_recomendacoes')
-                ->select($fkPonto.' as id','ordem','ativo_forcado','inicio_em','fim_em')
-                ->whereNull('categoria_id')
+            $pontosRec = PontoTuristico::query()
+                ->publicados()
+                ->comRecomendacaoGlobalAtiva()
+                ->when($q !== '', fn($qq)=>$qq->where(function($w) use($q,$like){
+                    $w->where('nome',$like,"%{$q}%")
+                    ->orWhere('descricao',$like,"%{$q}%");
+                }))
+                ->addSelect([
+                    'recomendacao_ordem' => DB::table('ponto_recomendacoes as pr')
+                        ->select('pr.ordem')
+                        ->whereColumn("pr.$fkPonto", 'pontos_turisticos.id')
+                        ->whereNull('pr.deleted_at')
+                        ->whereNull('pr.categoria_id')
+                        ->orderBy('pr.ordem')
+                        ->limit(1),
+                ])
+                ->with([
+                    'midias' => fn($m) => $m->orderBy('ordem')->limit(1),
+                    'recomendacoes' => fn($r) => $r->whereNull('categoria_id')->ativas()->orderBy('ordem')->limit(1),
+                ])
+                ->orderBy('recomendacao_ordem')
+                ->limit(6)
                 ->get()
-                ->keyBy('id');
+                ->map(function($p){
+                    $img = $p->capa_url
+                        ?? $p->foto_capa_url
+                        ?? optional($p->midias->first())->url
+                        ?? null;
 
-            $pontosRec = $pontosRec->map(function($it) use ($ordens, $now) {
-                if (isset($ordens[$it['id']])) {
-                    $rec = $ordens[$it['id']];
-                    $ativo = $rec->ativo_forcado
-                        || ( (empty($rec->inicio_em) || $rec->inicio_em <= $now)
-                        && (empty($rec->fim_em)    || $rec->fim_em    >= $now) );
-                    if ($ativo) {
-                        $it['ordem'] = $rec->ordem ?? 999999;
-                    }
-                }
-                return $it;
-            });
+                    $ordem = $p->recomendacao_ordem ?? optional($p->recomendacoes->first())->ordem ?? 999999;
+
+                    return [
+                        'id'       => $p->id,
+                        'type'     => 'ponto',
+                        'title'    => $p->nome,
+                        'subtitle' => $p->cidade ?? 'Altamira',
+                        'image'    => $img,
+                        'href'     => route('site.ponto', ['ponto' => $p->id]),
+                        'ordem'    => $ordem,
+                    ];
+                });
         }
 
         // ---- Empresas recomendadas ----
         $temTabelaRecEmpresas = Schema::hasTable('empresa_recomendacoes');
 
         $empresasRec = collect();
-        if ($temTabelaRecEmpresas) {
+
+        if (Schema::hasTable('empresa_recomendacoes')) {
             $empresasRec = Empresa::query()
-                ->when(method_exists(Empresa::class, 'scopePublicadas'),
-                    fn($q)=>$q->publicadas(),
-                    fn($q)=>$q->where('status','publicado')
-                )
+                ->publicadas()
+                ->comRecomendacaoGlobalAtiva()
                 ->when($q !== '', fn($qq)=>$qq->where('nome',$like,"%{$q}%"))
-                ->whereExists(function($sb) use ($now){
-                    $sb->select(DB::raw(1))
-                    ->from('empresa_recomendacoes')
-                    ->whereColumn('empresas.id','empresa_recomendacoes.empresa_id')
-                    ->whereNull('categoria_id')
-                    ->where(function($w) use ($now){
-                        $w->where('ativo_forcado', true)
-                            ->orWhere(function($p) use ($now){
-                                $p->where(function($d) use ($now){
-                                    $d->whereNull('inicio_em')->orWhere('inicio_em','<=', $now);
-                                })
-                                ->where(function($d) use ($now){
-                                    $d->whereNull('fim_em')->orWhere('fim_em','>=', $now);
-                                });
-                            });
-                    });
-                })
-                ->with(['recomendacoes'=>fn($r)=>$r->whereNull('categoria_id')->orderBy('ordem')->limit(1)])
-                ->limit(6)->get()
+                ->addSelect([
+                    'recomendacao_ordem' => DB::table('empresa_recomendacoes as er')
+                        ->select('er.ordem')
+                        ->whereColumn('er.empresa_id', 'empresas.id')
+                        ->whereNull('er.deleted_at')
+                        ->whereNull('er.categoria_id')
+                        ->orderBy('er.ordem')
+                        ->limit(1),
+                ])
+                ->with([
+                    'recomendacoes' => fn($r) => $r->whereNull('categoria_id')->ativas()->orderBy('ordem')->limit(1),
+                ])
+                ->orderBy('recomendacao_ordem')
+                ->limit(6)
+                ->get()
                 ->map(function($e){
-                    $ordem = optional($e->recomendacoes->first())->ordem ?? 999999;
+                    $ordem = $e->recomendacao_ordem ?? optional($e->recomendacoes->first())->ordem ?? 999999;
                     $img   = $e->capa_url ?? $e->foto_capa_url ?? $e->perfil_url ?? null;
+
                     return [
                         'id'       => $e->id,
                         'type'     => 'empresa',
@@ -171,68 +135,14 @@ class HomeController extends Controller
         }
 
         // Mescla, ordena por prioridade e garante até 4 itens (diversificando)
-        $recomendacoes = $pontosRec->concat($empresasRec)->sortBy('ordem')->values();
-
-        if ($recomendacoes->count() < 4) {
-            $faltam = 4 - $recomendacoes->count();
-
-            $idsE = $recomendacoes->where('type','empresa')->pluck('id')->all();
-            $extraEmpresas = Empresa::query()
-                ->when(method_exists(Empresa::class, 'scopePublicadas'),
-                    fn($q)=>$q->publicadas(),
-                    fn($q)=>$q->where('status','publicado')
-                )
-                ->when($q !== '', fn($qq)=>$qq->where('nome',$like,"%{$q}%"))
-                ->when(!empty($idsE), fn($qq)=>$qq->whereNotIn('id',$idsE))
-                ->orderBy('ordem')->orderBy('nome')
-                ->limit($faltam)->get()
-                ->map(function($e){
-                    $img = $e->capa_url ?? $e->foto_capa_url ?? $e->perfil_url ?? null;
-                    return [
-                        'id'       => $e->id,
-                        'type'     => 'empresa',
-                        'title'    => $e->nome,
-                        'subtitle' => $e->cidade ?? 'Altamira',
-                        'image'    => $img,
-                        'href'     => route('site.empresa', ['empresa' => ($e->slug ?? $e->id)]),
-                        'ordem'    => 999999,
-                    ];
-                });
-
-            $recomendacoes = $recomendacoes->concat($extraEmpresas)->take(4)->values();
-
-            if ($recomendacoes->count() < 4) {
-                $faltam2 = 4 - $recomendacoes->count();
-                $idsP = $recomendacoes->where('type','ponto')->pluck('id')->all();
-
-                $extraPontos = PontoTuristico::query()
-                    ->when(method_exists(PontoTuristico::class, 'scopePublicados'),
-                        fn($q)=>$q->publicados(),
-                        fn($q)=>$q->where('status','publicado')
-                    )
-                    ->when($q !== '', fn($qq)=>$qq->where(function($w) use($q,$like){
-                        $w->where('nome',$like,"%{$q}%")->orWhere('descricao',$like,"%{$q}%");
-                    }))
-                    ->when(!empty($idsP), fn($qq)=>$qq->whereNotIn('id',$idsP))
-                    ->with(['midias' => fn($m) => $m->orderBy('ordem')->limit(1)])
-                    ->orderBy('ordem')->orderBy('nome')
-                    ->limit($faltam2)->get()
-                    ->map(function($p){
-                        $img = $p->capa_url ?? $p->foto_capa_url ?? optional($p->midias->first())->url ?? null;
-                        return [
-                            'id'       => $p->id,
-                            'type'     => 'ponto',
-                            'title'    => $p->nome,
-                            'subtitle' => $p->cidade ?? 'Altamira',
-                            'image'    => $img,
-                            'href'     => route('site.ponto', ['ponto' => $p->id]),
-                            'ordem'    => 999999,
-                        ];
-                    });
-
-                $recomendacoes = $recomendacoes->concat($extraPontos)->take(4)->values();
-            }
-        }
+        $recomendacoes = $pontosRec
+        ->concat($empresasRec)
+        ->sortBy(fn($item) => [
+            $item['ordem'] ?? 999999,
+            mb_strtolower($item['title'] ?? ''),
+        ])
+        ->take(4)
+        ->values();
 
         /* 3) Pontos (lista principal) */
         $pontosDestaque = PontoTuristico::query()

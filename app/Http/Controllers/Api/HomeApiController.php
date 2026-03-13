@@ -37,25 +37,70 @@ class HomeApiController extends Controller
                 ])->values();
         });
 
-        // Recomendações (Pontos) via relação recomendacoes
-        $recomendacoes = Cache::remember("home:recomendados:pontos:q=$qh", 300, function () use ($q, $like) {
-            return PontoTuristico::publicados()
-                ->whereHas('recomendacoes')
+        // Recomendações (Pontos + Empresas) globais e ativas
+        $recomendacoes = Cache::remember("home:recomendados:mix:q=$qh", 300, function () use ($q, $like) {
+            $pontos = PontoTuristico::publicados()
+                ->whereHas('recomendacoes', function($r){
+                    $r->whereNull('categoria_id')->ativas();
+                })
                 ->when($q !== '', function($qq) use ($q, $like){
                     $qq->where(function($w) use ($q, $like){
                         $w->where('nome', $like, "%{$q}%")
-                          ->orWhere('descricao', $like, "%{$q}%");
+                        ->orWhere('descricao', $like, "%{$q}%");
                     });
                 })
-                ->with(['midias'=>fn($m)=>$m->orderBy('ordem')->take(1)])
-                ->ordenado()->take(4)->get()
-                ->map(fn($p)=>[
-                    'id'=>$p->id,
-                    'nome'=>$p->nome,
-                    'slug'=>$p->slug ?? (string) $p->id,
-                    'cidade'=>$p->cidade,
-                    'capa_url'=>$p->capa_url,
-                ])->values();
+                ->with([
+                    'midias'=>fn($m)=>$m->orderBy('ordem')->take(1),
+                    'recomendacoes'=>fn($r)=>$r->whereNull('categoria_id')->ativas()->orderBy('ordem'),
+                ])
+                ->ordenado()
+                ->take(6)
+                ->get()
+                ->map(function($p){
+                    $ordem = optional($p->recomendacoes->first())->ordem ?? 999999;
+
+                    return [
+                        'type'     => 'ponto',
+                        'id'       => $p->id,
+                        'nome'     => $p->nome,
+                        'slug'     => $p->slug ?? (string) $p->id,
+                        'cidade'   => $p->cidade,
+                        'capa_url' => $p->capa_url,
+                        'ordem'    => $ordem,
+                    ];
+                });
+
+            $empresas = Empresa::publicadas()
+                ->whereHas('recomendacoes', function($r){
+                    $r->whereNull('categoria_id')->ativas();
+                })
+                ->when($q !== '', fn($qq)=>$qq->where('nome',$like,"%{$q}%"))
+                ->with([
+                    'recomendacoes'=>fn($r)=>$r->whereNull('categoria_id')->ativas()->orderBy('ordem'),
+                ])
+                ->ordenado()
+                ->take(6)
+                ->get()
+                ->map(function($e){
+                    $ordem = optional($e->recomendacoes->first())->ordem ?? 999999;
+
+                    return [
+                        'type'        => 'empresa',
+                        'id'          => $e->id,
+                        'nome'        => $e->nome,
+                        'slug'        => $e->slug,
+                        'cidade'      => $e->cidade,
+                        'foto_capa'   => $e->foto_capa_url,
+                        'foto_perfil' => $e->foto_perfil_url,
+                        'ordem'       => $ordem,
+                    ];
+                });
+
+            return $pontos
+                ->concat($empresas)
+                ->sortBy('ordem')
+                ->take(4)
+                ->values();
         });
 
         // Pontos (lista principal)

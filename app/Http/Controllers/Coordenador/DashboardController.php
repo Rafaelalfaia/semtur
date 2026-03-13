@@ -14,7 +14,7 @@ use App\Models\Catalogo\Categoria;
 use App\Models\Catalogo\Empresa;
 use App\Models\Catalogo\PontoTuristico;
 use App\Models\Catalogo\PontoMidia;
-use App\Models\Banner;
+use App\Models\Conteudo\Banner;
 use App\Models\Catalogo\PontoRecomendacao;
 use App\Models\Catalogo\EmpresaRecomendacao;
 

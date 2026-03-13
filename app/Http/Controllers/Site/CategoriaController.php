@@ -38,22 +38,24 @@ class CategoriaController extends Controller
 
             if ($fk) {
                 $pontosQ->leftJoin('ponto_recomendacoes as pr', function($join) use ($fk,$categoria,$now){
-                        $join->on("pr.$fk",'=','pontos_turisticos.id')
-                             ->where('pr.categoria_id', $categoria->id)
-                             ->where(function($w) use ($now){
-                                 $w->where('pr.ativo_forcado', true)
-                                   ->orWhere(function($p) use ($now){
-                                       $p->where(function($d) use ($now){
-                                           $d->whereNull('pr.inicio_em')->orWhere('pr.inicio_em','<=',$now);
-                                       })->where(function($d) use ($now){
-                                           $d->whereNull('pr.fim_em')->orWhere('pr.fim_em','>=',$now);
-                                       });
-                                   });
-                             });
-                    })
-                    ->select('pontos_turisticos.*')
-                    ->orderByRaw('CASE WHEN pr.id IS NULL THEN 1 ELSE 0 END ASC')
-                    ->orderByRaw('COALESCE(pr.ordem, 999999) ASC');
+                    $join->on("pr.$fk",'=','pontos_turisticos.id')
+                        ->whereNull('pr.deleted_at')
+                        ->whereNull('pr.deleted_at')
+                        ->where('pr.categoria_id', $categoria->id)
+                        ->where(function($w) use ($now){
+                            $w->where('pr.ativo_forcado', true)
+                            ->orWhere(function($p) use ($now){
+                                $p->where(function($d) use ($now){
+                                    $d->whereNull('pr.inicio_em')->orWhere('pr.inicio_em','<=',$now);
+                                })->where(function($d) use ($now){
+                                    $d->whereNull('pr.fim_em')->orWhere('pr.fim_em','>=',$now);
+                                });
+                            });
+                        });
+                })
+                ->select('pontos_turisticos.*')
+                ->orderByRaw('CASE WHEN pr.id IS NULL THEN 1 ELSE 0 END ASC')
+                ->orderByRaw('COALESCE(pr.ordem, 999999) ASC');
             }
         }
         $pontos = $pontosQ->orderBy('ordem')->orderBy('nome')
@@ -67,22 +69,24 @@ class CategoriaController extends Controller
 
         if (Schema::hasTable('empresa_recomendacoes')) {
             $empresasQ->leftJoin('empresa_recomendacoes as er', function($join) use ($categoria,$now){
-                    $join->on('er.empresa_id','=','empresas.id')
-                         ->where('er.categoria_id',$categoria->id)
-                         ->where(function($w) use ($now){
-                             $w->where('er.ativo_forcado', true)
-                               ->orWhere(function($p) use ($now){
-                                   $p->where(function($d) use ($now){
-                                       $d->whereNull('er.inicio_em')->orWhere('er.inicio_em','<=',$now);
-                                   })->where(function($d) use ($now){
-                                       $d->whereNull('er.fim_em')->orWhere('er.fim_em','>=',$now);
-                                   });
-                               });
-                         });
-                })
-                ->select('empresas.*')
-                ->orderByRaw('CASE WHEN er.id IS NULL THEN 1 ELSE 0 END ASC')
-                ->orderByRaw('COALESCE(er.ordem, 999999) ASC');
+                $join->on('er.empresa_id','=','empresas.id')
+                    ->whereNull('er.deleted_at')
+                    ->whereNull('er.deleted_at')
+                    ->where('er.categoria_id',$categoria->id)
+                    ->where(function($w) use ($now){
+                        $w->where('er.ativo_forcado', true)
+                        ->orWhere(function($p) use ($now){
+                            $p->where(function($d) use ($now){
+                                $d->whereNull('er.inicio_em')->orWhere('er.inicio_em','<=',$now);
+                            })->where(function($d) use ($now){
+                                $d->whereNull('er.fim_em')->orWhere('er.fim_em','>=',$now);
+                            });
+                        });
+                    });
+            })
+            ->select('empresas.*')
+            ->orderByRaw('CASE WHEN er.id IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByRaw('COALESCE(er.ordem, 999999) ASC');
         }
 
         $empresas = $empresasQ->orderBy('ordem')->orderBy('nome')

@@ -487,7 +487,7 @@ private function stripHandleOrKeepUrl(string $v, string $net): string
     public function recomendar(Request $r, Empresa $empresa)
     {
         $data = $r->validate([
-            // se vier null => “global”
+            'contexto'      => ['required', Rule::in(['global','categoria'])],
             'categoria_id'  => ['nullable','integer','exists:categorias,id'],
             'ordem'         => ['nullable','integer','min:0'],
             'inicio_em'     => ['nullable','date'],
@@ -495,22 +495,30 @@ private function stripHandleOrKeepUrl(string $v, string $net): string
             'ativo_forcado' => ['nullable','boolean'],
         ]);
 
-        $payload = [
-            'empresa_id'    => $empresa->id,
-            'categoria_id'  => $data['categoria_id'] ?? null, // null = global
+        $categoriaId = $data['contexto'] === 'categoria'
+            ? ($data['categoria_id'] ?? null)
+            : null;
+
+        $rec = EmpresaRecomendacao::withTrashed()->firstOrNew([
+            'empresa_id'   => $empresa->id,
+            'categoria_id' => $categoriaId,
+        ]);
+
+        $rec->fill([
             'ordem'         => $data['ordem'] ?? 0,
             'inicio_em'     => $data['inicio_em'] ?? null,
             'fim_em'        => $data['fim_em'] ?? null,
             'ativo_forcado' => (bool)($data['ativo_forcado'] ?? false),
             'created_by'    => auth()->id(),
-        ];
+        ]);
 
-        EmpresaRecomendacao::updateOrCreate(
-            ['empresa_id'=>$empresa->id, 'categoria_id'=>$payload['categoria_id']],
-            $payload
-        );
+        if ($rec->trashed()) {
+            $rec->restore();
+        }
 
-        return back()->with('ok','Empresa destacada com sucesso.');
+        $rec->save();
+
+        return back()->with('ok','Empresa recomendada com sucesso.');
     }
 
 
@@ -518,21 +526,25 @@ private function stripHandleOrKeepUrl(string $v, string $net): string
     public function removerRecomendacao(Empresa $empresa, Request $r)
     {
         $data = $r->validate([
-            // se não enviar, remove a “global”
+            'contexto'     => ['required', Rule::in(['global','categoria'])],
             'categoria_id' => ['nullable','integer','exists:categorias,id'],
         ]);
 
-        EmpresaRecomendacao::where('empresa_id', $empresa->id)
-            ->where(function($q) use ($data){
-                if (array_key_exists('categoria_id',$data)) {
-                    $q->where('categoria_id', $data['categoria_id']);
-                } else {
-                    $q->whereNull('categoria_id'); // global
-                }
-            })
-            ->delete();
+        $q = EmpresaRecomendacao::where('empresa_id', $empresa->id);
 
-        return back()->with('ok','Destaque removido.');
+        if ($data['contexto'] === 'categoria') {
+            if (empty($data['categoria_id'])) {
+                return back()->withErrors(['categoria_id' => 'Selecione a categoria.']);
+            }
+
+            $q->where('categoria_id', $data['categoria_id']);
+        } else {
+            $q->whereNull('categoria_id');
+        }
+
+        $q->delete();
+
+        return back()->with('ok','Recomendação removida.');
     }
 
     public function reordenarRecomendacao(Request $r, EmpresaRecomendacao $rec)

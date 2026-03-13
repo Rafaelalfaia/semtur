@@ -156,14 +156,14 @@
               <form method="POST" action="{{ route('coordenador.pontos.recomendar', $ponto) }}">
                 @csrf
                 <input type="hidden" name="contexto" value="global">
-                <button class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-sm">Destacar (Home)</button>
-              </form>
+                <button class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-sm">Recomendar (Home)</button>
+            </form>
 
               <form method="POST" action="{{ route('coordenador.pontos.recomendar.remover', $ponto) }}">
                 @csrf @method('DELETE')
                 <input type="hidden" name="contexto" value="global">
-                <button class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-sm">Remover destaque</button>
-              </form>
+                <button class="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-sm">Remover recomendação</button>
+            </form>
             </div>
           @endif
         </div>
