@@ -1,308 +1,262 @@
-{{-- resources/views/site/eventos/show.blade.php --}}
 @extends('site.layouts.app')
-@section('title','Descubra Altamira')
-@section('meta.description','Guia turístico oficial de Altamira, Pará.')
-@section('meta.image', $capaUrl ?? '/images/og-default.jpg')
 
-@section('title', ($evento->nome ?? 'Evento').' — '.($edicao->ano ?? ''))
+@php
+  $seoTitle = trim(($evento->nome ?? 'Evento').($edicao->ano ? ' '.$edicao->ano : '').' em Altamira');
+  $seoDescription = \Illuminate\Support\Str::limit(strip_tags($edicao->resumo ?: ($evento->descricao ?? 'Detalhes do evento em Altamira.')), 160);
+  $seoImage = $evento->capa_url
+      ?? ($evento->capa_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($evento->capa_path) : null)
+      ?? $evento->perfil_url
+      ?? ($evento->perfil_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($evento->perfil_path) : null)
+      ?? theme_asset('hero_image');
+  $seoCanonical = isset($edicao->ano) && $edicao->ano
+      ? route('eventos.show', [$evento->slug ?? $evento->id, $edicao->ano])
+      : route('eventos.show', [$evento->slug ?? $evento->id]);
+@endphp
+
+@section('title', $seoTitle)
+@section('meta.description', $seoDescription)
+@section('meta.image', $seoImage)
+@section('meta.canonical', $seoCanonical)
+@section('meta.type', 'article')
+
+@php
+  $eventSchema = [
+      [
+          '@type' => 'BreadcrumbList',
+          '@id' => $seoCanonical.'#breadcrumbs',
+          'itemListElement' => array_values(array_filter([
+              [
+                  '@type' => 'ListItem',
+                  'position' => 1,
+                  'name' => 'Inicio',
+                  'item' => \Illuminate\Support\Facades\Route::has('site.home') ? route('site.home') : url('/'),
+              ],
+              \Illuminate\Support\Facades\Route::has('eventos.index') ? [
+                  '@type' => 'ListItem',
+                  'position' => 2,
+                  'name' => 'Eventos',
+                  'item' => route('eventos.index'),
+              ] : null,
+              [
+                  '@type' => 'ListItem',
+                  'position' => 3,
+                  'name' => $seoTitle,
+                  'item' => $seoCanonical,
+              ],
+          ])),
+      ],
+      array_filter([
+          '@type' => 'Event',
+          '@id' => $seoCanonical.'#event',
+          'name' => $evento->nome ?? 'Evento',
+          'description' => $seoDescription,
+          'url' => $seoCanonical,
+          'image' => [$seoImage],
+          'startDate' => !empty($edicao->data_inicio) ? \Illuminate\Support\Carbon::parse($edicao->data_inicio)->toAtomString() : null,
+          'endDate' => !empty($edicao->data_fim) ? \Illuminate\Support\Carbon::parse($edicao->data_fim)->toAtomString() : null,
+          'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+          'eventStatus' => 'https://schema.org/EventScheduled',
+          'location' => array_filter([
+              '@type' => 'Place',
+              'name' => trim((string) ($edicao->local ?? $evento->cidade ?? 'Altamira')),
+              'address' => [
+                  '@type' => 'PostalAddress',
+                  'addressLocality' => $evento->cidade ?? 'Altamira',
+                  'addressRegion' => 'PA',
+                  'addressCountry' => 'BR',
+              ],
+              'geo' => (is_numeric($edicao->lat ?? null) && is_numeric($edicao->lng ?? null)) ? [
+                  '@type' => 'GeoCoordinates',
+                  'latitude' => (float) $edicao->lat,
+                  'longitude' => (float) $edicao->lng,
+              ] : null,
+          ], fn ($value) => $value !== null),
+          'organizer' => [
+              '@type' => 'Organization',
+              'name' => 'VisitAltamira',
+              'url' => config('app.url') ?: url('/'),
+          ],
+      ], fn ($value) => $value !== null),
+  ];
+@endphp
+
+@push('structured-data')
+<script type="application/ld+json">@json(['@context' => 'https://schema.org', '@graph' => $eventSchema], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 
 @section('site.content')
 @php
-  use Illuminate\Support\Str;
   use Illuminate\Support\Facades\Storage;
   use Illuminate\Support\Facades\Route;
 
   $pub = fn($p) => $p ? Storage::disk('public')->url($p) : null;
 
-  $nome      = $evento->nome ?? 'Evento';
-  $cidade    = $evento->cidade ?? 'Altamira';
+  $nome = $evento->nome ?? 'Evento';
+  $cidade = $evento->cidade ?? 'Altamira';
   $descricao = $edicao->resumo ?: ($evento->descricao ?? null);
 
-  // imagens (preferir urls prontas > paths do storage > placeholder)
   $capaUrl = $evento->capa_url
-          ?? $pub($evento->capa_path ?? null)
-          ?? $evento->perfil_url
-          ?? $pub($evento->perfil_path ?? null)
-          ?? asset('images/placeholders/capa-evento.jpg');
+      ?? $pub($evento->capa_path ?? null)
+      ?? $evento->perfil_url
+      ?? $pub($evento->perfil_path ?? null)
+      ?? theme_asset('hero_image');
 
-  // rating (se existir)
-  $nota = property_exists($evento,'rating') ? (float)$evento->rating : null;
-
-  // Período/Quando
+  $nota = property_exists($evento, 'rating') ? (float) $evento->rating : null;
   $quando = $edicao->periodo
-        ?: (($edicao->data_inicio ? \Carbon\Carbon::parse($edicao->data_inicio)->format('d/m/Y') : null)
-          . ($edicao->data_fim ? ' – '.\Carbon\Carbon::parse($edicao->data_fim)->format('d/m/Y') : ''))
-        ?: ($edicao->ano ?? null);
+      ?: (($edicao->data_inicio ? \Carbon\Carbon::parse($edicao->data_inicio)->format('d/m/Y') : null)
+      . ($edicao->data_fim ? ' - '.\Carbon\Carbon::parse($edicao->data_fim)->format('d/m/Y') : ''))
+      ?: ($edicao->ano ?? null);
 
-  // Onde + coordenadas
   $onde = trim($edicao->local ?? '') ?: $cidade;
-  $lat  = is_numeric($edicao->lat ?? null) ? (float)$edicao->lat : null;
-  $lng  = is_numeric($edicao->lng ?? null) ? (float)$edicao->lng : null;
-
-  // deep-link do mapa (modelo de empresa)
-  $mapBase    = Route::has('site.mapa') ? route('site.mapa') : url('/mapa');
-  $slugOrId   = $evento->slug ?? $evento->id;
-  $mapQuery   = array_filter([
-      'focus' => 'evento:'.$slugOrId, // 👈 foco no evento
-      'lat'   => $lat,
-      'lng'   => $lng,
-      'open'  => 1,
+  $lat = is_numeric($edicao->lat ?? null) ? (float) $edicao->lat : null;
+  $lng = is_numeric($edicao->lng ?? null) ? (float) $edicao->lng : null;
+  $mapBase = Route::has('site.mapa') ? route('site.mapa') : url('/mapa');
+  $slugOrId = $evento->slug ?? $evento->id;
+  $mapQuery = array_filter([
+      'focus' => 'evento:'.$slugOrId,
+      'lat' => $lat,
+      'lng' => $lng,
+      'open' => 1,
   ], fn($v) => $v !== null && $v !== '');
   $mapHref = $mapBase.(count($mapQuery) ? ('?'.http_build_query($mapQuery)) : '');
 
-  // Galeria p/ lightbox
-  $galeria = collect($edicao->midias ?? [])->map(function($m){
-    $src = Str::startsWith($m->path, ['http://','https://','/']) ? $m->path : Storage::disk('public')->url($m->path);
-    return ['src'=>$src, 'alt'=>$m->alt ?? ''];
+  $galeria = collect($edicao->midias ?? [])->map(function ($midia) {
+      $src = \Illuminate\Support\Str::startsWith($midia->path, ['http://', 'https://', '/'])
+          ? $midia->path
+          : Storage::disk('public')->url($midia->path);
+      return ['src' => $src, 'alt' => $midia->alt ?? ''];
   })->values();
 
-  // Atrativos
-  $atrativos = collect($edicao->atrativos ?? []);
+  $atrativos = collect($edicao->atrativos ?? [])->map(function ($atrativo) use ($pub) {
+      return [
+          'title' => $atrativo->nome,
+          'subtitle' => 'Atrativo do evento',
+          'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $atrativo->descricao), 120),
+          'image' => $atrativo->thumb_url ?? $pub($atrativo->thumb_path ?? null) ?? theme_asset('hero_image'),
+          'badge' => 'Atrativo',
+      ];
+  });
 
-  // Anos (para seletor)
   $anos = collect($anos ?? []);
 @endphp
 
-{{-- Preload da capa --}}
-<link rel="preload" as="image" href="{{ $capaUrl }}"/>
+<div class="site-page site-page-shell">
+    @include('site.partials._page_hero', [
+        'badge' => 'Evento',
+        'title' => $nome,
+        'subtitle' => 'Informacoes publicas, periodo e contexto para acompanhar a experiencia do evento com mais clareza.',
+        'meta' => [
+            $cidade,
+            $quando,
+            $nota ? number_format($nota, 1, ',', '.').' de avaliacao' : null,
+        ],
+        'primaryActionLabel' => 'Abrir no mapa',
+        'primaryActionHref' => $mapHref,
+        'secondaryActionLabel' => Route::has('eventos.index') ? 'Ver agenda' : null,
+        'secondaryActionHref' => Route::has('eventos.index') ? route('eventos.index') : null,
+        'image' => $capaUrl,
+        'imageAlt' => 'Capa de '.$nome,
+    ])
 
-@push('head')
-<style>
-  :root{
-    --app-max: 420px;            /* largura app em qualquer tela */
-    --sheet-r: 30px;
-    --brand: #00837B;
-    --muted: #868B8B;
-    --shadow-1: 0 -6px 24px rgba(16,24,40,.08), 0 -2px 8px rgba(16,24,40,.05);
-  }
-  .wrap{ margin-inline:auto; max-width:var(--app-max); }
-  .hero{ height:44dvh; min-height:320px; }
-  @media (min-width:768px){ .hero{ height:360px; } }
-  @media (min-width:1024px){ .hero{ height:420px; } }
-
-  .card-top{
-    background:#fff; border-top-left-radius:var(--sheet-r); border-top-right-radius:var(--sheet-r);
-    box-shadow:var(--shadow-1);
-  }
-  .indicator{ width:134px; height:5px; background:#868B8B; border-radius:100px; }
-
-  .tab-btn{ padding-bottom:.5rem; font-weight:600; font-size:16px; }
-  .tab-on{ color:var(--brand); border-bottom:2px solid var(--brand); }
-  .tab-off{ color:#2B3536; opacity:.9; border-bottom:2px solid transparent; }
-
-  .lb-bg{ background:rgba(0,0,0,.85); }
-  .lb-btn{ width:42px; height:42px; border-radius:999px; background:rgba(255,255,255,.15); color:#fff; }
-  .lb-btn:hover{ background:rgba(255,255,255,.25); }
-</style>
-@endpush
-
-<div class="relative mx-auto w-full max-w-[420px] md:max-w-[768px] lg:max-w-[960px]">
-
-  {{-- HERO (igual ao da empresa) --}}
-  <div class="relative hero -mt-6 md:mt-0 overflow-hidden rounded-b-3xl">
-    <img src="{{ $capaUrl }}" alt="Capa de {{ $nome }}"
-         class="absolute inset-0 w-full h-full object-cover"
-         loading="eager" decoding="async" fetchpriority="high"
-         onerror="this.onerror=null;this.src='{{ asset('images/placeholders/capa-evento.jpg') }}';">
-    <div class="absolute inset-0" style="background:linear-gradient(180deg,#00837B 0%,rgba(255,255,255,0) 58.5%);"></div>
-
-    {{-- Top bar --}}
-    <div class="absolute left-0 right-0 top-0 pt-[env(safe-area-inset-top)] px-4">
-      <div class="mt-3 flex items-center justify-between">
-        <a href="{{ url()->previous() }}"
-           class="h-12 w-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shadow-md text-white hover:bg-white/30 transition"
-           aria-label="Voltar">
-          <svg viewBox="0 0 24 24" class="h-6 w-6"><path fill="currentColor" d="M15.41 7.41 14 6 8 12l6 6 1.41-1.41L10.83 12z"/></svg>
-        </a>
-
-        <button type="button"
-                x-data
-                @click="
-                  if (navigator.share) {
-                    navigator.share({ title: '{{ addslashes($nome) }}', url: window.location.href });
-                  } else {
-                    navigator.clipboard.writeText(window.location.href);
-                  }"
-                class="h-12 w-12 rounded-full bg-white/20 backdrop-blur flex items-center justify-center shadow-md text-white hover:bg-white/30 transition"
-                aria-label="Compartilhar">
-          <svg viewBox="0 0 24 24" class="h-6 w-6"><path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0018 7.91a3 3 0 10-2.83-4A3 3 0 0012 6a3 3 0 00.09.7L5.04 10.8A3 3 0 003 10a3 3 0 100 6c.76 0 1.44-.3 1.96-.77l7.13 4.19c-.06.2-.09.41-.09.63a3 3 0 103-3z"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  {{-- CARTÃO / CONTEÚDO (mesma lógica do show de empresa) --}}
-  <div class="relative -mt-6 md:-mt-10">
-    <section class="mx-auto w-full card-top">
-      <div class="w-full flex justify-center pt-4"><div class="indicator"></div></div>
-
-      {{-- Título + Ações rápidas --}}
-      <div class="px-4 pt-3">
-        <div class="flex items-center justify-between gap-3">
-          <h1 class="text-[22px] md:text-[24px] leading-8 font-semibold text-[#2B3536] line-clamp-2">{{ $nome }}</h1>
-          <div class="text-sm text-[#2B3536]/70">{{ $edicao->ano }}</div>
-        </div>
-
-        <div class="mt-1 flex items-center justify-between">
-          <div class="flex items-center gap-2 text-[#868B8B]">
-            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.6 2 4 5.6 4 10c0 6 8 12 8 12s8-6 8-12c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z"/></svg>
-            <span class="text-[16px] leading-5">{{ $cidade }}</span>
-          </div>
-
-          @if(!is_null($nota))
-            <div class="flex items-center gap-1">
-              @for($i=1; $i<=5; $i++)
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="{{ $i <= round($nota) ? '#FCCF05' : '#E5E7EB' }}"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              @endfor
-              <span class="text-[#868B8B] text-[14px] leading-5 font-medium">{{ number_format($nota,1,',','.') }}</span>
+    @if($anos->count() > 1)
+        <section class="site-section">
+            <div class="site-surface-soft">
+                <x-section-head eyebrow="Edicoes" title="Escolha o ano" subtitle="Troque entre as edicoes publicadas sem sair da pagina do evento." />
+                <div class="site-filter-row">
+                    @foreach($anos as $ano)
+                        <a href="{{ route('eventos.show', [$evento->slug ?? $evento->id, $ano]) }}" class="{{ $ano == $edicao->ano ? 'site-year-chip is-active' : 'site-year-chip' }}">
+                            {{ $ano }}
+                        </a>
+                    @endforeach
+                </div>
             </div>
-          @endif
-        </div>
-      </div>
+        </section>
+    @endif
 
-      {{-- Seleção de anos --}}
-      @if($anos->count() > 1)
-        <div class="px-4 mt-2 overflow-x-auto">
-          <div class="flex items-center gap-2">
-            @foreach($anos as $a)
-              <a href="{{ route('eventos.show', [$evento->slug ?? $evento->id, $a]) }}"
-                 class="px-3 py-1.5 rounded-full border {{ $a==$edicao->ano ? 'bg-[var(--brand)] text-white border-[var(--brand)]' : 'bg-white text-[#2B3536] border-slate-300' }}">
-                {{ $a }}
-              </a>
-            @endforeach
-          </div>
-        </div>
-      @endif
-
-      {{-- Quando / Onde / Mapa --}}
-      <div class="mt-3 px-4 grid gap-2">
-        @if($quando)
-          <div class="flex items-center gap-2 text-sm">
-            <div>
-              <div class="text-slate-900 font-medium">Data</div>
-              <div class="text-slate-600">{{ $quando }}</div>
-            </div>
-          </div>
-        @endif
-
-        <div class="flex items-center gap-2 text-sm">
-          <div class="min-w-0 flex-1">
-            <div class="text-slate-900 font-medium">Local</div>
-            <div class="text-slate-600 truncate">{{ $onde }}</div>
-          </div>
-          <a href="{{ $mapHref }}" class="ml-auto inline-flex items-center rounded-full bg-[var(--brand)] text-white px-3 py-1.5 text-xs">
-            Ver no mapa
-          </a>
-        </div>
-      </div>
-
-      {{-- Tabs --}}
-      <div x-data="{
-            tab:'desc',
-            lbOpen:false, i:0,
-            imgs: @js($galeria),
-            startX:0,
-            openAt(k){ this.i=k; this.lbOpen=true; document.body.style.overflow='hidden'; },
-            close(){ this.lbOpen=false; document.body.style.overflow=''; },
-            next(){ if(!this.imgs.length)return; this.i=(this.i+1)%this.imgs.length; },
-            prev(){ if(!this.imgs.length)return; this.i=(this.i-1+this.imgs.length)%this.imgs.length; },
-            tstart(e){ this.startX=(e.touches?.[0]?.clientX)||0; },
-            tend(e){ const dx=((e.changedTouches?.[0]?.clientX)||0)-this.startX; if(Math.abs(dx)>50){ dx<0?this.next():this.prev(); } }
-          }"
-          x-on:keydown.escape.window="lbOpen=false"
-          x-on:keydown.arrow-right.window="lbOpen && next()"
-          x-on:keydown.arrow-left.window="lbOpen && prev()"
-          class="mt-3">
-
-        <div class="px-4 flex items-start gap-12">
-          <button class="tab-btn" :class="tab==='desc' ? 'tab-on' : 'tab-off'" @click="tab='desc'">Descrição</button>
-          <button class="tab-btn" :class="tab==='gal'  ? 'tab-on' : 'tab-off'" @click="tab='gal'">Galeria de Fotos</button>
-        </div>
-
-        {{-- Descrição + Atrativos --}}
-        <section x-show="tab==='desc'" x-cloak class="px-4 pt-3 space-y-4">
-          <div>
-            <h3 class="text-[16px] font-semibold text-[#2B3536]">Sobre</h3>
-            @if($descricao)
-              <p class="mt-1 text-[14px] leading-5 text-[#868B8B] text-justify">{!! $descricao !!}</p>
-            @else
-              <p class="mt-1 text-[14px] leading-5 text-[#868B8B]">Sem descrição cadastrada.</p>
-            @endif
-          </div>
-
-          @if($atrativos->count())
-            <div>
-              <h3 class="text-[16px] font-semibold text-[#2B3536]">Atrativos</h3>
-              <div class="mt-2 space-y-4">
-                @foreach($atrativos as $a)
-                  @php
-                    $thumb = $a->thumb_url ?? $pub($a->thumb_path ?? null) ?? asset('images/placeholders/card.jpg');
-                  @endphp
-                  <div class="rounded-[10px] bg-white shadow-[0_4px_36px_rgba(0,0,0,0.09)] overflow-hidden">
-                    <div class="p-2 flex gap-3">
-                      <div class="w-[112px] sm:w-[136px] aspect-square rounded-[10px] overflow-hidden shrink-0">
-                        <img src="{{ $thumb }}" class="w-full h-full object-cover" alt="{{ $a->nome }}">
-                      </div>
-                      <div class="min-w-0 flex-1 py-1">
-                        <div class="text-[16px] font-semibold text-[#2B3536] truncate">{{ $a->nome }}</div>
-                        @if($a->descricao)
-                          <div class="mt-1 text-[12px] leading-[18px] text-[#868B8B] line-clamp-2">{{ $a->descricao }}</div>
-                        @endif
-                        <div class="mt-2">
-                          <img src="{{ asset('imagens/visitpreto.png') }}" alt="Visit Altamira" class="h-5 opacity-90">
-                        </div>
-                      </div>
+    <section class="site-section">
+        <div class="site-editorial-layout">
+            <div class="site-editorial-main">
+                <section class="site-surface site-content-block">
+                    <x-section-head eyebrow="Sobre" title="Descricao do evento" subtitle="Resumo editorial e conteudo publico da edicao selecionada." />
+                    <div class="site-prose">
+                        {!! $descricao ?: '<p>Esta edicao ainda nao tem uma descricao editorial publicada.</p>' !!}
                     </div>
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          @endif
-        </section>
+                </section>
 
-        {{-- Galeria (abre dentro com lightbox) --}}
-        <section x-show="tab==='gal'" x-cloak class="px-4 pt-3">
-          @if($galeria->count())
-            <div class="grid grid-cols-2 gap-2">
-              @foreach($galeria as $idx => $img)
-                <button type="button" class="block rounded-lg overflow-hidden"
-                        @click="openAt({{ $idx }})" aria-label="Abrir imagem {{ $idx+1 }}">
-                  <img src="{{ $img['src'] }}" alt="{{ $img['alt'] }}" class="w-full h-28 object-cover">
-                </button>
-              @endforeach
+                @if($atrativos->isNotEmpty())
+                    <section class="site-section">
+                        <x-section-head eyebrow="Atrativos" title="Destaques desta edicao" subtitle="Uma leitura visual consistente com o restante do portal." />
+                        <div class="site-card-list-grid">
+                            @foreach($atrativos as $item)
+                                <div class="site-card-list">
+                                    <div class="site-card-list-media">
+                                        <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" class="site-card-list-image" loading="lazy" decoding="async">
+                                    </div>
+                                    <div class="site-card-list-body">
+                                        <span class="site-badge">{{ $item['badge'] }}</span>
+                                        <h3 class="site-card-list-title">{{ $item['title'] }}</h3>
+                                        <p class="site-card-list-summary">{{ $item['summary'] }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
             </div>
 
-            {{-- Lightbox --}}
-            <div x-show="lbOpen" x-cloak class="fixed inset-0 z-[60] lb-bg flex items-center justify-center"
-                 x-transition.opacity @click.self="close()">
-              <div class="relative w-full h-full wrap">
-                <button class="absolute right-3 top-3 lb-btn" @click="close()" aria-label="Fechar">✕</button>
-                <div class="h-full flex items-center justify-center px-3 select-none"
-                     @touchstart.passive="tstart($event)" @touchend.passive="tend($event)">
-                  <img :src="imgs[i]?.src" :alt="imgs[i]?.alt || ''"
-                       class="max-h-[85vh] w-auto rounded-xl shadow-xl object-contain">
-                </div>
-                <div class="absolute inset-y-0 left-2 flex items-center">
-                  <button class="lb-btn" @click.stop="prev()" aria-label="Anterior">‹</button>
-                </div>
-                <div class="absolute inset-y-0 right-2 flex items-center">
-                  <button class="lb-btn" @click.stop="next()" aria-label="Próxima">›</button>
-                </div>
-              </div>
-            </div>
-          @else
-            <div class="text-sm text-slate-500">Sem fotos nesta edição.</div>
-          @endif
-        </section>
-      </div>
-
-      {{-- Espaço final --}}
-      <div class="h-4"></div>
+            <aside class="site-editorial-aside">
+                <section class="site-surface-soft site-content-block">
+                    <x-section-head eyebrow="Servico" title="Planeje sua presenca" />
+                    <div class="site-stats-grid">
+                        <div class="site-stat-card">
+                            <span class="site-stat-label">Data</span>
+                            <span class="site-stat-value">{{ $quando ?: 'A definir' }}</span>
+                        </div>
+                        <div class="site-stat-card">
+                            <span class="site-stat-label">Local</span>
+                            <span class="site-stat-value">{{ $onde }}</span>
+                        </div>
+                        <div class="site-stat-card">
+                            <span class="site-stat-label">Fotos</span>
+                            <span class="site-stat-value">{{ $galeria->count() }}</span>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </div>
     </section>
-  </div>
-</div>
 
-{{-- Espaço p/ não cobrir conteúdo (mobile) + bottom nav --}}
-<div class="h-[80px] pb-[env(safe-area-inset-bottom)] md:hidden"></div>
-@includeIf('site.partials._bottom_nav')
+    @if($galeria->isNotEmpty())
+        <section class="site-section" x-data="{
+            open:false,
+            index:0,
+            images:@js($galeria),
+            show(i){ this.index=i; this.open=true; document.body.style.overflow='hidden'; },
+            close(){ this.open=false; document.body.style.overflow=''; },
+            next(){ this.index=(this.index+1)%this.images.length; },
+            prev(){ this.index=(this.index-1+this.images.length)%this.images.length; }
+        }">
+            <x-section-head eyebrow="Galeria" title="Fotos da edicao" subtitle="Imagens publicas com o mesmo ritmo visual das paginas premium do portal." />
+
+            <div class="site-gallery-grid">
+                @foreach($galeria as $index => $img)
+                    <button type="button" class="site-gallery-button" @click="show({{ $index }})">
+                        <img src="{{ $img['src'] }}" alt="{{ $img['alt'] }}" class="site-gallery-image" loading="lazy" decoding="async">
+                    </button>
+                @endforeach
+            </div>
+
+            <div x-show="open" x-cloak class="site-lightbox" @click.self="close()" x-transition.opacity>
+                <div class="site-lightbox-frame">
+                    <button type="button" class="site-lightbox-close" @click="close()" aria-label="Fechar galeria">&times;</button>
+                    <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="Foto anterior">&#8249;</button>
+                    <img :src="images[index]?.src" :alt="images[index]?.alt || ''" class="site-lightbox-image">
+                    <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="Proxima foto">&#8250;</button>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    <div class="site-bottom-safe-space md:hidden" aria-hidden="true"></div>
+</div>
 @endsection

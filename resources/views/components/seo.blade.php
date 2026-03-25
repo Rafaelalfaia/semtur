@@ -1,40 +1,129 @@
 @props([
-  'title' => null,
-  'description' => null,
-  'image' => null,        // caminho relativo ou URL absoluta
-  'canonical' => null,
-  'type' => 'website',    // 'article' nas páginas de conteúdo
-  'locale' => 'pt_BR',
-  'noindex' => false,     // opcional
+    'title' => null,
+    'description' => null,
+    'image' => null,
+    'canonical' => null,
+    'type' => 'website',
+    'locale' => 'pt_BR',
+    'noindex' => false,
 ])
 
 @php
-  $siteName = config('app.name', 'VisitAltamira');
-  $baseUrl  = rtrim(config('app.url'), '/');
+    use Illuminate\Support\Facades\Route;
+    use Illuminate\Support\Str;
 
-  // ---------- Fallbacks pensados para “Amazônia / Xingu / Altamira / Pará”
-  $fallbackTitle = 'VisitAltamira — Altamira, Rio Xingu (Pará, Amazônia)';
-  $fallbackDesc  = 'Guia oficial de Altamira e do Rio Xingu no Pará (Amazônia): pontos turísticos, experiências, gastronomia e empresas locais. Descubra o Xingu.';
+    $siteName = config('app.name', 'VisitAltamira');
+    $baseUrl = rtrim(config('app.url') ?: url('/'), '/');
+    $fallbackImage = theme_asset('hero_image');
 
-  $titleTag = $title ? ($title.' — '.$siteName) : $fallbackTitle;
-  $desc     = $description ?: $fallbackDesc;
+    $fallbackTitle = 'VisitAltamira - Altamira, Rio Xingu (Para, Amazonia)';
+    $fallbackDesc = 'Guia oficial de Altamira e do Rio Xingu no Para: pontos turisticos, experiencias, gastronomia e servicos para planejar a visita com mais contexto.';
 
-  $imgUrl   = $image
-            ? (Str::startsWith($image, ['http://','https://','/']) ? $image : $baseUrl.'/'.ltrim($image,'/'))
-            : $baseUrl.'/images/og-default.jpg';
+    $resolvedTitle = trim((string) $title);
+    $titleTag = $resolvedTitle === ''
+        ? $fallbackTitle
+        : (Str::contains(Str::lower($resolvedTitle), Str::lower($siteName))
+            ? $resolvedTitle
+            : $resolvedTitle.' - '.$siteName);
 
-  // Canonical consistente
-  $canon    = $canonical ?: url()->current();
+    $desc = trim((string) ($description ?: $fallbackDesc)) ?: $fallbackDesc;
 
-  // ✅ querystring só no ambiente local para quebrar cache de favicons
-  $v = app()->environment('local') ? ('?v='.now()->timestamp) : '';
+    $toAbsoluteUrl = function ($value) use ($baseUrl) {
+        $value = trim((string) $value);
 
-  // Hreflang: se não tiver versões, mantemos pt-BR e x-default apontando para o canonical
-  $hrefPtBr = $canon;
-  $hrefXDef = $canon;
+        if ($value === '') {
+            return null;
+        }
 
-  // Palavras-chave (não influenciam muito, mas não atrapalham)
-  $keywords = 'VisitAltamira, Altamira, Pará, Amazônia, Rio Xingu, Xingu, turismo, guia, pontos turísticos, gastronomia, hotéis';
+        if (Str::startsWith($value, ['http://', 'https://'])) {
+            return $value;
+        }
+
+        return $baseUrl.'/'.ltrim($value, '/');
+    };
+
+    $imgUrl = $toAbsoluteUrl($image) ?: $toAbsoluteUrl($fallbackImage);
+    $canon = $toAbsoluteUrl($canonical) ?: url()->current();
+    $v = app()->environment('local') ? ('?v='.now()->timestamp) : '';
+
+    $hrefPtBr = $canon;
+    $hrefXDef = $canon;
+
+    $keywords = 'VisitAltamira, Altamira, Para, Amazonia, Rio Xingu, turismo, guia turistico, gastronomia, hospedagem, experiencias';
+    $maskIconExists = file_exists(public_path('icons/mask-icon.svg'));
+    $logoUrl = $toAbsoluteUrl('icons/pwa-512.png') ?: $imgUrl;
+    $searchTarget = Route::has('site.explorar')
+        ? route('site.explorar').'?q={search_term_string}'
+        : null;
+
+    $websiteId = $baseUrl.'#website';
+    $organizationId = $baseUrl.'#organization';
+
+    $graph = [
+        [
+            '@type' => 'Organization',
+            '@id' => $organizationId,
+            'name' => 'VisitAltamira',
+            'url' => $baseUrl,
+            'logo' => $logoUrl,
+            'areaServed' => [
+                '@type' => 'AdministrativeArea',
+                'name' => 'Altamira, Para, Brasil',
+            ],
+            'sameAs' => [
+                'https://www.instagram.com/visitaltamira/',
+                'https://www.facebook.com/visitaltamira',
+            ],
+        ],
+        array_filter([
+            '@type' => 'WebSite',
+            '@id' => $websiteId,
+            'name' => 'VisitAltamira',
+            'url' => $baseUrl,
+            'inLanguage' => 'pt-BR',
+            'publisher' => ['@id' => $organizationId],
+            'potentialAction' => $searchTarget ? [
+                '@type' => 'SearchAction',
+                'target' => $searchTarget,
+                'query-input' => 'required name=search_term_string',
+            ] : null,
+        ], fn ($value) => $value !== null),
+        [
+            '@type' => 'WebPage',
+            '@id' => $canon.'#webpage',
+            'url' => $canon,
+            'name' => $titleTag,
+            'description' => Str::limit(strip_tags($desc), 200),
+            'inLanguage' => 'pt-BR',
+            'isPartOf' => ['@id' => $websiteId],
+            'about' => [
+                [
+                    '@type' => 'Place',
+                    'name' => 'Amazonia',
+                    'sameAs' => 'https://pt.wikipedia.org/wiki/Amaz%C3%B4nia',
+                ],
+                [
+                    '@type' => 'RiverBodyOfWater',
+                    'name' => 'Rio Xingu',
+                    'sameAs' => 'https://pt.wikipedia.org/wiki/Rio_Xingu',
+                ],
+                [
+                    '@type' => 'City',
+                    'name' => 'Altamira',
+                    'sameAs' => 'https://pt.wikipedia.org/wiki/Altamira_(Par%C3%A1)',
+                ],
+                [
+                    '@type' => 'AdministrativeArea',
+                    'name' => 'Para',
+                    'sameAs' => 'https://pt.wikipedia.org/wiki/Par%C3%A1',
+                ],
+            ],
+            'primaryImageOfPage' => [
+                '@type' => 'ImageObject',
+                'url' => $imgUrl,
+            ],
+        ],
+    ];
 @endphp
 
 <title>{{ $titleTag }}</title>
@@ -44,105 +133,38 @@
 
 <link rel="canonical" href="{{ $canon }}">
 
-{{-- Hreflang --}}
 <link rel="alternate" hreflang="pt-BR" href="{{ $hrefPtBr }}">
 <link rel="alternate" hreflang="x-default" href="{{ $hrefXDef }}">
 
-{{-- Open Graph --}}
 <meta property="og:site_name" content="{{ $siteName }}">
 <meta property="og:title" content="{{ $titleTag }}">
 <meta property="og:description" content="{{ Str::limit(strip_tags($desc), 200) }}">
 <meta property="og:type" content="{{ $type }}">
 <meta property="og:url" content="{{ $canon }}">
 <meta property="og:image" content="{{ $imgUrl }}">
-<meta property="og:image:alt" content="VisitAltamira — Altamira e Rio Xingu (Pará, Amazônia)">
-<meta property="og:locale" content="pt_BR">
+<meta property="og:image:secure_url" content="{{ $imgUrl }}">
+<meta property="og:image:alt" content="{{ $resolvedTitle !== '' ? $resolvedTitle : 'VisitAltamira em Altamira e no Rio Xingu' }}">
+<meta property="og:locale" content="{{ $locale }}">
 <meta property="og:locale:alternate" content="en_US">
 
-{{-- Twitter --}}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ $titleTag }}">
 <meta name="twitter:description" content="{{ Str::limit(strip_tags($desc), 200) }}">
 <meta name="twitter:image" content="{{ $imgUrl }}">
+<meta name="twitter:image:alt" content="{{ $resolvedTitle !== '' ? $resolvedTitle : 'VisitAltamira em Altamira e no Rio Xingu' }}">
 
-{{-- Favicons/manifest --}}
 <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png{{ $v }}">
 <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16.png{{ $v }}">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png{{ $v }}">
-<link rel="mask-icon" href="/icons/mask-icon.svg" color="#0e1b12">
+@if ($maskIconExists)
+<link rel="mask-icon" href="/icons/mask-icon.svg{{ $v }}" color="#0e1b12">
+@endif
 <link rel="manifest" href="/manifest.webmanifest{{ $v }}">
 <link rel="shortcut icon" href="/favicon.ico{{ $v }}">
 <meta name="theme-color" content="#0e1b12">
 
-{{-- Performance/LCP --}}
 <link rel="preload" as="image" href="{{ $imgUrl }}">
 
-{{-- JSON-LD: Organization + WebSite + WebPage (com "about" nas entidades Amazônia/Xingu/Altamira/Pará) --}}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "name": "VisitAltamira",
-      "url": "{{ $baseUrl }}",
-      "logo": "{{ $baseUrl }}/icons/pwa-512.png",
-      "areaServed": {
-        "@type": "AdministrativeArea",
-        "name": "Altamira, Pará, Brasil"
-      },
-      "sameAs": [
-        "https://www.instagram.com/visitaltamira/",
-        "https://www.facebook.com/visitaltamira"
-      ]
-    },
-    {
-      "@type": "WebSite",
-      "name": "VisitAltamira",
-      "url": "{{ $baseUrl }}",
-      "inLanguage": "pt-BR",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "{{ $baseUrl }}/buscar?q={query}",
-        "query-input": "required name=query"
-      }
-    },
-    {
-      "@type": "WebPage",
-      "url": "{{ $canon }}",
-      "name": "{{ $titleTag }}",
-      "description": "{{ Str::limit(strip_tags($desc), 200) }}",
-      "inLanguage": "pt-BR",
-      "isPartOf": { "@id": "{{ $baseUrl }}#" },
-      "about": [
-        {
-          "@type": "Place",
-          "name": "Amazônia",
-          "sameAs": "https://pt.wikipedia.org/wiki/Amaz%C3%B4nia"
-        },
-        {
-          "@type": "RiverBodyOfWater",
-          "name": "Rio Xingu",
-          "sameAs": "https://pt.wikipedia.org/wiki/Rio_Xingu"
-        },
-        {
-          "@type": "City",
-          "name": "Altamira",
-          "sameAs": "https://pt.wikipedia.org/wiki/Altamira_(Par%C3%A1)"
-        },
-        {
-          "@type": "AdministrativeArea",
-          "name": "Pará",
-          "sameAs": "https://pt.wikipedia.org/wiki/Par%C3%A1"
-        }
-      ],
-      "primaryImageOfPage": {
-        "@type": "ImageObject",
-        "url": "{{ $imgUrl }}"
-      }
-    }
-  ]
-}
-</script>
+<script type="application/ld+json">@json(['@context' => 'https://schema.org', '@graph' => $graph], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
 
 {{ $slot }}

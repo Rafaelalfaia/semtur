@@ -1,123 +1,69 @@
 @php
-use Illuminate\Support\Facades\Route as R;
-use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Route as R;
 
-/* ------- URLs seguras ------- */
-$homeHref     = R::has('site.home')     ? route('site.home')     : url('/');
-$explorarHref = R::has('site.explorar') ? route('site.explorar') : url('/explorar');
-$orgaosHref   = R::has('site.orgaos')   ? route('site.orgaos')   : url('/orgaos');
+    $homeHref = R::has('site.home') ? route('site.home') : url('/');
+    $descubraHref = R::has('site.explorar') ? route('site.explorar') : (R::has('site.descubra') ? route('site.descubra') : url('/descubra-altamira'));
+    $agendaHref = R::has('site.agenda') ? route('site.agenda') : url('/agenda');
+    $mapaHref = R::has('site.mapa') ? route('site.mapa') : url('/mapa');
 
-/* Mapa (substitui “Ingressos”) */
-$mapHref = null;
-foreach (['site.mapa','mapa.index','site.explorar.mapa'] as $r) {
-  if (R::has($r)) { $mapHref = route($r); break; }
-}
-$mapHref = $mapHref ?: (url('/mapa') ?: $homeHref);
+    $perfilHref = R::has('login') ? route('login') : url('/login');
+    $u = Auth::user();
 
-/* Perfil / Entrar com roles */
-$u = Auth::user();
-$perfilLabel = 'Entrar';
-$perfilHref  = R::has('login') ? route('login') : url('/login');
+    if ($u && method_exists($u, 'hasRole')) {
+        if ($u->hasRole('Admin') && R::has('admin.dashboard')) {
+            $perfilHref = route('admin.dashboard');
+        } elseif ($u->hasRole('Coordenador') && R::has('coordenador.dashboard')) {
+            $perfilHref = route('coordenador.dashboard');
+        } elseif ($u->hasRole('Cidadao') && R::has('site.perfil.index')) {
+            $perfilHref = route('site.perfil.index');
+        } elseif (R::has('dashboard')) {
+            $perfilHref = route('dashboard');
+        }
+    }
 
-if ($u) {
-  $perfilLabel = 'Perfil';
-  $role = null;
-  if (method_exists($u, 'hasRole')) {
-    foreach (['admin','gestor','coordenador','cidadao'] as $r) if ($u->hasRole($r)) { $role = $r; break; }
-  } elseif (isset($u->role) && is_string($u->role)) {
-    $role = strtolower($u->role);
-  }
+    $perfilLabel = $u ? 'Perfil' : 'Entrar';
+    $iconFor = function (string $key): string {
+        return match ($key) {
+            'home' => '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.5 9.5V20h11V9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            'descubra' => '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M16 16 20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+            'agenda' => '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M8 3.5v4M16 3.5v4M4 9.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+            'mapa' => '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 18.5 4.5 20V5.5L9 4l6 1.5 4.5-1.5V18.5L15 20 9 18.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 4v14.5M15 5.5V20" stroke="currentColor" stroke-width="1.8"/></svg>',
+            default => '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+        };
+    };
 
-  $prefer = [
-    'cidadao'     => ['cidadao.perfil','cidadao.dashboard','site.perfil'],
-    'coordenador' => ['coordenador.dashboard','coordenador.home'],
-    'gestor'      => ['gestor.dashboard','gestor.home'],
-    'admin'       => ['admin.dashboard','admin.home'],
-  ];
-  if ($role && $role !== 'cidadao') $perfilLabel = 'Painel';
+    $tabs = [
+        ['key' => 'home', 'href' => $homeHref, 'label' => 'Início'],
+        ['key' => 'descubra', 'href' => $descubraHref, 'label' => 'Descubra'],
+        ['key' => 'agenda', 'href' => $agendaHref, 'label' => 'Agenda'],
+        ['key' => 'mapa', 'href' => $mapaHref, 'label' => 'Mapa'],
+        ['key' => 'perfil', 'href' => $perfilHref, 'label' => $perfilLabel],
+    ];
 
-  $dest = null;
-  if ($role && isset($prefer[$role])) {
-    foreach ($prefer[$role] as $r) if (R::has($r)) { $dest = route($r); break; }
-  }
-  if (!$dest) {
-    foreach (['site.perfil','profile.show','dashboard','home'] as $r) if (R::has($r)) { $dest = route($r); break; }
-  }
-  $perfilHref = $dest ?: $homeHref;
-}
-
-$semturHref   = R::has('site.semtur') ? route('site.semtur') : url('/semtur'); // 👈
-
-/* Tabs */
-$tabs = [
-  ['key'=>'home',      'href'=>$homeHref,     'label'=>'Início',   'icon'=>'home'],
-  ['key'=>'map',       'href'=>$mapHref,      'label'=>'Mapa',     'icon'=>'map'],
-  ['key'=>'explorar',  'href'=>$explorarHref, 'label'=>'Explorar', 'icon'=>'compass'],
-  ['key'=>'semtur',    'href'=>$semturHref,  'label'=>'SEMTUR',   'icon'=>'building'], // 👈
-  ['key'=>'perfil',    'href'=>$perfilHref,   'label'=>$perfilLabel,'icon'=>'user'],
-];
-
-/* Aba ativa */
-$activeKey = 'home';
-if (request()->routeIs('site.mapa*') || request()->is('mapa*'))                            $activeKey='map';
-elseif (request()->routeIs('site.explorar*') || request()->is('explorar*'))                $activeKey='explorar';
-elseif (request()->routeIs('site.semtur')   || request()->is('semtur*'))      $activeKey='semtur'; // 👈
-elseif (request()->routeIs(['site.perfil*','profile*','dashboard','admin.*','gestor.*',
-                            'coordenador.*','cidadao.*','login']))                         $activeKey='perfil';
+    $activeKey = 'home';
+    if (request()->routeIs('site.descubra') || request()->routeIs('site.explorar*')) {
+        $activeKey = 'descubra';
+    } elseif (request()->routeIs('site.agenda') || request()->routeIs('eventos.*')) {
+        $activeKey = 'agenda';
+    } elseif (request()->routeIs('site.mapa*')) {
+        $activeKey = 'mapa';
+    } elseif (request()->routeIs(['site.perfil*', 'profile*', 'dashboard', 'admin.*', 'coordenador.*', 'login'])) {
+        $activeKey = 'perfil';
+    }
 @endphp
 
-<div class="fixed inset-x-0 bottom-0 z-50 md:hidden
-            pb-[calc(env(safe-area-inset-bottom,0)+8px)] pt-2
-            bg-transparent pointer-events-none" role="navigation" aria-label="Menu inferior">
-
-  <nav class="pointer-events-auto mx-auto w-full max-w-[480px] px-3">
-    <div class="relative mx-auto max-w-[420px] rounded-full bg-[#00837B]
-                h-16 px-3 flex items-center justify-between
-                shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
-
-      @foreach($tabs as $t)
-        @php $active = $t['key'] === $activeKey; @endphp
-        <a href="{{ $t['href'] }}"
-           class="relative grid place-items-center w-12 h-12 {{ $active ? 'bg-white rounded-full' : '' }}"
-           aria-label="{{ $t['label'] }}" @if($active) aria-current="page" @endif>
-
-          @switch($t['icon'])
-            @case('home')
-              @if($active)
-                <svg class="w-6 h-6 text-[#00837B]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.1 3 10v10h6v-6h6v6h6V10z"/></svg>
-              @else
-                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10z"/></svg>
-              @endif
-            @break
-
-            @case('map') {{-- ícone de mapa/pino --}}
-              <svg class="w-6 h-6 {{ $active ? 'text-[#00837B]' : 'text-white' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M9 20l-5 2V6l5-2 6 2 5-2v16l-5 2-6-2z"/><circle cx="15" cy="9" r="2.5"/>
-              </svg>
-            @break
-
-            @case('compass')
-              <svg class="w-6 h-6 {{ $active ? 'text-[#00837B]' : 'text-white' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="12" r="10"/><path d="M9 15l6-3-3 6-3-3z"/>
-              </svg>
-            @break
-
-            @case('building')
-              <svg class="w-6 h-6 {{ $active ? 'text-[#00837B]' : 'text-white' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M3 21h18M6 21V9l6-4 6 4v12M9 21v-6m6 6v-6"/>
-              </svg>
-            @break
-
-            @case('user')
-              <svg class="w-6 h-6 {{ $active ? 'text-[#00837B]' : 'text-white' }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/>
-              </svg>
-            @break
-          @endswitch
-        </a>
-      @endforeach
-    </div>
-
-    <div class="mx-auto mt-2 h-1.5 w-36 rounded-full bg-[#C3C5C8]"></div>
-  </nav>
+<div class="site-bottom-nav-shell md:hidden">
+    <nav class="site-bottom-nav" aria-label="Menu público inferior">
+        @foreach($tabs as $tab)
+            @php $active = $tab['key'] === $activeKey; @endphp
+            <a href="{{ $tab['href'] }}"
+               class="{{ $active ? 'site-bottom-nav-link is-active' : 'site-bottom-nav-link' }}"
+               aria-label="{{ $tab['label'] }}"
+               @if($active) aria-current="page" @endif>
+                <span class="site-bottom-nav-icon" aria-hidden="true">{!! $iconFor($tab['key']) !!}</span>
+                <span>{{ $tab['label'] }}</span>
+            </a>
+        @endforeach
+    </nav>
 </div>

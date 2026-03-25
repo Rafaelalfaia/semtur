@@ -2,60 +2,70 @@
 
 namespace App\Models\Conteudo;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class BannerDestaque extends Model
 {
-    // Tabela (garante compatibilidade com a migration)
     protected $table = 'banner_destaques';
 
-    /** Status aceitos */
     public const STATUS_PUBLICADO = 'publicado';
-    public const STATUS_RASCUNHO  = 'rascunho';
+    public const STATUS_RASCUNHO = 'rascunho';
     public const STATUS_ARQUIVADO = 'arquivado';
 
-    /** Chaves de cache que a Home pode usar */
+    public const MEDIA_IMAGE = 'image';
+    public const MEDIA_VIDEO = 'video';
+
     protected const CACHE_KEYS = [
-        'home:banner_topo',       // usada na Home atual
-        'home:banner_principal',  // usada em alguns pontos do backoffice
+        'home:banner_topo',
+        'home:banner_principal',
     ];
 
-    /** Atributos preenchíveis */
     protected $fillable = [
         'titulo',
         'subtitulo',
         'link_url',
         'target_blank',
+        'media_type',
         'cor_fundo',
         'overlay_opacity',
+        'autoplay',
+        'loop',
+        'muted',
+        'hero_variant',
+        'preload_mode',
+        'alt_text',
         'status',
         'ordem',
         'inicio_publicacao',
         'fim_publicacao',
         'imagem_desktop_path',
         'imagem_mobile_path',
+        'video_desktop_path',
+        'video_mobile_path',
+        'poster_desktop_path',
+        'poster_mobile_path',
+        'fallback_image_desktop_path',
+        'fallback_image_mobile_path',
         'crop_desktop',
         'crop_mobile',
     ];
 
-    /** Casts coerentes com o uso */
     protected $casts = [
-        'target_blank'      => 'bool',
-        'ordem'             => 'integer',
-        'overlay_opacity'   => 'integer',   // ou 'float' se preferir
+        'target_blank' => 'bool',
+        'autoplay' => 'bool',
+        'loop' => 'bool',
+        'muted' => 'bool',
+        'ordem' => 'integer',
+        'overlay_opacity' => 'integer',
         'inicio_publicacao' => 'datetime',
-        'fim_publicacao'    => 'datetime',
-        'crop_desktop'      => 'array',     // json/jsonb na migration
-        'crop_mobile'       => 'array',
+        'fim_publicacao' => 'datetime',
+        'crop_desktop' => 'array',
+        'crop_mobile' => 'array',
     ];
 
-    /**
-     * Atributos "append" úteis quando o model vira array/JSON.
-     * (No Blade, não é obrigatório — os accessors já funcionam.)
-     */
     protected $appends = [
         'imagem_desktop_url',
         'imagem_mobile_url',
@@ -65,20 +75,19 @@ class BannerDestaque extends Model
         'cor',
         'ativo_agora',
         'publicado',
+        'video_desktop_url',
+        'video_mobile_url',
+        'poster_desktop_url',
+        'poster_mobile_url',
+        'fallback_image_desktop_url',
+        'fallback_image_mobile_url',
+        'video_valido',
     ];
 
-    /* -----------------------------------------
-     | Boot: limpa o cache da Home ao salvar/apagar
-     ------------------------------------------*/
     protected static function booted(): void
     {
-        static::saved(function () {
-            static::clearHomeCaches();
-        });
-
-        static::deleted(function () {
-            static::clearHomeCaches();
-        });
+        static::saved(fn () => static::clearHomeCaches());
+        static::deleted(fn () => static::clearHomeCaches());
     }
 
     protected static function clearHomeCaches(): void
@@ -88,88 +97,94 @@ class BannerDestaque extends Model
         }
     }
 
-    /* -----------------------------------------
-     | Helpers internos
-     ------------------------------------------*/
     protected function publicUrlFromPath(?string $path): ?string
     {
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 
-        // Se já for URL absoluta (http/https ou protocolo relativo), retorna como está
-        if (str_starts_with($path, 'http://')
-            || str_starts_with($path, 'https://')
-            || str_starts_with($path, '//')) {
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://') || str_starts_with($path, '//')) {
             return $path;
         }
 
-        // Caso contrário, assume disk 'public'
         return Storage::disk('public')->url($path);
     }
 
     protected function sanitizeHref(?string $url): ?string
     {
-        if (!$url) {
+        if (! $url) {
             return null;
         }
+
         $url = trim($url);
 
-        // Aceita http/https e caminhos internos começando com '/'
         if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://') || str_starts_with($url, '/')) {
             return $url;
         }
 
-        // Qualquer outra coisa, melhor cair no '#'
         return '#';
     }
 
-    /* -----------------------------------------
-     | Accessors (Laravel 10/11 style)
-     | Observação: nome camelCase mapeia para snake_case no acesso dinâmico
-     | Ex.: imagemDesktopUrl() => $model->imagem_desktop_url
-     ------------------------------------------*/
-
-    // URL pública da imagem desktop (padrão principal)
     protected function imagemDesktopUrl(): Attribute
     {
-        return Attribute::get(function () {
-            return $this->publicUrlFromPath($this->imagem_desktop_path);
-        });
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->imagem_desktop_path));
     }
 
-    // URL pública da imagem mobile (padrão principal)
     protected function imagemMobileUrl(): Attribute
     {
-        return Attribute::get(function () {
-            return $this->publicUrlFromPath($this->imagem_mobile_path);
-        });
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->imagem_mobile_path));
     }
 
-    // Aliases para compatibilidade com views que esperam desktop_url/mobile_url
+    protected function videoDesktopUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->video_desktop_path));
+    }
+
+    protected function videoMobileUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->video_mobile_path));
+    }
+
+    protected function posterDesktopUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->poster_desktop_path));
+    }
+
+    protected function posterMobileUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->poster_mobile_path));
+    }
+
+    protected function fallbackImageDesktopUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->fallback_image_desktop_path));
+    }
+
+    protected function fallbackImageMobileUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->publicUrlFromPath($this->fallback_image_mobile_path));
+    }
+
     protected function desktopUrl(): Attribute
     {
-        return Attribute::get(fn () => $this->imagem_desktop_url);
+        return Attribute::get(fn () => $this->fallback_image_desktop_url ?: $this->imagem_desktop_url);
     }
 
     protected function mobileUrl(): Attribute
     {
-        return Attribute::get(fn () => $this->imagem_mobile_url);
+        return Attribute::get(fn () => $this->fallback_image_mobile_url ?: $this->imagem_mobile_url ?: $this->desktop_url);
     }
 
-    // Cor com alias genérico "cor" (algumas views usam esse nome)
     protected function cor(): Attribute
     {
         return Attribute::get(fn () => $this->cor_fundo);
     }
 
-    // href saneado para ser usado diretamente na view
     protected function href(): Attribute
     {
         return Attribute::get(fn () => $this->sanitizeHref($this->link_url));
     }
 
-    // Flags úteis na view/controller
     protected function publicado(): Attribute
     {
         return Attribute::get(fn () => $this->status === self::STATUS_PUBLICADO);
@@ -180,28 +195,48 @@ class BannerDestaque extends Model
         return Attribute::get(function () {
             $now = Carbon::now();
 
-            $inicioOk = !$this->inicio_publicacao || $this->inicio_publicacao->lte($now);
-            $fimOk    = !$this->fim_publicacao || $this->fim_publicacao->gte($now);
+            $inicioOk = ! $this->inicio_publicacao || $this->inicio_publicacao->lte($now);
+            $fimOk = ! $this->fim_publicacao || $this->fim_publicacao->gte($now);
 
             return $inicioOk && $fimOk;
         });
     }
 
-    /* -----------------------------------------
-     | Scopes
-     ------------------------------------------*/
+    protected function videoValido(): Attribute
+    {
+        return Attribute::get(fn () => $this->hasValidVideo());
+    }
 
-    /**
-     * Somente registros com status "publicado".
-     */
+    public function hasValidVideo(): bool
+    {
+        if ($this->media_type !== self::MEDIA_VIDEO) {
+            return false;
+        }
+
+        return filled($this->video_desktop_path) || filled($this->video_mobile_path);
+    }
+
+    public function resolvedPosterDesktopUrl(?string $fallback = null): ?string
+    {
+        return $this->poster_desktop_url
+            ?: $this->fallback_image_desktop_url
+            ?: $this->imagem_desktop_url
+            ?: $fallback;
+    }
+
+    public function resolvedPosterMobileUrl(?string $fallback = null): ?string
+    {
+        return $this->poster_mobile_url
+            ?: $this->fallback_image_mobile_url
+            ?: $this->imagem_mobile_url
+            ?: $this->resolvedPosterDesktopUrl($fallback);
+    }
+
     public function scopePublicados($query)
     {
         return $query->where('status', self::STATUS_PUBLICADO);
     }
 
-    /**
-     * Dentro da janela de publicação (tolerante a null).
-     */
     public function scopeAtivosAgora($query)
     {
         $now = Carbon::now();
@@ -209,17 +244,14 @@ class BannerDestaque extends Model
         return $query
             ->where(function ($q) use ($now) {
                 $q->whereNull('inicio_publicacao')
-                  ->orWhere('inicio_publicacao', '<=', $now);
+                    ->orWhere('inicio_publicacao', '<=', $now);
             })
             ->where(function ($q) use ($now) {
                 $q->whereNull('fim_publicacao')
-                  ->orWhere('fim_publicacao', '>=', $now);
+                    ->orWhere('fim_publicacao', '>=', $now);
             });
     }
 
-    /**
-     * Ordenação padrão: ordem ASC, id DESC (estável).
-     */
     public function scopeOrdenados($query)
     {
         return $query->orderBy('ordem')->orderByDesc('id');

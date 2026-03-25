@@ -1,76 +1,113 @@
 @extends('console.layout')
-@section('title','Editar evento')
+@section('title', 'Editar evento')
+@section('page.title', 'Editar evento')
+@section('topbar.description', 'Atualize o evento principal mantendo o shell global e a heranca de light/dark do console.')
+
+@section('topbar.nav')
+  <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
+  <span class="ui-console-topbar-tab is-active">Editar evento</span>
+@endsection
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-xl font-semibold">Editar: {{ $evento->nome }}</h1>
-    <a class="px-3 py-2 rounded border border-neutral-700" href="{{ route('coordenador.eventos.edicoes.index',$evento) }}">Gerenciar edições</a>
-  </div>
+@php use Illuminate\Support\Facades\Storage; @endphp
+
+<div class="ui-console-page">
+  <x-dashboard.page-header
+    title="Editar evento"
+    subtitle="Atualize dados, imagens e status editorial do evento sem sair do fluxo padrao do console."
+  >
+    <div class="flex flex-wrap gap-2">
+      <a class="ui-btn-secondary" href="{{ route('coordenador.eventos.edicoes.index', $evento) }}">Gerenciar edicoes</a>
+      <a class="ui-btn-secondary" href="{{ route('coordenador.eventos.index') }}">Voltar</a>
+    </div>
+  </x-dashboard.page-header>
 
   @if(session('ok'))
-    <div class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-emerald-300">{{ session('ok') }}</div>
+    <div class="ui-alert ui-alert-success mt-5">{{ session('ok') }}</div>
   @endif
   @if($errors->any())
-    <div class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-red-300">
+    <div class="ui-alert ui-alert-danger mt-5">
       <ul class="list-disc list-inside">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
     </div>
   @endif
 
-  <form method="POST" action="{{ route('coordenador.eventos.update',$evento) }}" enctype="multipart/form-data" class="space-y-4 rounded-xl border border-white/5 p-5">
-    @csrf @method('PUT')
+  <form method="POST" action="{{ route('coordenador.eventos.update', $evento) }}" enctype="multipart/form-data" class="mt-5 space-y-6">
+    @csrf
+    @method('PUT')
 
-    <div class="grid md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm mb-1">Nome *</label>
-        <input name="nome" value="{{ old('nome',$evento->nome) }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2" required>
+    <x-dashboard.section-card title="Dados principais" subtitle="Edite as informacoes institucionais do evento" class="ui-coord-dashboard-panel">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label class="ui-form-label">Nome *</label>
+          <input name="nome" value="{{ old('nome', $evento->nome) }}" class="ui-form-control" required>
+        </div>
+        <div>
+          <label class="ui-form-label">Slug</label>
+          <input name="slug" value="{{ old('slug', $evento->slug) }}" class="ui-form-control">
+        </div>
+        <div>
+          <label class="ui-form-label">Cidade</label>
+          <input name="cidade" value="{{ old('cidade', $evento->cidade) }}" class="ui-form-control">
+        </div>
+        <div>
+          <label class="ui-form-label">Regiao</label>
+          <input name="regiao" value="{{ old('regiao', $evento->regiao) }}" class="ui-form-control">
+        </div>
+        <div class="md:col-span-2">
+          <label class="ui-form-label">Descricao</label>
+          <textarea name="descricao" rows="5" class="ui-form-control">{{ old('descricao', $evento->descricao) }}</textarea>
+        </div>
       </div>
-      <div>
-        <label class="block text-sm mb-1">Slug</label>
-        <input name="slug" value="{{ old('slug',$evento->slug) }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Cidade</label>
-        <input name="cidade" value="{{ old('cidade',$evento->cidade) }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Região</label>
-        <input name="regiao" value="{{ old('regiao',$evento->regiao) }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
-      </div>
-    </div>
+    </x-dashboard.section-card>
 
-    <div>
-      <label class="block text-sm mb-1">Descrição</label>
-      <textarea name="descricao" rows="5" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">{{ old('descricao',$evento->descricao) }}</textarea>
-    </div>
+    <x-dashboard.section-card title="Midia e status" subtitle="Atualize imagens e controle o estado editorial" class="ui-coord-dashboard-panel">
+      <div class="grid gap-4 lg:grid-cols-2">
+        <div class="space-y-4">
+          <div>
+            <label class="ui-form-label">Capa</label>
+            @if($evento->capa_path)
+              <div class="ui-event-preview-card mb-3">
+                <img src="{{ Storage::disk('public')->url($evento->capa_path) }}" class="ui-event-preview-image ui-event-preview-image-wide" alt="">
+              </div>
+              <label class="inline-flex items-center gap-2 text-sm text-[var(--ui-text-soft)]">
+                <input type="checkbox" name="remove_capa" value="1">
+                Remover capa
+              </label>
+            @endif
+            <input type="file" name="capa" accept="image/*" class="ui-form-control mt-2">
+          </div>
+        </div>
 
-    <div class="grid md:grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm mb-1">Capa</label>
-        @if($evento->capa_path)
-          <img src="{{ Storage::disk('public')->url($evento->capa_path) }}" class="w-full max-h-48 object-cover rounded mb-2">
-          <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="remove_capa" value="1"> Remover capa</label>
-        @endif
-        <input type="file" name="capa" accept="image/*" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2 mt-2">
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Perfil</label>
-        @if($evento->perfil_path)
-          <img src="{{ Storage::disk('public')->url($evento->perfil_path) }}" class="w-24 h-24 object-cover rounded mb-2">
-          <label class="inline-flex items-center gap-2 text-sm"><input type="checkbox" name="remove_perfil" value="1"> Remover perfil</label>
-        @endif
-        <input type="file" name="perfil" accept="image/*" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2 mt-2">
-      </div>
-    </div>
+        <div class="space-y-4">
+          <div>
+            <label class="ui-form-label">Perfil</label>
+            @if($evento->perfil_path)
+              <div class="ui-event-preview-card mb-3">
+                <img src="{{ Storage::disk('public')->url($evento->perfil_path) }}" class="ui-event-preview-image ui-event-preview-image-square" alt="">
+              </div>
+              <label class="inline-flex items-center gap-2 text-sm text-[var(--ui-text-soft)]">
+                <input type="checkbox" name="remove_perfil" value="1">
+                Remover perfil
+              </label>
+            @endif
+            <input type="file" name="perfil" accept="image/*" class="ui-form-control mt-2">
+          </div>
 
-    <div class="flex items-center gap-3">
-      <select name="status" class="rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
-        @foreach(['publicado','rascunho','arquivado'] as $st)
-          <option value="{{ $st }}" @selected(old('status',$evento->status)===$st)>{{ ucfirst($st) }}</option>
-        @endforeach
-      </select>
-      <button class="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-white">Salvar</button>
-      <a href="{{ route('coordenador.eventos.index') }}" class="px-4 py-2 rounded border border-neutral-700">Voltar</a>
+          <div>
+            <label class="ui-form-label">Status</label>
+            <select name="status" class="ui-form-select">
+              @foreach(['publicado','rascunho','arquivado'] as $st)
+                <option value="{{ $st }}" @selected(old('status', $evento->status) === $st)>{{ ucfirst($st) }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+      </div>
+    </x-dashboard.section-card>
+
+    <div class="flex flex-wrap items-center gap-3 border-t border-[var(--ui-border)] pt-5">
+      <button class="ui-btn-primary">Salvar</button>
+      <a href="{{ route('coordenador.eventos.index') }}" class="ui-btn-secondary">Voltar</a>
     </div>
   </form>
 </div>

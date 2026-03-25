@@ -1,408 +1,300 @@
 @extends('site.layouts.app')
-@section('title','Descubra Altamira')
-@section('meta.description','Guia turístico oficial de Altamira, Pará.')
-@section('meta.image', $capaUrl ?? '/images/og-default.jpg')
 
-@section('title','Descubra Altamira — VisitAltamira')
+@php
+    use Illuminate\Support\Facades\Route as R;
 
-@push('head')
-  <style>[x-cloak]{display:none;}</style>
+    $homeCanonical = R::has('site.home') ? route('site.home') : url('/');
+    $homeTitle = 'Descubra Altamira';
+    $homeDescription = 'Guia turístico oficial de Altamira com experiências publicadas, curadoria, mapa e vídeos para planejar a viagem com mais clareza.';
+    $homeImage = theme_asset('hero_image');
+    $homeSchema = [
+        [
+            '@type' => 'TouristDestination',
+            '@id' => $homeCanonical.'#destination',
+            'name' => 'Altamira',
+            'url' => $homeCanonical,
+            'description' => $homeDescription,
+            'image' => $homeImage,
+            'touristType' => [
+                'Turismo de natureza',
+                'Turismo cultural',
+                'Experiências no Rio Xingu',
+            ],
+            'containedInPlace' => [
+                '@type' => 'State',
+                'name' => 'Pará',
+            ],
+        ],
+    ];
+@endphp
+
+@section('title', $homeTitle)
+@section('meta.description', $homeDescription)
+@section('meta.image', $homeImage)
+@section('meta.canonical', $homeCanonical)
+@section('meta.type', 'website')
+
+@push('structured-data')
+<script type="application/ld+json">@json(['@context' => 'https://schema.org', '@graph' => $homeSchema], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
 @endpush
 
 @section('site.content')
 @php
-  use Illuminate\Support\Str;
-  use Illuminate\Support\Facades\Route as R;
-  use Illuminate\Support\Facades\Storage as FS;
+    $pontosDestaque = collect($pontosDestaque ?? []);
+    $recomendacoes = collect($recomendacoes ?? []);
+    $videosHome = collect($videosHome ?? []);
+    $instagram = collect($instagram ?? []);
+    $bannersDestaque = collect($bannersDestaque ?? []);
+    $experienciasEntrada = collect($experienciasEntrada ?? []);
+    $atalhosPremium = collect($atalhosPremium ?? []);
+    $mapCategories = collect($mapCategories ?? []);
+    $bannerTopo = $bannerTopo ?? $bannersDestaque->first() ?? null;
+    $bannerIntermediario = $bannerIntermediario ?? $banner ?? null;
 
-  /* =================== 🛠 TAMANHOS AQUI =================== */
-  // Destaque — celular (quadrado)
-  $HERO_MOBILE_H  = '100vw';                 // altura = largura
-  // Destaque — tablet/desktop (3:1 com +10% de altura) => 100vw / (3/1.1) = 100vw/2.727
-  $HERO_DESKTOP_H = 'calc(100vw / 2.727)';
-  // Banner normal — desktop -10% (≈ 3.333:1)
-  $NORMAL_DESKTOP_ASPECT = '10/3';
-  /* ======================================================== */
+    $pointCards = $pontosDestaque
+        ->take(8)
+        ->map(fn ($item) => [
+            'title' => $item->card_title ?? $item->nome ?? '',
+            'subtitle' => $item->cidade ?? 'Altamira',
+            'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 92),
+            'image' => $item->card_image_url ?? $item->capa_url ?? $item->foto_capa_url ?? null,
+            'href' => R::has('site.ponto') ? route('site.ponto', ['ponto' => ($item->slug ?? $item->id)]) : '#',
+            'badge' => 'Ponto turístico',
+            'cta' => 'Descobrir',
+        ]);
 
-  /* Container padrão */
-  $container = $container
-    ?? 'mx-auto w-full max-w-[420px] md:max-w-[1024px] lg:max-w-[1200px] px-4 md:px-6';
+    $recommendationCards = $recomendacoes->map(fn ($item) => [
+        'title' => $item['title'] ?? '',
+        'subtitle' => $item['subtitle'] ?? 'Altamira',
+        'image' => $item['image'] ?? null,
+        'href' => $item['href'] ?? '#',
+        'badge' => $item['badge'] ?? 'Recomendado',
+        'meta' => ($item['type'] ?? null) === 'empresa' ? 'Curadoria ativa' : 'Ponto recomendado',
+    ]);
 
-  /* Dados */
-  $categoriasConteudo = collect($categoriasConteudo ?? []);
-  $recomendacoes      = collect($recomendacoes ?? []);
-  $empresasTurismo    = collect($empresasTurismo ?? []);
-  $banner             = $banner ?? null;                 // banner normal (single)
-  $bannersNormais     = collect($bannersNormais ?? []);  // opcional: vários
-  $bannerTopo         = $bannerTopo ?? null;             // destaque (single)
-  $bannersDestaque    = collect($bannersDestaque ?? []); // destaque (coleção)
-  $eventosHome        = collect($eventosHome ?? []); // [+] eventos que vêm do HomeController
+    $videoCards = $videosHome->map(function ($video) {
+        return [
+            'title' => $video->titulo,
+            'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $video->descricao), 132),
+            'image' => $video->capa_url ?: theme_asset('hero_image'),
+            'href' => R::has('site.videos.show') ? route('site.videos.show', $video->slug) : '#',
+            'meta' => optional($video->published_at)->format('d.m.Y'),
+        ];
+    });
 
-  /* Rotas */
-  $hasCategoria = R::has('site.categoria');
-  $hasExplorar  = R::has('site.explorar');
-  $hasPonto     = R::has('site.ponto');
-  $hasEmpresa   = R::has('site.empresa');
-  $hasEvtIndex  = R::has('eventos.index');  // [+]
-  $hasEvtShow   = R::has('eventos.show');
-  /* Helpers */
-  $safeUrl = function (string $name, array $params = [], $fallback = '#') {
-      try { return route($name, $params); } catch (\Throwable $e) { return $fallback; }
-  };
-
-  $toUrl = function ($path) {
-      if (!$path) return null;
-      return Str::startsWith($path, ['http://','https://','/'])
-          ? $path : FS::disk('public')->url($path);
-  };
-
-  $mkHref = function ($item) use ($safeUrl, $hasExplorar, $hasPonto, $hasEmpresa) {
-      $isArray = is_array($item); $isObj = is_object($item);
-      $id    = $isArray ? ($item['id']   ?? null) : ($item->id   ?? null);
-      $slug  = $isArray ? ($item['slug'] ?? null) : ($item->slug ?? null);
-      $param = $slug ?: $id;
-      $class   = $isObj ? class_basename($item) : null;
-      $type    = $isArray ? ($item['type'] ?? null) : null;
-      $hrefApi = $isArray ? ($item['href'] ?? null) : null;
-      $isEmpresa = ($class === 'Empresa') || ($type === 'empresa') ||
-                   ($isArray && isset($item['empresa_slug'])) ||
-                   ($isObj && (isset($item->cnpj) || isset($item->perfil_path)));
-      $isPonto = ($class === 'PontoTuristico') || ($type === 'ponto') ||
-                 ($isObj && (isset($item->lat) || isset($item->lng) || method_exists($item, 'midias')));
-      if ($param) {
-            if ($isEmpresa && $hasEmpresa) return $safeUrl('site.empresa', ['empresa' => $param]);
-          if ($isPonto   && $hasPonto)   return $safeUrl('site.ponto',   ['ponto'    => $param]);
-          if ($hasPonto)   { $u = $safeUrl('site.ponto',   ['ponto'=>$param], null);   if ($u) return $u; }
-          if ($hasEmpresa) { $u = $safeUrl('site.empresa', ['slugOrId'=>$param], null); if ($u) return $u; }
-      }
-      if ($hrefApi && Str::startsWith($hrefApi, ['http://','https://'])) return $hrefApi;
-      if ($param && $hasExplorar) {
-          return $isEmpresa ? $safeUrl('site.explorar', ['empresa'=>$param])
-                            : $safeUrl('site.explorar', ['ponto'=>$param]);
-      }
-      return $hrefApi ?: '#';
-  };
-
-  /* Link do banner normal (single) */
-  $bannerHref = '#';
-  if ($banner) {
-      $bArr = is_array($banner) ? $banner : null;
-      $bObj = is_object($banner) ? $banner : null;
-      $link = $bArr['link_url'] ?? ($bObj->link_url ?? null);
-      $rel  = ($bArr['ponto'] ?? ($bObj->ponto ?? null)) ?: ($bArr['empresa'] ?? ($bObj->empresa ?? null));
-      if ($link && Str::startsWith($link, ['http://','https://','/'])) {
-          $bannerHref = $link;
-      } elseif ($rel) {
-          $bannerHref = $mkHref($rel);
-      } elseif (!empty($bObj?->ponto_id) || !empty($bArr['ponto_id'] ?? null)) {
-          $pid = $bArr['ponto_id'] ?? $bObj->ponto_id ?? null;
-          $bannerHref = $hasPonto ? $safeUrl('site.ponto', ['ponto'=>$pid]) : '#';
-      } elseif (!empty($bObj?->empresa_id) || !empty($bArr['empresa_id'] ?? null)) {
-          $eid = $bArr['empresa_id'] ?? $bObj->empresa_id ?? null;
-          $bannerHref = $hasEmpresa ? $safeUrl('site.empresa', ['slugOrId'=>$eid]) : '#';
-      } else {
-          $bannerHref = $mkHref($banner);
-      }
-  }
-
-  /* Destaques (normaliza) */
-  $rawHeroes = $bannersDestaque->count() ? $bannersDestaque
-              : ($bannerTopo ? collect([$bannerTopo]) : collect());
-
-  $heroes = $rawHeroes->map(function($b){
-      $href  = $b->cta_link ?? $b->link_url ?? '#';
-      if (!Str::startsWith((string)$href, ['http://','https://','/'])) $href = '#';
-      $blank = (bool)($b->target_blank ?? false);
-      $desktop = $b->imagem_desktop_url ?? $b->desktop_url ?? $b->imagem_url ?? $b->image_url ?? $b->imagem ?? null;
-      $mobile  = $b->imagem_mobile_url  ?? $b->mobile_url  ?? $desktop;
-      $cropD = $b->crop_desktop ?? [];
-      $cropM = $b->crop_mobile  ?? [];
-      // (mantemos sem aplicar no retorno — não é essencial ao carrossel)
-      $bg      = $b->cor_fundo ?? '#00837B';
-      return (object)['href'=>$href,'blank'=>$blank,'desktop'=>$desktop,'mobile'=>$mobile,'bg'=>$bg];
-  })->filter(fn($h)=>$h->desktop || $h->mobile)->values();
-
-  $hasHero = $heroes->isNotEmpty();
+    $videosIndexHref = R::has('site.videos') ? route('site.videos') : '#';
 @endphp
 
-
-{{-- =================== TOPO: BANNER DESTAQUE (sem título/overlay, encostado no topo) =================== --}}
-<section class="relative overflow-hidden pb-6 md:pb-10"
-         style="background: linear-gradient(180deg, #00837B 0%, #FFFFFF 100%);">
-
-  @if($hasHero)
-    {{-- FULL-BLEED + SEM MARGEM NO TOPO --}}
-    <div class="relative pt-0"
-         style="width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);margin-top:0;">
-      <div
-        x-data="{ i:0, n:{{ $heroes->count() }}, next(){ this.i=(this.i+1)%this.n }, go(k){ this.i=k } }"
-        x-init="if(n>1){ setInterval(()=>next(), 5000) }"
-        class="relative"
-        role="region" aria-roledescription="carousel"
-        data-hero-carousel
-        >
-
-        <!-- alturas do container -->
-        <div class="relative">
-          <!-- celular: quadrado -->
-          <div class="block md:hidden" style="height: {{ $HERO_MOBILE_H }};"></div>
-          <!-- tablet+desktop: mesmo tamanho e +10% de altura -->
-          <div class="hidden md:block" style="height: {{ $HERO_DESKTOP_H }};"></div>
-
-          @foreach($heroes as $k => $h)
-            @php
-              $srcM = $h->mobile ?: $h->desktop;
-              $srcD = $h->desktop ?: $h->mobile;
-              $isPngM = Str::endsWith(Str::lower(parse_url($srcM, PHP_URL_PATH) ?? ''), '.png');
-              $isPngD = Str::endsWith(Str::lower(parse_url($srcD, PHP_URL_PATH) ?? ''), '.png');
-              $fitM   = $isPngM ? 'object-contain' : 'object-cover';
-              $fitD   = $isPngD ? 'object-contain' : 'object-cover';
-
-              // 🔹 estilos de crop (opcionais; não impedem o carrossel)
-              $cropM = $h->crop_mobile ?? ($h->cropMobile ?? null);
-              $cropD = $h->crop_desktop ?? ($h->cropDesktop ?? null);
-              $styleM = '';
-              $styleD = '';
-              if (is_array($cropM) && isset($cropM['x'])) {
-                  $scaleM = $cropM['scaleX'] ?? 1;
-                  $styleM = "object-position: {$cropM['x']}px {$cropM['y']}px; transform: scale({$scaleM});";
-              }
-              if (is_array($cropD) && isset($cropD['x'])) {
-                  $scaleD = $cropD['scaleX'] ?? 1;
-                  $styleD = "object-position: {$cropD['x']}px {$cropD['y']}px; transform: scale({$scaleD});";
-              }
-            @endphp
-
-            <a href="{{ $h->href ?: '#' }}"
-            @if($h->blank) target="_blank" rel="noopener" @endif
-            class="absolute inset-0 transition-opacity duration-700"
-            :style="i === {{ $k }} ? 'opacity:1;pointer-events:auto' : 'opacity:0;pointer-events:none'"
-            style="background-color: {{ $h->bg }}"
-            data-slide>
-
-
-
-              <picture class="absolute inset-0 w-full h-full">
-                <source media="(min-width: 768px)" srcset="{{ $srcD }}">
-                <img src="{{ $srcM }}" alt="" class="w-full h-full md:hidden {{ $fitM }}" style="{{ $styleM }}">
-                <img src="{{ $srcD }}" alt="" class="w-full h-full hidden md:block {{ $fitD }}" style="{{ $styleD }}">
-              </picture>
-            </a>
-          @endforeach
-
-        </div>
-
-        @if($heroes->count() > 1)
-          <div class="absolute bottom-3 inset-x-0 flex justify-center gap-2">
-            @foreach($heroes as $k => $h)
-             <button type="button" class="w-2.5 h-2.5 rounded-full bg-white/70"
-                :class="{ 'bg-white': i==={{ $k }} }"
-                @click="go({{ $k }})"
-                data-dot
-                aria-label="Ir ao banner {{ $k+1 }}"></button>
-
-            @endforeach
-          </div>
-        @endif
-      </div>
-    </div>
-  @endif
-
-  {{-- ===================== Categorias ===================== --}}
-  <div class="{{ $container }} mt-3 md:mt-6">
-    @includeIf('site.partials._categories_top', [
-      'categorias' => ($categorias ?? null) ?: $categoriasConteudo
-    ])
-  </div>
-
-  {{-- ===================== Banner NORMAL (desktop -10%) ===================== --}}
-  <div class="{{ $container }} mt-3 md:mt-6">
-    <div
-      class="relative overflow-hidden rounded-[20px] md:rounded-2xl w-full
-             aspect-[21/7] md:aspect-[21/7] lg:aspect-[{{ $NORMAL_DESKTOP_ASPECT }}]
-             md:bg-white/5 md:ring-1 md:ring-black/5 md:shadow-xl
-             [&_img]:absolute [&_img]:inset-0 [&_img]:w-full [&_img]:h-full [&_img]:object-cover
-             [&_picture>img]:absolute [&_picture>img]:inset-0 [&_picture>img]:w-full [&_picture>img]:h-full [&_picture>img]:object-cover
-             [&_video]:absolute [&_video]:inset-0 [&_video]:w-full [&_video]:h-full [&_video]:object-cover
-             [&_a]:block [&_a]:h-full [&_a]:w-full [&_figure]:h-full [&_figure]:w-full">
-
-      @php $hasCarouselNormal = $bannersNormais->count() > 1; @endphp
-
-      @if($hasCarouselNormal)
-        {{-- vários banners normais -> gira para a ESQUERDA --}}
-        <div x-data="{ i:0, n:{{ $bannersNormais->count() }}, prev(){ this.i=(this.i-1+this.n)%this.n }, go(k){ this.i=k } }"
-             x-init="setInterval(()=>prev(), 5000)" class="relative h-full" role="region" aria-roledescription="carousel">
-          @foreach($bannersNormais as $k => $bn)
-            <div class="absolute inset-0 transition-opacity duration-700"
-                 :class="{ 'opacity-100': i === {{ $k }}, 'opacity-0 pointer-events-none': i !== {{ $k }} }">
-              @includeIf('site.partials._banner', ['banner' => $bn, 'href' => '#'])
-            </div>
-          @endforeach
-        </div>
-      @else
-        @includeIf('site.partials._banner', ['banner' => $banner, 'href' => $bannerHref])
-      @endif
-    </div>
-  </div>
-
-  {{-- ===================== Recomendações ===================== --}}
-  <div class="{{ $container }} pt-5">
-    <div class="flex items-center justify-between">
-      <h2 class="text-white font-semibold text-[16px] md:text-lg leading-5">Recomendações</h2>
-      <a href="{{ Route::has('site.explorar') ? route('site.explorar') : '#' }}"
-         class="text-white text-[14px] leading-5 hover:underline">Ver todos</a>
-    </div>
-
-    <div class="mt-3">
-      @if($recomendacoes->isNotEmpty())
-        @include('site.partials._recomendacoes_carousel', [
-          'itens'       => $recomendacoes,
-          'mkHref'      => $mkHref,
-          'mobile_full' => true,
+<div class="site-page site-home-page">
+    <div class="site-section site-home-hero-section site-home-hero-section--premium">
+        @include('site.partials._banner', [
+            'banner' => $bannerTopo,
+            'title' => '',
+            'subtitle' => null,
+            'ctaLabel' => null,
+            'href' => null,
+            'secondaryCtaLabel' => null,
+            'secondaryHref' => null,
+            'overlayOnly' => true,
+            'overlayImage' => asset('imagens/visitcapa.png'),
+            'overlayImageAlt' => 'VisitAltamira - Experimente, vivencie, apaixone-se',
+            'heroClass' => 'site-hero-home-immersive',
         ])
-      @else
-        <div class="text-sm text-white/90">Sem recomendações ainda.</div>
-      @endif
-    </div>
-  </div>
-</section>
 
-{{-- ===================== Publicações Instagram ===================== --}}
-<section class="bg-white py-4 md:py-6">
-  <div class="{{ $container }}">
-    @include('partials._instagram_carousel', ['instagram' => $instagram])
-  </div>
-</section>
+        <div class="site-home-hero-panel">
+            <div class="site-home-hero-panel-copy">
+                <span class="site-badge">Destino oficial</span>
+                <h1 class="site-home-hero-panel-title">Altamira para sentir.</h1>
+            </div>
 
-{{-- ===================== BLOCOS POR CATEGORIA ===================== --}}
-@foreach($categoriasConteudo as $cat)
-  @php
-    $catSlug = $cat->slug ?? null;
-    $catId   = $cat->id   ?? null;
-
-    if (\Illuminate\Support\Facades\Route::has('site.explorar')) {
-        $catHref = route('site.explorar', array_filter([
-            'categoria'    => $catSlug,
-            'categoria_id' => $catId,
-        ], fn($v) => !is_null($v) && $v !== ''));
-    }
-    elseif (\Illuminate\Support\Facades\Route::has('site.categoria') && $catSlug) {
-        $catHref = route('site.categoria', ['categoria' => $catSlug]);
-    } else {
-        $catHref = '#';
-    }
-  @endphp
-
-  <section class="bg-gradient-to-b from-slate-50 to-[#EAF4F2] py-2 md:py-4">
-    <div class="{{ $container }}">
-      <div class="flex items-center justify-between mt-1 mb-3">
-        <h2 class="text-[16px] md:text-lg font-semibold text-[#2B3536]">{{ $cat->nome }}</h2>
-        <a href="{{ $catHref }}" class="text-[14px] text-[#00837B] hover:underline">Ver todos</a>
-      </div>
-
-      <div class="space-y-3">
-        @php
-            $pontos    = collect($cat->pontos ?? []);
-            $empresas  = collect($cat->empresas ?? []);
-            $itens     = $pontos->concat($empresas)
-                                ->sortBy(fn($i) => [ $i->ordem ?? 999999, \Illuminate\Support\Str::lower($i->nome ?? '') ])
-                                ->values();
-            @endphp
-
-
-        @foreach($itens as $item)
-          @php
-            $cardTitle = $item->card_title ?? $item->nome ?? '';
-            $cardSub   = $item->card_city  ?? ($item->cidade ?? 'Altamira');
-            $cardImg   = $item->card_image_url ?? ($item->capa_url ?? ($item->foto_capa_url ?? null));
-            $cardHref  = $item->card_href ?? $mkHref($item);
-          @endphp
-          <x-card-list :title="$cardTitle" :subtitle="$cardSub" :image="$cardImg" :href="$cardHref" logo="/imagens/visitpreto.png" />
-        @endforeach
-      </div>
-    </div>
-  </section>
-@endforeach
-
-
-
-{{-- ===================== EVENTOS (substitui Parceiros Turísticos) ===================== --}}
-@php
-  $eventosHref = $hasEvtIndex ? $safeUrl('eventos.index') : '#';
-@endphp
-<section class="bg-gradient-to-b from-white to-[#F5F7F7] py-2 md:py-4">
-  <div class="{{ $container }}">
-    <div class="flex items-center justify-between mt-1 mb-3">
-      <h2 class="text-[16px] md:text-lg font-semibold text-[#2B3536]">Eventos</h2>
-      <a href="{{ $eventosHref }}" class="text-[14px] text-[#00837B] hover:underline">Ver todos</a>
+            <div class="site-home-hero-panel-actions">
+                <a href="{{ R::has('site.explorar') ? route('site.explorar') : '#' }}" class="site-button-primary">Descobrir</a>
+                <a href="{{ R::has('site.mapa') ? route('site.mapa') : '#' }}" class="site-button-secondary">Mapa</a>
+            </div>
+        </div>
     </div>
 
-    <div class="space-y-3">
-      @forelse($eventosHome as $ev)
-        @php
-          $ed    = collect($ev->edicoes ?? [])->first();
-          $ano   = $ed->ano ?? ($ev->ano_max ?? null);
-          $slug  = $ev->slug ?? null;
-          $href  = ($hasEvtShow && $slug) ? route('eventos.show', [$slug, $ano]) : '#';
+    @include('site.partials._portal_shortcuts', ['experienciasEntrada' => $experienciasEntrada])
 
-          $imgPath = $ev->perfil_path ?? $ev->capa_path ?? null;
-          $imgUrl  = $toUrl($imgPath);
+    @if($recommendationCards->isNotEmpty())
+        <section class="site-section site-home-recommendations-section">
+            <x-section-head
+                title="Comece pelos recomendados"
+            />
 
-          $cidade  = $ev->cidade ?? 'Altamira';
-        @endphp
+            <div class="site-home-carousel-shell site-home-recommendations-shell" x-data="{
+                canPrev: false,
+                canNext: true,
+                update() {
+                    const el = this.$refs.viewport;
+                    if (!el) return;
+                    this.canPrev = el.scrollLeft > 12;
+                    this.canNext = (el.scrollWidth - el.clientWidth - el.scrollLeft) > 12;
+                },
+                move(direction) {
+                    const el = this.$refs.viewport;
+                    if (!el) return;
+                    const step = Math.max(el.clientWidth * 0.76, 280);
+                    el.scrollBy({ left: step * direction, behavior: 'smooth' });
+                    window.setTimeout(() => this.update(), 220);
+                }
+            }" x-init="$nextTick(() => update())">
+                <div class="site-home-carousel-controls" aria-hidden="true">
+                    <button type="button" class="site-home-carousel-control" @click="move(-1)" :disabled="!canPrev" :aria-disabled="!canPrev">&larr;</button>
+                    <button type="button" class="site-home-carousel-control" @click="move(1)" :disabled="!canNext" :aria-disabled="!canNext">&rarr;</button>
+                </div>
 
-        <x-card-list
-          :title="$ev->nome"
-          :subtitle="$cidade"
-          :image="$imgUrl"
-          :href="$href"
-          logo="/imagens/visitpreto.png"
-        />
-      @empty
-        <div class="text-sm text-slate-500">Sem eventos publicados.</div>
-      @endforelse
-    </div>
-  </div>
-</section>
+                <div class="site-home-carousel-track site-home-recommendations-track" x-ref="viewport" @scroll.debounce.50ms="update()" x-on:resize.window.debounce.120ms="update()">
+                    @foreach($recommendationCards as $item)
+                        <div class="site-home-carousel-slide site-home-recommendations-slide">
+                            <x-card-mini
+                                :title="$item['title']"
+                                :subtitle="$item['subtitle']"
+                                :image="$item['image']"
+                                :href="$item['href']"
+                                :badge="$item['badge']"
+                                :meta="$item['meta']"
+                                variant="editorial"
+                            />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 
-{{-- Espaço p/ não cobrir conteúdo (mobile) + bottom nav --}}
-<div class="h-[80px] pb-[env(safe-area-inset-bottom)] md:hidden"></div>
-@includeIf('site.partials._bottom_nav')
+    @include('site.partials._instagram_carousel', ['instagram' => $instagram])
 
-{{-- Fallback JS: garante o carrossel do destaque em qualquer device, mesmo sem Alpine --}}
-@push('scripts')
-<script type="module">
-(() => {
-  const root = document.querySelector('[data-hero-carousel]');
-  if (!root) return;
-  const slides = Array.from(root.querySelectorAll('[data-slide]'));
-  const dots   = Array.from(root.querySelectorAll('[data-dot]'));
-  const n = slides.length;
-  if (n <= 1) return;
+    @if($bannerIntermediario)
+        <section class="site-section site-home-editorial-banner-section">
+            @include('site.partials._banner', [
+                'banner' => $bannerIntermediario,
+                'title' => $bannerIntermediario->titulo ?? 'VisitAltamira',
+                'ctaLabel' => $bannerIntermediario->cta_label ?? 'Explorar',
+                'href' => $bannerIntermediario->cta_url ?? $bannerIntermediario->href ?? (R::has('site.explorar') ? route('site.explorar') : '#'),
+                'heroClass' => 'site-hero-home-editorial-banner',
+            ])
+        </section>
+    @endif
 
-  let i = 0;
-  const show = (k) => {
-    slides.forEach((el, idx) => {
-      const active = idx === k;
-      el.style.opacity = active ? '1' : '0';
-      el.style.pointerEvents = active ? 'auto' : 'none';
-      el.setAttribute('aria-hidden', active ? 'false' : 'true');
-    });
-    dots.forEach((d, idx) => {
-      if (!d) return;
-      d.classList.toggle('bg-white', idx === k);
-      d.classList.toggle('bg-white/70', idx !== k);
-    });
-    i = k;
-  };
+    @include('site.partials._category_section', [
+        'eyebrow' => 'Coleção publicada',
+        'title' => 'Pontos turísticos',
+        'subtitle' => 'Uma coleção publicada para descobrir Altamira com leitura mais leve.',
+        'href' => R::has('site.explorar') ? route('site.explorar') : '#',
+        'items' => $pointCards,
+        'layout' => 'carousel',
+        'cardVariant' => 'compact',
+        'empty' => 'Sem pontos turísticos publicados no momento.',
+        'emptyTitle' => 'Nenhum ponto em destaque agora',
+    ])
 
-  dots.forEach((d, idx) => d && d.addEventListener('click', () => show(idx)));
+    @if($atalhosPremium->isNotEmpty())
+        <section class="site-section site-home-utility-section">
+            <x-section-head
+                eyebrow="Planeje a experiência"
+                title="Três atalhos para seguir"
+                subtitle="Comer, ficar e acessar guias oficiais."
+            />
 
-  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduce) setInterval(() => show((i + 1) % n), 5000);
+            <div class="site-home-utility-grid">
+                @foreach($atalhosPremium as $item)
+                    <a
+                        href="{{ $item['href'] ?? '#' }}"
+                        class="site-home-utility-card site-home-utility-card--{{ $item['key'] ?? 'entry' }}"
+                        aria-label="{{ $item['title'] }}"
+                        title="{{ $item['title'] }}"
+                    >
+                        <div class="site-home-utility-media">
+                            <img
+                                src="{{ $item['image'] }}"
+                                alt="{{ $item['title'] }}"
+                                loading="lazy"
+                                decoding="async"
+                                class="site-home-utility-image"
+                            >
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
-  show(0);
-})();
-</script>
-@endpush
+    @if($videoCards->isNotEmpty())
+        <section class="site-section site-home-videos-section">
+            <x-section-head title="Vídeos" />
+
+            <div class="site-home-carousel-shell site-home-video-shell" x-data="{
+                canPrev: false,
+                canNext: true,
+                update() {
+                    const el = this.$refs.viewport;
+                    if (!el) return;
+                    this.canPrev = el.scrollLeft > 12;
+                    this.canNext = (el.scrollWidth - el.clientWidth - el.scrollLeft) > 12;
+                },
+                move(direction) {
+                    const el = this.$refs.viewport;
+                    if (!el) return;
+                    const step = Math.max(el.clientWidth * 0.78, 260);
+                    el.scrollBy({ left: step * direction, behavior: 'smooth' });
+                    window.setTimeout(() => this.update(), 220);
+                }
+            }" x-init="$nextTick(() => update())">
+                <div class="site-home-carousel-controls" aria-hidden="true">
+                    <button type="button" class="site-home-carousel-control" @click="move(-1)" :disabled="!canPrev" :aria-disabled="!canPrev">&larr;</button>
+                    <button type="button" class="site-home-carousel-control" @click="move(1)" :disabled="!canNext" :aria-disabled="!canNext">&rarr;</button>
+                </div>
+
+                <div class="site-home-video-track" x-ref="viewport" @scroll.debounce.50ms="update()" x-on:resize.window.debounce.120ms="update()">
+                    @foreach($videoCards as $item)
+                        <a href="{{ $item['href'] }}" class="site-home-video-rail-card">
+                            <div class="site-home-video-media">
+                                <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" loading="lazy" decoding="async" class="site-home-video-image">
+                                <span class="site-home-video-play" aria-hidden="true">Assistir</span>
+                            </div>
+
+                            <div class="site-home-video-rail-body">
+                                <div class="site-home-video-rail-top">
+                                    <span class="site-badge">Video</span>
+                                    @if($item['meta'])
+                                        <span class="site-home-video-meta">{{ $item['meta'] }}</span>
+                                    @endif
+                                </div>
+
+                                <h3 class="site-home-video-title">{{ $item['title'] }}</h3>
+                                <span class="site-home-video-cta">Assistir agora</span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+
+                <div class="site-home-video-actions">
+                    <a href="{{ $videosIndexHref }}" class="site-button-primary">Ver todos os vídeos</a>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @include('site.partials._home_map_embed', ['mapCategories' => $mapCategories])
+
+    <a
+        href="https://wa.me/559391727547?text={{ rawurlencode('Olá! Quero tirar dúvidas e planejar minha visita a Altamira.') }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="site-home-whatsapp"
+        aria-label="Falar com a SEMTUR no WhatsApp"
+        title="Falar com a SEMTUR no WhatsApp"
+    >
+        <span class="site-home-whatsapp-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.05 4.91A9.82 9.82 0 0 0 12.03 2a9.94 9.94 0 0 0-8.47 15.15L2 22l4.99-1.55A10 10 0 0 0 12.03 22c5.5 0 9.97-4.46 9.97-9.97a9.9 9.9 0 0 0-2.95-7.12Zm-7.02 15.4a8.3 8.3 0 0 1-4.23-1.16l-.3-.18-2.96.92.97-2.88-.2-.31a8.3 8.3 0 1 1 6.72 3.61Zm4.56-6.18c-.25-.13-1.47-.73-1.7-.81-.23-.09-.4-.13-.57.12-.16.25-.65.81-.79.98-.15.16-.29.19-.54.06-.25-.12-1.04-.38-1.98-1.21-.73-.65-1.22-1.45-1.37-1.69-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.16.04-.31-.02-.43-.07-.13-.57-1.38-.78-1.89-.2-.49-.41-.42-.57-.43h-.49c-.16 0-.43.06-.65.31-.22.25-.86.84-.86 2.06s.88 2.39 1 2.56c.12.16 1.72 2.62 4.17 3.68.58.25 1.04.4 1.39.51.58.18 1.1.15 1.52.09.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.06-.09-.22-.15-.47-.27Z"/>
+            </svg>
+        </span>
+        <span class="site-home-whatsapp-copy">
+            <strong>WhatsApp</strong>
+            <span>Fale com a SEMTUR</span>
+        </span>
+    </a>
+</div>
 @endsection

@@ -2,30 +2,37 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
+use App\Models\Catalogo\Categoria;
+use App\Models\Catalogo\Empresa;
+use App\Models\Catalogo\EmpresaRecomendacao;
+use App\Models\Catalogo\PontoMidia;
+use App\Models\Catalogo\PontoRecomendacao;
+use App\Models\Catalogo\PontoTuristico;
+use App\Models\Catalogo\Roteiro;
+use App\Models\Catalogo\RoteiroEmpresa;
+use App\Models\Catalogo\RoteiroEtapa;
+use App\Models\Catalogo\RoteiroEtapaPonto;
+use App\Models\Conteudo\Aviso;
+use App\Models\Conteudo\Banner;
+use App\Models\Conteudo\BannerDestaque;
 use App\Observers\SiteSyncObserver;
-use App\Models\Catalogo\{Categoria, Empresa, PontoTuristico};
-use App\Models\Catalogo\{PontoMidia, PontoRecomendacao};
-use App\Models\Catalogo\{EmpresaRecomendacao};
-use Illuminate\Support\Facades\View;
+use App\Services\ThemeManager;
+use App\Services\ThemeResolver;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
-use App\Models\Conteudo\Aviso;
-
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        require_once app_path('Support/theme_helpers.php');
+
+        $this->app->singleton(ThemeResolver::class, fn () => new ThemeResolver());
+        $this->app->singleton(ThemeManager::class, fn ($app) => new ThemeManager($app->make(ThemeResolver::class)));
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Categoria::observe(SiteSyncObserver::class);
@@ -35,8 +42,23 @@ class AppServiceProvider extends ServiceProvider
         PontoRecomendacao::observe(SiteSyncObserver::class);
         EmpresaRecomendacao::observe(SiteSyncObserver::class);
 
+        Banner::observe(SiteSyncObserver::class);
+        BannerDestaque::observe(SiteSyncObserver::class);
+        Aviso::observe(SiteSyncObserver::class);
+
         View::composer('*', function ($view) {
             $aviso = null;
+            $themePayload = [
+                'context' => null,
+                'theme' => null,
+                'activeTheme' => null,
+                'previewTheme' => null,
+                'isPreview' => false,
+                'dataTheme' => 'default',
+                'cssVariables' => [],
+                'assets' => [],
+                'hasCustomConsoleTheme' => false,
+            ];
 
             if (Schema::hasTable('avisos')) {
                 $aviso = Cache::remember('aviso:ativo', 60, function () {
@@ -47,8 +69,27 @@ class AppServiceProvider extends ServiceProvider
                 });
             }
 
-            $view->with('aviso', $aviso);
-        });
-    }
+            if (Schema::hasTable('themes') && Schema::hasTable('system_settings')) {
+                $themePayload = app(ThemeResolver::class)->payload(auth()->user());
+            }
 
+            $view->with([
+                'aviso' => $aviso,
+                'resolvedThemeContext' => $themePayload['context'] ?? null,
+                'resolvedTheme' => $themePayload['theme'],
+                'resolvedActiveTheme' => $themePayload['activeTheme'],
+                'resolvedPreviewTheme' => $themePayload['previewTheme'],
+                'resolvedThemeIsPreview' => $themePayload['isPreview'],
+                'resolvedThemeDataTheme' => $themePayload['dataTheme'],
+                'resolvedThemeCssVariables' => $themePayload['cssVariables'],
+                'resolvedThemeAssets' => $themePayload['assets'],
+                'resolvedThemeHasCustomConsoleTheme' => $themePayload['hasCustomConsoleTheme'] ?? false,
+            ]);
+        });
+
+        Roteiro::observe(SiteSyncObserver::class);
+        RoteiroEtapa::observe(SiteSyncObserver::class);
+        RoteiroEtapaPonto::observe(SiteSyncObserver::class);
+        RoteiroEmpresa::observe(SiteSyncObserver::class);
+    }
 }

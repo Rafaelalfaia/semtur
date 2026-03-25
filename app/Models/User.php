@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Permission\PermissionRegistrar;
 
 class User extends Authenticatable
 {
@@ -67,5 +69,51 @@ class User extends Authenticatable
     {
         return $q->where('coordenador_id', auth()->id())
                  ->role('Tecnico');
+    }
+
+    public static function forbiddenForTecnicoPermissions(): array
+    {
+        return [
+            'tecnicos.manage',
+            'usuarios.manage',
+            'console.cache.clear',
+        ];
+    }
+
+    public function delegablePermissionNames(): array
+    {
+        return $this->getAllPermissions()
+            ->pluck('name')
+            ->reject(function ($permission) {
+                return in_array($permission, self::forbiddenForTecnicoPermissions(), true)
+                    || Str::startsWith($permission, ['usuarios.', 'console.cache.', 'tecnicos.']);
+            })
+            ->values()
+            ->all();
+    }
+
+    public function syncCoordenadorDirectPermissions(array $permissions): void
+    {
+        $this->syncPermissions($permissions);
+
+        if ($this->hasRole('Coordenador')) {
+            $this->syncTecnicosDelegatedPermissions();
+        }
+    }
+
+    public function syncTecnicosDelegatedPermissions(): void
+    {
+        if (! $this->hasRole('Coordenador')) {
+            return;
+        }
+
+        $allowed = $this->delegablePermissionNames();
+
+        foreach ($this->tecnicos()->get() as $tecnico) {
+            $currentDirect = $tecnico->getDirectPermissions()->pluck('name')->all();
+            $tecnico->syncPermissions(array_values(array_intersect($currentDirect, $allowed)));
+        }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

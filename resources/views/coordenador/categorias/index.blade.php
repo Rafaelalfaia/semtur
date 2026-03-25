@@ -1,45 +1,50 @@
 @extends('console.layout')
-@section('title','Categorias — Coordenador')
+@section('title','Categorias - Coordenador')
 @section('page.title','Categorias')
+@section('topbar.description', 'Gerencie categorias com filtros, status editoriais e o mesmo padrao visual do console compartilhado.')
+
+@section('topbar.nav')
+  <span class="ui-console-topbar-tab is-active">Categorias</span>
+  @can('categorias.create')
+    <a href="{{ route('coordenador.categorias.create') }}" class="ui-console-topbar-tab">Nova categoria</a>
+  @endcan
+@endsection
 
 @section('content')
-<div class="space-y-6">
+<div class="ui-console-page">
+  @if(session('ok'))
+    <div class="ui-alert ui-alert-success mb-4">{{ session('ok') }}</div>
+  @endif
 
-  {{-- Filtros + Novo --}}
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    <form method="GET" class="flex items-center gap-2">
+  <x-dashboard.page-header
+    title="Categorias"
+    subtitle="Organize a catalogacao do portal com filtros, status e uma leitura mais limpa, leve e consistente com o novo console."
+  >
+    @can('categorias.create')
+      <a href="{{ route('coordenador.categorias.create') }}" class="ui-btn-primary">Nova categoria</a>
+    @endcan
+  </x-dashboard.page-header>
+
+  <x-dashboard.section-card title="Filtros" subtitle="Busque por nome e refine pelo status editorial" class="ui-coord-dashboard-panel mt-5">
+    <form method="GET" class="grid grid-cols-1 gap-3 md:grid-cols-[240px_220px_auto]">
       <input
-        type="text" name="busca" value="{{ $busca }}" placeholder="Buscar..."
-        class="w-[220px] rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100 placeholder:text-slate-400"
+        type="text"
+        name="busca"
+        value="{{ $busca }}"
+        placeholder="Digite pelo menos 3 letras..."
+        class="ui-form-control"
       >
       @php $opts = ['todos'=>'Todos','rascunho'=>'Rascunho','publicado'=>'Publicado','arquivado'=>'Arquivado']; @endphp
-      <select name="status"
-              class="rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
+      <select name="status" class="ui-form-select">
         @foreach($opts as $k=>$v)
           <option value="{{ $k }}" @selected($status===$k)>{{ $v }}</option>
         @endforeach
       </select>
-      <button class="px-3 py-2 rounded-lg bg-emerald-600 text-black font-semibold">Filtrar</button>
+      <button class="ui-btn-secondary">Filtrar</button>
     </form>
+  </x-dashboard.section-card>
 
-    {{-- Mostrar o botão "Nova Categoria" somente para quem pode criar --}}
-    @can('categorias.create')
-      <a href="{{ route('coordenador.categorias.create') }}"
-        class="inline-flex items-center px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-black font-semibold">
-        + Nova Categoria
-      </a>
-    @endcan
-  </div>
-
-  {{-- Feedback --}}
-  @if(session('ok'))
-    <div class="rounded-lg border border-emerald-600/30 bg-emerald-500/10 text-emerald-300 px-3 py-2">
-      {{ session('ok') }}
-    </div>
-  @endif
-
-  {{-- Lista --}}
-  <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+  <div class="ui-category-grid mt-5">
     @forelse($categorias as $c)
       @php
         $isDraft = $c->status === 'rascunho';
@@ -47,83 +52,80 @@
         $isArch  = $c->status === 'arquivado';
       @endphp
 
-      <div class="rounded-xl border border-white/5 bg-[#0F1412] p-4">
+      <article class="ui-category-card">
         <div class="flex items-start gap-3">
-          <div class="h-12 w-12 rounded-lg overflow-hidden bg-white/5 flex items-center justify-center">
+          <div class="ui-category-icon-shell">
             @if($c->icone_url)
-              <img src="{{ $c->icone_url }}" alt="Ícone {{ $c->nome }}" class="h-10 w-10 object-contain">
+              <img src="{{ $c->icone_url }}" alt="Icone {{ $c->nome }}" class="ui-category-icon-image">
             @else
-              <span class="text-xs text-slate-400">sem ícone</span>
+              <span class="text-xs text-[var(--ui-text-soft)]">sem icone</span>
             @endif
           </div>
 
-          <div class="flex-1">
-            <div class="font-semibold">{{ $c->nome }}</div>
-            <div class="text-xs text-slate-400">/{{ $c->slug }}</div>
-            <div class="mt-1 text-xs">
-              <span class="rounded-full px-2 py-0.5
-                {{ $isPub ? 'bg-emerald-500/15 text-emerald-300' :
-                   ($isArch ? 'bg-rose-500/15 text-rose-300' : 'bg-white/10 text-slate-300') }}">
-                {{ ucfirst($c->status) }}
-              </span>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-[var(--ui-text-title)]">{{ $c->nome }}</div>
+            <div class="text-xs text-[var(--ui-text-soft)]">/{{ $c->slug }}</div>
+            <div class="mt-2">
+              @if($isPub)
+                <span class="ui-badge ui-badge-success">Publicado</span>
+              @elseif($isArch)
+                <span class="ui-badge ui-badge-danger">Arquivado</span>
+              @else
+                <span class="ui-badge ui-badge-neutral">Rascunho</span>
+              @endif
             </div>
           </div>
         </div>
 
-        {{-- Ações de edição/remoção: respeitam permissões --}}
-        <div class="mt-3 flex items-center gap-2">
+        <div class="mt-4 flex items-center gap-2">
           @can('categorias.update')
-            <a href="{{ route('coordenador.categorias.edit',$c) }}"
-               class="text-sm text-emerald-300 hover:text-emerald-200 hover:underline">Editar</a>
+            <a href="{{ route('coordenador.categorias.edit',$c) }}" class="ui-btn-secondary">Editar</a>
           @endcan
 
           @can('categorias.delete')
-            <form method="POST" action="{{ route('coordenador.categorias.destroy',$c) }}"
-                  onsubmit="return confirm('Remover categoria?');" class="inline">
-              @csrf @method('DELETE')
-              <button class="text-sm text-rose-300 hover:text-rose-200 hover:underline">Excluir</button>
+            <form method="POST" action="{{ route('coordenador.categorias.destroy',$c) }}" onsubmit="return confirm('Remover categoria?');" class="inline">
+              @csrf
+              @method('DELETE')
+              <button class="ui-btn-danger">Excluir</button>
             </form>
           @endcan
         </div>
 
-        {{-- Ações de status: só mostra se puder, e desabilita quando já está nesse status --}}
-        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+        <div class="mt-4 ui-category-status-actions">
           @can('categorias.rascunho')
             <form method="POST" action="{{ route('coordenador.categorias.rascunho',$c) }}">
-              @csrf @method('PATCH')
-              <button @disabled($isDraft)
-                class="rounded bg-white/5 px-2 py-1 hover:bg-white/10 {{ $isDraft ? 'opacity-40 cursor-not-allowed' : '' }}">
-                Rascunho
-              </button>
+              @csrf
+              @method('PATCH')
+              <button @disabled($isDraft) class="ui-category-status-btn {{ $isDraft ? 'is-disabled' : '' }}">Rascunho</button>
             </form>
           @endcan
 
           @can('categorias.publicar')
             <form method="POST" action="{{ route('coordenador.categorias.publicar',$c) }}">
-              @csrf @method('PATCH')
-              <button @disabled($isPub)
-                class="rounded bg-white/5 px-2 py-1 hover:bg-white/10 {{ $isPub ? 'opacity-40 cursor-not-allowed' : '' }}">
-                Publicar
-              </button>
+              @csrf
+              @method('PATCH')
+              <button @disabled($isPub) class="ui-category-status-btn {{ $isPub ? 'is-disabled' : '' }}">Publicar</button>
             </form>
           @endcan
 
           @can('categorias.arquivar')
             <form method="POST" action="{{ route('coordenador.categorias.arquivar',$c) }}">
-              @csrf @method('PATCH')
-              <button @disabled($isArch)
-                class="rounded bg-white/5 px-2 py-1 hover:bg-white/10 {{ $isArch ? 'opacity-40 cursor-not-allowed' : '' }}">
-                Arquivar
-              </button>
+              @csrf
+              @method('PATCH')
+              <button @disabled($isArch) class="ui-category-status-btn {{ $isArch ? 'is-disabled' : '' }}">Arquivar</button>
             </form>
           @endcan
         </div>
-      </div>
+      </article>
     @empty
-      <div class="text-slate-400">Nenhuma categoria encontrada.</div>
+      <x-dashboard.section-card title="Nenhuma categoria" subtitle="{{ mb_strlen(trim((string) $busca)) < 3 ? 'Digite pelo menos 3 letras para pesquisar categorias.' : 'Nenhuma categoria encontrada para a busca informada.' }}" class="ui-coord-dashboard-panel">
+        <p class="text-sm text-[var(--ui-text-soft)]">
+          {{ mb_strlen(trim((string) $busca)) < 3 ? 'A listagem fica vazia ate que a pesquisa tenha no minimo 3 letras.' : 'Ajuste os filtros ou tente outro termo de busca.' }}
+        </p>
+      </x-dashboard.section-card>
     @endforelse
   </div>
 
-  <div>{{ $categorias->links() }}</div>
+  <div class="mt-5">{{ $categorias->links() }}</div>
 </div>
 @endsection

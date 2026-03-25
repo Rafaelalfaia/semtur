@@ -2,22 +2,42 @@
 
 namespace App\Models\Catalogo;
 
-use App\Models\Concerns\HasPublicado;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class EspacoCultural extends Model
 {
-    use SoftDeletes, HasPublicado;
+    use SoftDeletes;
 
     protected $table = 'espacos_culturais';
+
+    public const TIPO_MUSEU  = 'museu';
+    public const TIPO_TEATRO = 'teatro';
+
+    public const TIPOS = [
+        self::TIPO_MUSEU,
+        self::TIPO_TEATRO,
+    ];
+
+    public const STATUS_RASCUNHO  = 'rascunho';
+    public const STATUS_PUBLICADO = 'publicado';
+    public const STATUS_ARQUIVADO = 'arquivado';
+
+    public const STATUSES = [
+        self::STATUS_RASCUNHO,
+        self::STATUS_PUBLICADO,
+        self::STATUS_ARQUIVADO,
+    ];
 
     protected $fillable = [
         'tipo',
         'nome',
         'slug',
+        'resumo',
         'descricao',
+        'capa_path',
         'maps_url',
         'endereco',
         'bairro',
@@ -28,35 +48,46 @@ class EspacoCultural extends Model
         'status',
         'published_at',
         'created_by',
+        'agendamento_ativo',
+        'agendamento_contato_nome',
+        'agendamento_contato_label',
+        'agendamento_whatsapp_phone',
+        'agendamento_instrucoes',
     ];
 
     protected $casts = [
         'lat' => 'float',
         'lng' => 'float',
         'published_at' => 'datetime',
+        'agendamento_ativo' => 'boolean',
     ];
 
-    public const STATUS_RASCUNHO  = 'rascunho';
-    public const STATUS_PUBLICADO = 'publicado';
-    public const STATUS_ARQUIVADO = 'arquivado';
-
-    public const TIPOS = ['museu', 'teatro'];
-
     protected $attributes = [
-        'tipo'   => 'museu',
+        'tipo' => self::TIPO_MUSEU,
         'cidade' => 'Altamira',
+        'ordem' => 0,
         'status' => self::STATUS_RASCUNHO,
-        'ordem'  => 0,
+        'agendamento_ativo' => false,
+    ];
+
+    protected $appends = [
+        'tipo_label',
+        'capa_url',
+        'agendamento_disponivel',
     ];
 
     protected static function booted(): void
     {
         static::saving(function (self $model) {
             $base = Str::slug($model->slug ?: $model->nome ?: 'espaco-cultural');
-            $model->slug = static::uniqueSlug($base, $model->exists ? (int) $model->getKey() : null);
+            $model->slug = static::uniqueSlug($base, $model->exists ? (int) $model->id : null);
 
-            if ($model->status === self::STATUS_PUBLICADO && empty($model->published_at)) {
-                $model->published_at = now();
+            $model->agendamento_whatsapp_phone = static::onlyDigits($model->agendamento_whatsapp_phone);
+
+            if ($model->status === self::STATUS_PUBLICADO) {
+                $model->published_at ??= now();
+            } else {
+                $model->published_at = null;
             }
         });
     }
@@ -68,7 +99,7 @@ class EspacoCultural extends Model
 
         while (
             static::withTrashed()
-                ->when($ignoreId, fn($q) => $q->where('id', '<>', $ignoreId))
+                ->when($ignoreId, fn ($q) => $q->where('id', '<>', $ignoreId))
                 ->where('slug', $slug)
                 ->exists()
         ) {
@@ -79,25 +110,65 @@ class EspacoCultural extends Model
         return $slug;
     }
 
+    private static function onlyDigits(?string $value): ?string
+    {
+        $digits = preg_replace('/\D+/', '', (string) $value);
+
+        return $digits !== '' ? $digits : null;
+    }
+
+    public function scopePublicados($query)
+    {
+        return $query->where('status', self::STATUS_PUBLICADO);
+    }
+
+    public function scopeOrdenados($query)
+    {
+        return $query->orderBy('ordem')->orderBy('nome');
+    }
+
     public function horarios()
     {
         return $this->hasMany(EspacoCulturalHorario::class, 'espaco_cultural_id')
             ->orderBy('dia_semana')
-            ->orderBy('hora_inicio');
+            ->orderBy('hora_inicio')
+            ->orderBy('ordem');
+    }
+
+    public function agendamentos()
+    {
+        return $this->hasMany(EspacoCulturalAgendamento::class, 'espaco_cultural_id')
+            ->latest('id');
+    }
+
+    public function midias()
+    {
+        return $this->hasMany(EspacoCulturalMidia::class, 'espaco_cultural_id')
+            ->orderBy('ordem')
+            ->orderBy('id');
     }
 
     public function getTipoLabelAttribute(): string
     {
-        return $this->tipo === 'teatro' ? 'Teatro' : 'Museu';
+        return $this->tipo === self::TIPO_TEATRO ? 'Teatro' : 'Museu';
     }
 
-    public function scopeMuseus($q)
+    public function getCapaUrlAttribute(): ?string
     {
-        return $q->where('tipo', 'museu');
+        return $this->capa_path
+            ? Storage::disk('public')->url($this->capa_path)
+            : null;
     }
 
-    public function scopeTeatros($q)
+    public function getAgendamentoDisponivelAttribute(): bool
     {
-        return $q->where('tipo', 'teatro');
+        return $this->status === self::STATUS_PUBLICADO
+            && (bool) $this->agendamento_ativo
+            && filled($this->agendamento_whatsapp_phone);
+    }
+
+    public function getAgendamentoContatoLabelAttribute($value): string
+    {
+        return $value ?: 'Agendamentos';
     }
 }

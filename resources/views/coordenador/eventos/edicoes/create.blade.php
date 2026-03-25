@@ -1,62 +1,82 @@
 @extends('console.layout')
-@section('title','Nova edição — '.$evento->nome)
+@section('title', 'Nova edicao - '.$evento->nome)
+@section('page.title', 'Nova edicao')
+@section('topbar.description', 'Cadastre uma nova edicao do evento mantendo a consistencia estrutural e visual do console.')
+
+@section('topbar.nav')
+  <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
+  <a href="{{ route('coordenador.eventos.edicoes.index', $evento) }}" class="ui-console-topbar-tab">Edicoes</a>
+  <span class="ui-console-topbar-tab is-active">Nova edicao</span>
+@endsection
 
 @section('content')
-<div class="max-w-3xl mx-auto space-y-6">
-  <h1 class="text-xl font-semibold">Nova edição — {{ $evento->nome }}</h1>
+<div class="ui-console-page">
+  <x-dashboard.page-header
+    title="Nova edicao"
+    subtitle="Cadastre ano, periodo, localizacao e status editorial da edicao do evento."
+  >
+    <a href="{{ route('coordenador.eventos.edicoes.index', $evento) }}" class="ui-btn-secondary">Voltar</a>
+  </x-dashboard.page-header>
 
   @if($errors->any())
-    <div class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-red-300">
+    <div class="ui-alert ui-alert-danger mt-5">
       <ul class="list-disc list-inside">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
     </div>
   @endif
 
-  <form method="POST" action="{{ route('coordenador.eventos.edicoes.store',$evento) }}" class="space-y-4 rounded-xl border border-white/5 p-5">
+  <form method="POST" action="{{ route('coordenador.eventos.edicoes.store', $evento) }}" class="mt-5 space-y-6">
     @csrf
-    <div class="grid md:grid-cols-3 gap-4">
-      <div>
-        <label class="block text-sm mb-1">Ano *</label>
-        <input type="number" name="ano" value="{{ old('ano',$edicao->ano) }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2" required>
+
+    <x-dashboard.section-card title="Dados da edicao" subtitle="Preencha as informacoes de calendario, local e resumo" class="ui-coord-dashboard-panel">
+      <div class="grid gap-4 md:grid-cols-3">
+        <div>
+          <label class="ui-form-label">Ano *</label>
+          <input type="number" name="ano" value="{{ old('ano', $edicao->ano) }}" class="ui-form-control" required>
+        </div>
+        <div>
+          <label class="ui-form-label">Inicio</label>
+          <input type="date" name="data_inicio" value="{{ old('data_inicio') }}" class="ui-form-control">
+        </div>
+        <div>
+          <label class="ui-form-label">Fim</label>
+          <input type="date" name="data_fim" value="{{ old('data_fim') }}" class="ui-form-control">
+        </div>
       </div>
-      <div>
-        <label class="block text-sm mb-1">Início</label>
-        <input type="date" name="data_inicio" value="{{ old('data_inicio') }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
+
+      <div class="mt-4">
+        <label class="ui-form-label">Local</label>
+        <input name="local" value="{{ old('local') }}" class="ui-form-control">
       </div>
-      <div>
-        <label class="block text-sm mb-1">Fim</label>
-        <input type="date" name="data_fim" value="{{ old('data_fim') }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
+
+      <div class="mt-4">
+        <label class="ui-form-label">Link do Google Maps</label>
+        <input
+          name="maps_url"
+          value="{{ old('maps_url') }}"
+          placeholder="Cole aqui o link do Google Maps"
+          class="ui-form-control"
+        >
+        <p class="mt-1 text-xs text-[var(--ui-text-soft)]">Ex.: https://maps.app.goo.gl/... ou https://www.google.com/maps/...</p>
       </div>
-    </div>
 
-    <div>
-      <label class="block text-sm mb-1">Local</label>
-      <input name="local" value="{{ old('local') }}" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
-    </div>
+      <div class="mt-4">
+        <label class="ui-form-label">Resumo</label>
+        <textarea name="resumo" rows="4" class="ui-form-control">{{ old('resumo') }}</textarea>
+      </div>
 
-    <div>
-    <label class="block text-sm mb-1">Link do Google Maps</label>
-    <input name="maps_url" value="{{ old('maps_url') }}"
-            placeholder="Cole aqui o link do Google Maps (compartilhar)"
-            class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
-    <p class="mt-1 text-xs text-neutral-400">
-        Ex.: https://maps.app.goo.gl/... ou https://www.google.com/maps/... @lat,lng
-    </p>
-    </div>
+      <div class="mt-4 min-w-[220px] max-w-[260px]">
+        <label class="ui-form-label">Status</label>
+        <select name="status" class="ui-form-select">
+          @foreach(['publicado','rascunho','arquivado'] as $st)
+            <option value="{{ $st }}" @selected(old('status') === $st)>{{ ucfirst($st) }}</option>
+          @endforeach
+        </select>
+      </div>
+    </x-dashboard.section-card>
 
-
-    <div>
-      <label class="block text-sm mb-1">Resumo</label>
-      <textarea name="resumo" rows="4" class="w-full rounded bg-neutral-900 border border-neutral-700 px-3 py-2">{{ old('resumo') }}</textarea>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <select name="status" class="rounded bg-neutral-900 border border-neutral-700 px-3 py-2">
-        @foreach(['publicado','rascunho','arquivado'] as $st)
-          <option value="{{ $st }}" @selected(old('status')===$st)>{{ ucfirst($st) }}</option>
-        @endforeach
-      </select>
-      <button class="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-white">Salvar</button>
-      <a href="{{ route('coordenador.eventos.edicoes.index',$evento) }}" class="px-4 py-2 rounded border border-neutral-700">Cancelar</a>
+    <div class="flex flex-wrap items-center gap-3 border-t border-[var(--ui-border)] pt-5">
+      <button class="ui-btn-primary">Salvar</button>
+      <a href="{{ route('coordenador.eventos.edicoes.index', $evento) }}" class="ui-btn-secondary">Cancelar</a>
     </div>
   </form>
 </div>

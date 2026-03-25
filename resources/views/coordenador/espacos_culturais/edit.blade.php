@@ -1,93 +1,48 @@
 @extends('console.layout')
 
-@section('title', 'Editar espaço cultural')
-@section('page.title', 'Editar espaço cultural')
+@section('title', 'Editar Espaco Cultural')
+@section('page.title', 'Editar Espaco Cultural')
+@section('topbar.description', 'Atualize um espaco cultural mantendo compatibilidade total com o shell, o modo global e a futura base de temas.')
+
+@section('topbar.nav')
+  <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-console-topbar-tab">Espacos culturais</a>
+  <span class="ui-console-topbar-tab is-active">Editar espaco</span>
+@endsection
 
 @section('content')
-    @if(session('ok'))
-        <div class="mb-4 rounded-lg bg-emerald-600/15 border border-emerald-500/30 px-3 py-2 text-emerald-200">
-            {{ session('ok') }}
-        </div>
-    @endif
+<div class="ui-console-page">
+  @if (session('ok'))
+    <div class="ui-alert ui-alert-success mb-4">{{ session('ok') }}</div>
+  @endif
 
-    @if ($errors->any())
-        <div class="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-rose-200">
-            <strong>Corrija os campos abaixo:</strong>
-            <ul class="list-disc list-inside mt-2">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+  @if (session('erro'))
+    <div class="ui-alert ui-alert-danger mb-4">{{ session('erro') }}</div>
+  @endif
 
-    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 text-xs rounded-full bg-sky-900/40 text-sky-200 border border-sky-700/40">
-                {{ $espaco->tipo_label }}
-            </span>
-
-            @if($espaco->status === 'publicado')
-                <span class="px-2 py-0.5 text-xs rounded-full bg-emerald-900/50 text-emerald-300 border border-emerald-700/40">
-                    Publicado
-                </span>
-            @elseif($espaco->status === 'arquivado')
-                <span class="px-2 py-0.5 text-xs rounded-full bg-amber-900/30 text-amber-200 border border-amber-700/40">
-                    Arquivado
-                </span>
-            @else
-                <span class="px-2 py-0.5 text-xs rounded-full bg-slate-700 text-slate-300 border border-slate-600">
-                    Rascunho
-                </span>
-            @endif
-        </div>
-
-        <a href="{{ route('coordenador.espacos-culturais.index') }}"
-           class="px-3 py-2 rounded-lg bg-white/5 text-slate-200 hover:bg-white/10">
-            Voltar
-        </a>
+  <x-dashboard.page-header
+    title="{{ $espaco->nome ?: 'Editar espaco cultural' }}"
+    subtitle="{{ $espaco->tipo_label }} • status atual: {{ ucfirst($espaco->status ?? 'rascunho') }}"
+  >
+    <div class="flex flex-wrap gap-2">
+      @if ($espaco->slug)
+        <a href="{{ route('site.museus.show', $espaco->slug) }}" target="_blank" class="ui-btn-secondary">Ver no site</a>
+      @endif
+      <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-btn-secondary">Voltar</a>
     </div>
+  </x-dashboard.page-header>
 
-    <form method="POST" action="{{ route('coordenador.espacos-culturais.update', $espaco) }}" class="space-y-6">
-        @csrf
-        @method('PUT')
+  <form action="{{ route('coordenador.espacos-culturais.update', $espaco) }}" method="POST" enctype="multipart/form-data" class="mt-5">
+    @csrf
+    @method('PUT')
+    @include('coordenador.espacos_culturais._form')
+  </form>
 
-        @include('coordenador.espacos_culturais._form', [
-            'espaco' => $espaco,
-            'diasSemana' => $diasSemana,
-        ])
-
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex flex-wrap gap-2">
-                <button class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white">
-                    Salvar alterações
-                </button>
-
-                <a href="{{ route('coordenador.espacos-culturais.index') }}"
-                   class="px-4 py-2 rounded-lg bg-white/5 text-slate-200 hover:bg-white/10">
-                    Cancelar
-                </a>
-            </div>
-
-            <div class="flex flex-wrap gap-2">
-                <form method="POST" action="{{ route('coordenador.espacos-culturais.rascunho', $espaco) }}">
-                    @csrf
-                    @method('PATCH')
-                    <button class="px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-sm">Rascunho</button>
-                </form>
-
-                <form method="POST" action="{{ route('coordenador.espacos-culturais.publicar', $espaco) }}">
-                    @csrf
-                    @method('PATCH')
-                    <button class="px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-sm">Publicar</button>
-                </form>
-
-                <form method="POST" action="{{ route('coordenador.espacos-culturais.arquivar', $espaco) }}">
-                    @csrf
-                    @method('PATCH')
-                    <button class="px-3 py-2 rounded bg-white/10 hover:bg-white/20 text-sm">Arquivar</button>
-                </form>
-            </div>
-        </div>
+  <x-dashboard.section-card title="Zona de cuidado" subtitle="A exclusao e bloqueada quando existirem agendamentos futuros ativos." class="ui-coord-dashboard-panel mt-8 ui-espaco-danger-zone">
+    <form action="{{ route('coordenador.espacos-culturais.destroy', $espaco) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja arquivar este espaco cultural?');">
+      @csrf
+      @method('DELETE')
+      <button type="submit" class="ui-btn-danger">Arquivar espaco cultural</button>
     </form>
+  </x-dashboard.section-card>
+</div>
 @endsection

@@ -134,5 +134,4 @@
 
 {{-- Espaço p/ não cobrir conteúdo (mobile) + bottom nav --}}
 <div class="h-[80px] pb-[env(safe-area-inset-bottom)] md:hidden"></div>
-@includeIf('site.partials._bottom_nav')
 @endsection

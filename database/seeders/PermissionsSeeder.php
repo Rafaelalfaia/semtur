@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
@@ -45,6 +46,8 @@ class PermissionsSeeder extends Seeder
             // Extras
             'relatorios'        => ['view'],
             'console.cache'     => ['clear'],
+            // Modulo de temas: governanca administrativa do tema institucional
+            'themes'            => ['view','create','edit','preview','activate','archive','execute.console','execute.site'],
 
             // Administração
             'usuarios'          => ['manage'],
@@ -54,6 +57,23 @@ class PermissionsSeeder extends Seeder
 
             //ESPAÇO CULTURAL
             'espacos_culturais' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+
+            'roteiros' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+
+            'onde_comer' => ['view', 'update', 'publicar', 'arquivar', 'rascunho'],
+            'onde_ficar' => ['view', 'update', 'publicar', 'arquivar', 'rascunho'],
+            'guias' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'videos' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'jogos_indigenas' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'jogos_indigenas.edicoes' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'jogos_indigenas.edicoes.fotos' => ['view','create','update','delete'],
+            'jogos_indigenas.edicoes.videos' => ['view','create','update','delete'],
+            'jogos_indigenas.edicoes.patrocinadores' => ['view','create','update','delete'],
+            'rota_do_cacau' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'rota_do_cacau.edicoes' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'rota_do_cacau.edicoes.fotos' => ['view','create','update','delete'],
+            'rota_do_cacau.edicoes.videos' => ['view','create','update','delete'],
+            'rota_do_cacau.edicoes.patrocinadores' => ['view','create','update','delete'],
         ];
 
         // Flatten: gera lista "grupo.acao" (ou "grupo.sub.acao")
@@ -108,40 +128,60 @@ class PermissionsSeeder extends Seeder
         // Admin: tudo
         $roleAdmin->syncPermissions($allPerms);
 
-        // Coordenador: todo conteúdo editorial + relatorios + técnicos
-        // (opcional) conceder secretaria.* via .env => SEED_COORD_SECRETARIA=true
-        $coordPrefixes = [
-            'categorias.',
-            'empresas.',
-            'pontos.',
-            'banners.',
-            'banners_destaque.',
-            'avisos.',
-            'eventos.',          // cobre também sub-recursos (edicoes/atrativos/midias)
-            'relatorios.',
-            'tecnicos.',
-        ];
-        if (filter_var(env('SEED_COORD_SECRETARIA', false), FILTER_VALIDATE_BOOLEAN)) {
-            $coordPrefixes[] = 'secretaria.';
-        }
-        // (por padrão, NÃO inclui 'usuarios.' nem 'console.cache.' para coordenador)
-        $roleCoordenador->syncPermissions($byPrefixes($coordPrefixes));
+        // Coordenador: sem baseline por role.
+        // O acesso real será cedido pelo Admin via permissões diretas.
+        $modulosInstitucionaisPerms = $byPrefixes([
+            'banners',
+            'banners_destaque',
+            'avisos',
+            'categorias',
+            'empresas',
+            'pontos',
+            'eventos',
+            'espacos_culturais',
+            'roteiros',
+            'onde_comer',
+            'onde_ficar',
+            'guias',
+            'videos',
+            'jogos_indigenas',
+            'rota_do_cacau',
+            'relatorios',
+            'secretaria',
+            'equipe',
+            'tecnicos',
+        ]);
+        $modulosInstitucionaisPerms = array_values(array_unique(array_merge(
+            $modulosInstitucionaisPerms,
+            [
+                'themes.view',
+                'themes.preview',
+                'themes.execute.console',
+                'themes.execute.site',
+            ]
+        )));
+        $roleCoordenador->syncPermissions($modulosInstitucionaisPerms);
 
-        // Técnico: conjunto enxuto para produção de conteúdo
-        // (sem publicar/arquivar/excluir por padrão)
-        $tecnicoAllow = [
-            'empresas.view','empresas.create','empresas.update',
-            'pontos.view','pontos.create','pontos.update',
-            'banners.view',
-            'banners_destaque.view',
-            'eventos.view',
-            'eventos.edicoes.manage',
-            'eventos.midias.manage',
-            'espacos_culturais.view',
-            'espacos_culturais.create',
-            'espacos_culturais.update',
-        ];
-        $roleTecnico->syncPermissions($tecnicoAllow);
+        // O seeder nao injeta baseline como permissao direta no usuario.
+        // Assim, o role continua sendo a fonte do baseline e as permissoes
+        // diretas permanecem reservadas para extras/customizacoes.
+        User::role('Coordenador')->get()->each(function (User $user) use ($modulosInstitucionaisPerms) {
+            $customDirect = $user->getDirectPermissions()
+                ->pluck('name')
+                ->reject(fn (string $permission) => in_array($permission, $modulosInstitucionaisPerms, true))
+                ->values()
+                ->all();
+
+            $user->syncPermissions($customDirect);
+            $user->syncTecnicosDelegatedPermissions();
+        });
+
+
+        // Técnico: sem baseline por role.
+        // O acesso real será cedido pelo Coordenador via permissões diretas.
+        $roleTecnico->syncPermissions([]);
+
+
         // ------------------------------------------------------------
         // 5) Finalização
         // ------------------------------------------------------------

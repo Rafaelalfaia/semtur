@@ -1,6 +1,16 @@
 @extends('console.layout')
 @section('title','Avisos')
 @section('page.title','Avisos')
+@section('topbar.description', 'Gerencie os avisos do console com filtros, status e a mesma base visual usada nos demais modulos.')
+
+@section('topbar.nav')
+  <span class="ui-console-topbar-tab is-active">Avisos</span>
+  @can('avisos.manage')
+    @if (Route::has('coordenador.avisos.create'))
+      <a href="{{ route('coordenador.avisos.create') }}" class="ui-console-topbar-tab">Novo aviso</a>
+    @endif
+  @endcan
+@endsection
 
 @section('content')
 @php
@@ -11,125 +21,123 @@
   $showActions = $canManage || $canPublicar || $canArquivar;
 @endphp
 
-<div class="max-w-6xl mx-auto">
+<div class="ui-console-page">
   @include('coordenador.partials.flash')
 
-  {{-- Cabeçalho --}}
-  <div class="mb-5 flex items-center justify-between gap-3">
-    <h1 class="text-xl sm:text-2xl font-semibold">Avisos</h1>
+  <x-dashboard.page-header
+    title="Avisos"
+    subtitle="Acompanhe publicacao, janelas de exibicao e acoes editoriais em uma visao mais limpa e consistente com o novo console."
+  >
     @can('avisos.manage')
       @if (Route::has('coordenador.avisos.create'))
-        <a href="{{ route('coordenador.avisos.create') }}"
-           class="inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
-          + Novo Aviso
-        </a>
+        <a href="{{ route('coordenador.avisos.create') }}" class="ui-btn-primary">Novo aviso</a>
       @endif
     @endcan
-  </div>
+  </x-dashboard.page-header>
 
-  {{-- Filtros --}}
-  <form method="get" class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-    <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Buscar por título, descrição ou WhatsApp…"
-           class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600">
-    <select name="status"
-            class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600">
-      <option value="" class="bg-[#0B0F0D]">— Todos os status —</option>
-      @foreach(['publicado'=>'Publicado','rascunho'=>'Rascunho','arquivado'=>'Arquivado'] as $k=>$v)
-        <option value="{{ $k }}" @selected(($sts ?? '')===$k) class="bg-[#0B0F0D]">{{ $v }}</option>
-      @endforeach
-    </select>
-    <button class="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-slate-100 hover:bg-white/10">
-      Filtrar
-    </button>
-  </form>
+  <x-dashboard.section-card title="Filtros" subtitle="Busque por titulo, descricao, WhatsApp e status" class="ui-coord-dashboard-panel mt-5">
+    <form method="get" class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_240px_auto]">
+      <input
+        type="text"
+        name="q"
+        value="{{ $q ?? '' }}"
+        placeholder="Buscar por titulo, descricao ou WhatsApp..."
+        class="ui-form-control"
+      >
+      <select name="status" class="ui-form-select">
+        <option value="">Todos os status</option>
+        @foreach(['publicado'=>'Publicado','rascunho'=>'Rascunho','arquivado'=>'Arquivado'] as $k=>$v)
+          <option value="{{ $k }}" @selected(($sts ?? '')===$k)>{{ $v }}</option>
+        @endforeach
+      </select>
+      <button class="ui-btn-secondary">Filtrar</button>
+    </form>
+  </x-dashboard.section-card>
 
-  {{-- Tabela --}}
-  <div class="overflow-hidden rounded-xl border border-white/10 bg-[#0F1412]">
-    <table class="min-w-full">
-      <thead class="bg-white/5">
-        <tr class="text-left text-slate-300 text-sm">
-          <th class="px-4 py-3 font-medium">Título</th>
-          <th class="px-4 py-3 font-medium">Status</th>
-          <th class="px-4 py-3 font-medium">Janela</th>
-          @if($showActions)
-            <th class="px-4 py-3 font-medium text-right">Ações</th>
-          @endif
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-white/10">
-        @forelse($avisos as $aviso)
-          <tr class="text-slate-200">
-            <td class="px-4 py-3 align-top">
-              <div class="font-medium">{{ $aviso->titulo }}</div>
-              <div class="text-xs text-slate-400">Atualizado: {{ $aviso->updated_at?->format('d/m/Y H:i') }}</div>
-            </td>
-
-            <td class="px-4 py-3 align-top">
-              <span class="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-xs">
-                {{ ucfirst($aviso->status) }}
-              </span>
-            </td>
-
-            <td class="px-4 py-3 align-top text-sm text-slate-300">
-              @if($aviso->inicio_em || $aviso->fim_em)
-                {{ $aviso->inicio_em?->format('d/m/Y H:i') ?? '—' }} — {{ $aviso->fim_em?->format('d/m/Y H:i') ?? '—' }}
-              @else
-                Sempre
-              @endif
-            </td>
-
+  <x-dashboard.section-card title="Lista de avisos" subtitle="Controle status, janela de exibicao e acoes do modulo" class="ui-coord-dashboard-panel mt-5">
+    <div class="ui-table-shell">
+      <table class="min-w-full">
+        <thead class="ui-table-head">
+          <tr class="text-left text-sm">
+            <th class="px-4 py-3 font-medium">Titulo</th>
+            <th class="px-4 py-3 font-medium">Status</th>
+            <th class="px-4 py-3 font-medium">Janela</th>
             @if($showActions)
-              <td class="px-4 py-3 align-top">
-                <div class="flex items-center justify-end gap-2">
-                  @if($canPublicar && $aviso->status!=='publicado')
-                    <form action="{{ route('coordenador.avisos.publicar',$aviso) }}" method="post">
-                      @csrf @method('PATCH')
-                      <button class="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs hover:bg-white/10">
-                        Publicar
-                      </button>
-                    </form>
-                  @endif
-
-                  @if($canArquivar && $aviso->status!=='arquivado')
-                    <form action="{{ route('coordenador.avisos.arquivar',$aviso) }}" method="post">
-                      @csrf @method('PATCH')
-                      <button class="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs hover:bg-white/10">
-                        Arquivar
-                      </button>
-                    </form>
-                  @endif
-
-                  @can('avisos.manage')
-                    <a href="{{ route('coordenador.avisos.edit',$aviso) }}"
-                       class="rounded border border-white/10 bg-white/5 px-2 py-1 text-xs hover:bg-white/10">
-                      Editar
-                    </a>
-                    <form action="{{ route('coordenador.avisos.destroy',$aviso) }}" method="post"
-                          onsubmit="return confirm('Remover este aviso?');">
-                      @csrf @method('DELETE')
-                      <button class="rounded border border-red-500/30 bg-red-900/20 px-2 py-1 text-xs text-red-200 hover:bg-red-900/30">
-                        Excluir
-                      </button>
-                    </form>
-                  @endcan
-                </div>
-              </td>
+              <th class="px-4 py-3 font-medium text-right">Acoes</th>
             @endif
           </tr>
-        @empty
-          <tr>
-            <td colspan="{{ 3 + (int)$showActions }}" class="px-4 py-10 text-center text-slate-400">
-              Nenhum aviso encontrado.
-            </td>
-          </tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
+        </thead>
+        <tbody>
+          @forelse($avisos as $aviso)
+            <tr class="ui-table-row">
+              <td class="px-4 py-3 align-top">
+                <div class="font-semibold text-[var(--ui-text-title)]">{{ $aviso->titulo }}</div>
+                <div class="mt-1 text-xs text-[var(--ui-text-soft)]">Atualizado: {{ $aviso->updated_at?->format('d/m/Y H:i') }}</div>
+              </td>
 
-  {{-- Paginação --}}
-  <div class="mt-4">
-    {{ $avisos->onEachSide(1)->links() }}
-  </div>
+              <td class="px-4 py-3 align-top">
+                @if($aviso->status === 'publicado')
+                  <span class="ui-badge ui-badge-success">Publicado</span>
+                @elseif($aviso->status === 'arquivado')
+                  <span class="ui-badge ui-badge-warning">Arquivado</span>
+                @else
+                  <span class="ui-badge ui-badge-neutral">Rascunho</span>
+                @endif
+              </td>
+
+              <td class="px-4 py-3 align-top text-sm text-[var(--ui-text-soft)]">
+                @if($aviso->inicio_em || $aviso->fim_em)
+                  {{ $aviso->inicio_em?->format('d/m/Y H:i') ?? '—' }} — {{ $aviso->fim_em?->format('d/m/Y H:i') ?? '—' }}
+                @else
+                  Sempre
+                @endif
+              </td>
+
+              @if($showActions)
+                <td class="px-4 py-3 align-top">
+                  <div class="ui-aviso-actions justify-end">
+                    @if($canPublicar && $aviso->status !== 'publicado')
+                      <form action="{{ route('coordenador.avisos.publicar',$aviso) }}" method="post">
+                        @csrf
+                        @method('PATCH')
+                        <button class="ui-btn-secondary">Publicar</button>
+                      </form>
+                    @endif
+
+                    @if($canArquivar && $aviso->status !== 'arquivado')
+                      <form action="{{ route('coordenador.avisos.arquivar',$aviso) }}" method="post">
+                        @csrf
+                        @method('PATCH')
+                        <button class="ui-btn-secondary">Arquivar</button>
+                      </form>
+                    @endif
+
+                    @can('avisos.manage')
+                      <a href="{{ route('coordenador.avisos.edit',$aviso) }}" class="ui-btn-secondary">Editar</a>
+                      <form action="{{ route('coordenador.avisos.destroy',$aviso) }}" method="post" onsubmit="return confirm('Remover este aviso?');">
+                        @csrf
+                        @method('DELETE')
+                        <button class="ui-btn-danger">Excluir</button>
+                      </form>
+                    @endcan
+                  </div>
+                </td>
+              @endif
+            </tr>
+          @empty
+            <tr class="ui-table-row">
+              <td colspan="{{ 3 + (int)$showActions }}" class="px-4 py-10 text-center text-[var(--ui-text-soft)]">
+                Nenhum aviso encontrado.
+              </td>
+            </tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4">
+      {{ $avisos->onEachSide(1)->links() }}
+    </div>
+  </x-dashboard.section-card>
 </div>
 @endsection

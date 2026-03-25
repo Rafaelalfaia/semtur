@@ -3,7 +3,6 @@
 
 @section('site.content')
 <div class="min-h-dvh bg-white text-slate-900">
-  {{-- Top bar --}}
   <header class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-100">
     <div class="mx-auto max-w-lg px-4 py-3 flex items-center gap-3">
       <a href="{{ url()->previous() ?: route('site.perfil.index') }}"
@@ -41,11 +40,7 @@
 
     <p class="text-xs text-slate-500 mt-6">Última atualização: {{ now()->format('d/m/Y') }}</p>
   </main>
-  </div>
 </div>
 
-
-  {{-- Espaço p/ não cobrir conteúdo (mobile) + bottom nav --}}
 <div class="h-[80px] pb-[env(safe-area-inset-bottom)] md:hidden"></div>
-@includeIf('site.partials._bottom_nav')
 @endsection

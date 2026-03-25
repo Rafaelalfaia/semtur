@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
     {
         // 1) Sempre rode as permissões/papéis
         $this->call(PermissionsSeeder::class);
+        $this->call(ThemeSeeder::class);
 
         // 2) (Opcional) Crie/garanta um admin padrão de forma idempotente
         // Troque o e-mail/senha via .env se quiser:

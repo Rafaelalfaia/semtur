@@ -1,10 +1,37 @@
-@props(['title','subtitle'=>null,'image'=>null,'href'=>'#'])
-<a href="{{ $href }}" class="block rounded-2xl overflow-hidden bg-white shadow-[0_3px_12px_rgba(0,0,0,0.06)]">
-  <div class="aspect-[4/3] bg-slate-100">
-    @if($image)<img src="{{ $image }}" class="w-full h-full object-cover" loading="lazy">@endif
-  </div>
-  <div class="p-3">
-    <div class="text-[15px] font-semibold text-slate-900 line-clamp-1">{{ $title }}</div>
-    @if($subtitle)<div class="text-[12px] text-slate-500 line-clamp-1 mt-0.5">{{ $subtitle }}</div>@endif
-  </div>
+@props([
+    'title',
+    'subtitle' => null,
+    'image' => null,
+    'href' => '#',
+    'badge' => null,
+    'meta' => null,
+    'variant' => null,
+])
+
+<a href="{{ $href }}" {{ $attributes->class(['site-card-mini', "site-card-mini--{$variant}" => filled($variant)]) }}>
+    <div class="site-card-mini-media">
+        @if($image)
+            <img src="{{ $image }}" alt="{{ $title }}" loading="lazy" decoding="async" class="site-card-mini-image">
+        @else
+            <div class="site-card-mini-placeholder">Sem imagem</div>
+        @endif
+    </div>
+
+    <div class="site-card-mini-body">
+        <div class="site-card-mini-top">
+            @if($badge)
+                <span class="site-badge">{{ $badge }}</span>
+            @endif
+
+            @if($meta)
+                <div class="site-card-mini-meta">{{ $meta }}</div>
+            @endif
+        </div>
+
+        <div class="site-card-mini-title">{{ $title }}</div>
+
+        @if($subtitle)
+            <div class="site-card-mini-subtitle">{{ $subtitle }}</div>
+        @endif
+    </div>
 </a>

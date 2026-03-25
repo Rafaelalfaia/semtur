@@ -11,6 +11,10 @@ class Secretaria extends Model
 {
     use SoftDeletes;
 
+    public const STATUS_RASCUNHO = 'rascunho';
+    public const STATUS_PUBLICADO = 'publicado';
+    public const STATUS_ARQUIVADO = 'arquivado';
+
     protected $table = 'secretaria';
 
     protected $fillable = [
@@ -33,13 +37,29 @@ class Secretaria extends Model
         return $this->foto_capa_path ? Storage::url($this->foto_capa_path) : null;
     }
 
+    public function scopePublicados($query)
+    {
+        return $query->where('status', self::STATUS_PUBLICADO);
+    }
+
+    public static function makePublicFallback(): self
+    {
+        return new static([
+            'nome' => 'SEMTUR',
+            'slug' => 'semtur',
+            'descricao' => 'Informações institucionais da Secretaria Municipal de Turismo de Altamira.',
+            'status' => self::STATUS_RASCUNHO,
+            'redes' => [],
+        ]);
+    }
+
     /* Singleton helper */
     public static function instance(): self
     {
         return static::query()->first() ?? static::create([
             'nome' => 'SEMTUR',
             'slug' => 'semtur',
-            'status' => 'publicado',
+            'status' => self::STATUS_PUBLICADO,
         ]);
     }
 

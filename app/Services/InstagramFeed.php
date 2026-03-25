@@ -46,11 +46,22 @@ class InstagramFeed
 
                 // Garante chaves esperadas na view
                 return array_values(array_map(function ($item) {
+                    $image = $item['image']
+                        ?? $item['display_url']
+                        ?? $item['media_url']
+                        ?? $item['thumbnail_url']
+                        ?? $item['thumbnail_src']
+                        ?? data_get($item, 'image_versions2.candidates.0.url')
+                        ?? data_get($item, 'images.standard_resolution.url')
+                        ?? null;
+
                     return [
                         'id'      => $item['id']      ?? Str::uuid()->toString(),
-                        'image'   => $item['image']   ?? null,
+                        'image'   => $image,
                         'caption' => $item['caption'] ?? null,
-                        'url'     => $item['url']     ?? null,
+                        'url'     => $item['url']
+                            ?? $item['permalink']
+                            ?? (isset($item['shortcode']) ? "https://www.instagram.com/p/{$item['shortcode']}/" : null),
                     ];
                 }, $items));
             } catch (\Throwable $e) {

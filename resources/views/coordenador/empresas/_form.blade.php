@@ -1,49 +1,46 @@
-{{-- resources/views/coordenador/empresas/_form.blade.php --}}
 @csrf
 
 <div class="grid gap-4 md:grid-cols-2">
-  {{-- Nome --}}
   <div>
-    <label class="block text-sm text-slate-300 mb-1">Nome *</label>
-    <input type="text" name="nome" value="{{ old('nome', $empresa->nome ?? '') }}"
-           class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100" required>
-    @error('nome')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label class="ui-form-label">Nome *</label>
+    <input type="text" name="nome" value="{{ old('nome', $empresa->nome ?? '') }}" class="ui-form-control" required>
+    @error('nome')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
-  {{-- Status --}}
   <div>
-    <label class="block text-sm text-slate-300 mb-1">Status *</label>
+    <label class="ui-form-label">Status *</label>
     @php
       $statusAtual = old('status', $empresa->status ?? 'rascunho');
     @endphp
-    <select name="status" class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100" required>
-      <option value="rascunho"  @selected($statusAtual==='rascunho')>Rascunho</option>
+    <select name="status" class="ui-form-select" required>
+      <option value="rascunho" @selected($statusAtual==='rascunho')>Rascunho</option>
       <option value="publicado" @selected($statusAtual==='publicado')>Publicado</option>
       <option value="arquivado" @selected($statusAtual==='arquivado')>Arquivado</option>
     </select>
-    @error('status')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    @error('status')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
-  {{-- Localização via URL do Google Maps --}}
   <div class="md:col-span-2">
-    <label for="maps_url" class="block text-sm text-slate-300 mb-1">
-      Localização (URL do Google Maps)
-    </label>
-    <input type="url" name="maps_url" id="maps_url"
-           value="{{ old('maps_url', $empresa->maps_url ?? '') }}"
-           placeholder="Cole aqui o link do Google Maps (ex.: https://maps.google.com/...@-3.1,-60.0,17z)"
-           class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-    @error('maps_url')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label for="maps_url" class="ui-form-label">Localizacao (URL do Google Maps)</label>
+    <input
+      type="url"
+      name="maps_url"
+      id="maps_url"
+      value="{{ old('maps_url', $empresa->maps_url ?? '') }}"
+      placeholder="Cole aqui o link do Google Maps"
+      class="ui-form-control"
+    >
+    @error('maps_url')<p class="ui-form-error">{{ $message }}</p>@enderror
 
-    <div class="flex items-center gap-3 text-xs text-slate-400 mt-2">
+    <div class="flex items-center gap-3 text-xs text-[var(--ui-text-soft)] mt-2">
       @php
         $latSaved = $empresa->lat ?? null;
         $lngSaved = $empresa->lng ?? null;
-        $mapsUrl  = old('maps_url', $empresa->maps_url ?? '');
+        $mapsUrl = old('maps_url', $empresa->maps_url ?? '');
       @endphp
 
       @if($mapsUrl)
-        <a href="{{ $mapsUrl }}" target="_blank" class="underline hover:no-underline">Abrir no Maps ↗</a>
+        <a href="{{ $mapsUrl }}" target="_blank" class="underline hover:no-underline">Abrir no Maps</a>
       @endif
 
       @if(!is_null($latSaved) && !is_null($lngSaved))
@@ -51,135 +48,185 @@
       @endif
     </div>
 
-    <p class="text-xs text-slate-400 mt-2">
-      Basta colar a URL do Google Maps — as coordenadas serão extraídas automaticamente.
-      <strong>Ao publicar</strong>, é obrigatório que a URL contenha coordenadas válidas.
+    <p class="ui-profile-help">
+      Basta colar a URL do Google Maps. Ao publicar, a URL precisa conter coordenadas validas.
     </p>
   </div>
 
-  {{-- Descrição --}}
   <div class="md:col-span-2">
-    <label class="block text-sm text-slate-300 mb-1">Descrição</label>
-    <textarea name="descricao" rows="4"
-              class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">{{ old('descricao', $empresa->descricao ?? '') }}</textarea>
-    @error('descricao')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label class="ui-form-label">Descricao</label>
+    <textarea name="descricao" rows="4" class="ui-form-control">{{ old('descricao', $empresa->descricao ?? '') }}</textarea>
+    @error('descricao')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
-  {{-- ====== REDES SOCIAIS & CONTATOS ====== --}}
   @php $c = old('contatos', $empresa->contatos ?? []); @endphp
   <div class="md:col-span-2">
-    <div class="rounded-xl border border-white/10 p-5 bg-[#0F1412]">
-      <h3 class="text-sm font-semibold text-slate-200 uppercase tracking-wide mb-4">
-        Redes sociais & Contatos
+    <div class="ui-coord-contact-card">
+      <h3 class="text-sm font-semibold text-[var(--ui-text-title)] uppercase tracking-wide mb-4">
+        Redes sociais e contatos
       </h3>
 
       <div class="grid gap-4 md:grid-cols-2">
-        {{-- WhatsApp --}}
         <div>
-          <label for="contatos_whatsapp" class="block text-sm text-slate-300 mb-1">WhatsApp (DDI+DDD+Número)</label>
-          <input type="text" id="contatos_whatsapp" name="contatos[whatsapp]"
-                 value="{{ $c['whatsapp'] ?? '' }}" placeholder="5593999999999"
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.whatsapp')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_whatsapp" class="ui-form-label">WhatsApp</label>
+          <input type="text" id="contatos_whatsapp" name="contatos[whatsapp]" value="{{ $c['whatsapp'] ?? '' }}" placeholder="5593999999999" class="ui-form-control">
+          @error('contatos.whatsapp')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
-        {{-- Site --}}
         <div>
-          <label for="contatos_site" class="block text-sm text-slate-300 mb-1">Site</label>
-          <input type="text" id="contatos_site" name="contatos[site]"
-                 value="{{ $c['site'] ?? '' }}" placeholder="https://www.seusite.com.br"
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.site')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_site" class="ui-form-label">Site</label>
+          <input type="text" id="contatos_site" name="contatos[site]" value="{{ $c['site'] ?? '' }}" placeholder="https://www.seusite.com.br" class="ui-form-control">
+          @error('contatos.site')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
-        {{-- Instagram --}}
         <div>
-          <label for="contatos_instagram" class="block text-sm text-slate-300 mb-1">Instagram</label>
-          <input type="text" id="contatos_instagram" name="contatos[instagram]"
-                 value="{{ $c['instagram'] ?? '' }}" placeholder="@usuario ou url"
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.instagram')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_instagram" class="ui-form-label">Instagram</label>
+          <input type="text" id="contatos_instagram" name="contatos[instagram]" value="{{ $c['instagram'] ?? '' }}" placeholder="@usuario ou url" class="ui-form-control">
+          @error('contatos.instagram')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
-        {{-- Facebook --}}
         <div>
-          <label for="contatos_facebook" class="block text-sm text-slate-300 mb-1">Facebook</label>
-          <input type="text" id="contatos_facebook" name="contatos[facebook]"
-                 value="{{ $c['facebook'] ?? '' }}" placeholder="página ou url"
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.facebook')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_facebook" class="ui-form-label">Facebook</label>
+          <input type="text" id="contatos_facebook" name="contatos[facebook]" value="{{ $c['facebook'] ?? '' }}" placeholder="pagina ou url" class="ui-form-control">
+          @error('contatos.facebook')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
-        {{-- TikTok --}}
         <div>
-          <label for="contatos_tiktok" class="block text-sm text-slate-300 mb-1">TikTok</label>
-          <input type="text" id="contatos_tiktok" name="contatos[tiktok]"
-                 value="{{ $c['tiktok'] ?? '' }}" placeholder="@usuario ou url"
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.tiktok')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_tiktok" class="ui-form-label">TikTok</label>
+          <input type="text" id="contatos_tiktok" name="contatos[tiktok]" value="{{ $c['tiktok'] ?? '' }}" placeholder="@usuario ou url" class="ui-form-control">
+          @error('contatos.tiktok')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
-        {{-- YouTube --}}
         <div>
-          <label for="contatos_youtube" class="block text-sm text-slate-300 mb-1">YouTube</label>
-          <input type="text" id="contatos_youtube" name="contatos[youtube]"
-                 value="{{ $c['youtube'] ?? '' }}" placeholder="url do canal ou @handle"
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.youtube')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_youtube" class="ui-form-label">YouTube</label>
+          <input type="text" id="contatos_youtube" name="contatos[youtube]" value="{{ $c['youtube'] ?? '' }}" placeholder="url do canal ou @handle" class="ui-form-control">
+          @error('contatos.youtube')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
-        {{-- Google Maps extra (link direto do lugar) --}}
         <div>
-          <label for="contatos_maps" class="block text-sm text-slate-300 mb-1">Google Maps (URL)</label>
-          <input type="url" id="contatos_maps" name="contatos[maps]"
-                 value="{{ $c['maps'] ?? '' }}" placeholder="https://maps.google.com/..."
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.maps')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_maps" class="ui-form-label">Google Maps (URL)</label>
+          <input type="url" id="contatos_maps" name="contatos[maps]" value="{{ $c['maps'] ?? '' }}" placeholder="https://maps.google.com/..." class="ui-form-control">
+          @error('contatos.maps')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
-        {{-- E-mail --}}
         <div>
-          <label for="contatos_email" class="block text-sm text-slate-300 mb-1">E-mail</label>
-          <input type="email" id="contatos_email" name="contatos[email]"
-                 value="{{ $c['email'] ?? '' }}" placeholder="contato@empresa.com"
-                 class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-          @error('contatos.email')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+          <label for="contatos_email" class="ui-form-label">E-mail</label>
+          <input type="email" id="contatos_email" name="contatos[email]" value="{{ $c['email'] ?? '' }}" placeholder="contato@empresa.com" class="ui-form-control">
+          @error('contatos.email')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
       </div>
     </div>
   </div>
 
-  {{-- CAPA --}}
-  <label class="block text-sm text-slate-300 mb-1">Foto de capa</label>
-  <input type="file" name="capa" id="capa"
-         @if(!$empresa->exists) required @endif
-         accept="image/*"
-         class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-  @error('capa')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+  <div>
+    <label class="ui-form-label">Foto de capa</label>
+    <input type="file" name="capa" id="capa" @if(!$empresa->exists) required @endif accept="image/*" class="ui-form-control">
+    @error('capa')<p class="ui-form-error">{{ $message }}</p>@enderror
+  </div>
 
-  {{-- PERFIL --}}
-  <label class="block text-sm text-slate-300 mb-1 mt-4">Foto de perfil</label>
-  <input type="file" name="perfil" id="perfil"
-         @if(!$empresa->exists) required @endif
-         accept="image/*"
-         class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-  @error('perfil')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+  <div>
+    <label class="ui-form-label">Foto de perfil</label>
+    <input type="file" name="perfil" id="perfil" @if(!$empresa->exists) required @endif accept="image/*" class="ui-form-control">
+    @error('perfil')<p class="ui-form-error">{{ $message }}</p>@enderror
+  </div>
 
-  {{-- Categorias --}}
   <div class="md:col-span-2">
-    <label class="block text-sm text-slate-300 mb-1">Categorias</label>
-    <select name="categorias[]" multiple
-            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-      @foreach(($categorias ?? []) as $cat)
-        <option value="{{ $cat->id }}"
-          @selected(collect(old('categorias', isset($empresa)? $empresa->categorias->pluck('id')->all() : []))->contains($cat->id))>
-          {{ $cat->nome }}
-        </option>
-      @endforeach
-    </select>
+    <label class="ui-form-label">Galeria de fotos</label>
+    <input
+      type="file"
+      name="galeria[]"
+      id="empresa-galeria"
+      accept="image/*"
+      multiple
+      class="ui-form-control"
+    >
+    @error('galeria')<p class="ui-form-error">{{ $message }}</p>@enderror
+    @error('galeria.*')<p class="ui-form-error">{{ $message }}</p>@enderror
+    <p class="ui-profile-help">Envie fotos complementares da empresa. A capa principal continua separada.</p>
+
+    <div id="empresa-galeria-preview" class="mt-3 hidden grid grid-cols-2 gap-3 md:grid-cols-4"></div>
+  </div>
+
+  @if(($empresa->exists ?? false) && $empresa->relationLoaded('galeriaFotos') && $empresa->galeriaFotos->count())
+    <div class="md:col-span-2">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="text-sm font-medium text-[var(--ui-text-title)]">Fotos cadastradas</h4>
+        <span class="text-xs text-[var(--ui-text-soft)]">Marque apenas as imagens que deseja remover.</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+        @foreach($empresa->galeriaFotos as $foto)
+          <label class="ui-coord-media-card block p-2 cursor-pointer">
+            <img src="{{ $foto->url }}" class="h-36 w-full rounded-xl object-cover" alt="{{ $foto->alt ?: 'Foto da galeria de '.$empresa->nome }}">
+            <div class="mt-2 flex items-center gap-2 text-xs text-[var(--ui-text-soft)]">
+              <input type="checkbox" name="remover_fotos[]" value="{{ $foto->id }}">
+              Remover foto
+            </div>
+          </label>
+        @endforeach
+      </div>
+    </div>
+  @endif
+
+  <div class="md:col-span-2">
+    @php
+      $categoriasSelecionadas = collect(old('categorias', $selecionadas ?? (isset($empresa) ? $empresa->categorias->pluck('id')->all() : [])))
+        ->map(fn($id) => (int) $id)
+        ->all();
+    @endphp
+
+    <label class="ui-form-label">Categorias</label>
+    <div class="ui-company-category-picker" role="group" aria-label="Categorias da empresa">
+      @forelse(($categorias ?? []) as $cat)
+        <label class="ui-company-category-option">
+          <input
+            type="checkbox"
+            name="categorias[]"
+            value="{{ $cat->id }}"
+            @checked(in_array((int) $cat->id, $categoriasSelecionadas, true))
+          >
+          <span>{{ $cat->nome }}</span>
+        </label>
+      @empty
+        <div class="ui-company-category-empty">Nenhuma categoria disponivel no momento.</div>
+      @endforelse
+    </div>
+    @error('categorias')<p class="ui-form-error">{{ $message }}</p>@enderror
+    @error('categorias.*')<p class="ui-form-error">{{ $message }}</p>@enderror
+    <p class="ui-profile-help">Selecione uma ou mais categorias que representam esta empresa.</p>
   </div>
 </div>
 
-<p class="text-xs text-slate-400 mt-3">
-  * <strong>Latitude</strong> e <strong>Longitude</strong> são obrigatórias quando o status for <strong>Publicado</strong> (para aparecer no mapa).
+<p class="ui-profile-help mt-3">
+  Latitude e longitude sao obrigatorias quando o status for <strong>Publicado</strong>.
 </p>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('empresa-galeria');
+    const preview = document.getElementById('empresa-galeria-preview');
+
+    if (!input || !preview) return;
+
+    input.addEventListener('change', function () {
+      preview.innerHTML = '';
+
+      const files = Array.from(input.files || []).filter(file => file.type.startsWith('image/'));
+      preview.classList.toggle('hidden', files.length === 0);
+
+      files.forEach(function (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const card = document.createElement('div');
+          card.className = 'ui-coord-media-card p-2';
+          card.innerHTML = `
+            <img src="${event.target.result}" alt="${file.name}" class="h-36 w-full rounded-xl object-cover">
+            <div class="mt-2 text-xs text-[var(--ui-text-soft)] truncate">${file.name}</div>
+          `;
+          preview.appendChild(card);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  });
+</script>

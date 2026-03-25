@@ -6,60 +6,80 @@
 
 <div class="grid gap-4 md:grid-cols-2">
   <div class="md:col-span-2">
-    <label class="block text-sm text-slate-300 mb-1">Nome *</label>
-    <input type="text" name="nome" value="{{ old('nome', $categoria->nome ?? '') }}"
-           class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100" required>
-    @error('nome')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label class="ui-form-label">Nome *</label>
+    <input type="text" name="nome" value="{{ old('nome', $categoria->nome ?? '') }}" class="ui-form-control" required>
+    @error('nome')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
   <div>
-    <label class="block text-sm text-slate-300 mb-1">Slug</label>
-    <input type="text" name="slug" value="{{ old('slug', $categoria->slug ?? '') }}"
-           class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-    @error('slug')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label class="ui-form-label">Slug</label>
+    <input type="text" name="slug" value="{{ old('slug', $categoria->slug ?? '') }}" class="ui-form-control">
+    @error('slug')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
   <div>
-    <label class="block text-sm text-slate-300 mb-1">Status *</label>
-    <select name="status" class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100" required>
+    <label class="ui-form-label">Status *</label>
+    <select name="status" class="ui-form-select" required>
       <option value="rascunho"  @selected($statusAtual==='rascunho')>Rascunho</option>
       <option value="publicado" @selected($statusAtual==='publicado')>Publicado</option>
       <option value="arquivado" @selected($statusAtual==='arquivado')>Arquivado</option>
     </select>
-    @error('status')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    @error('status')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
   <div class="md:col-span-2">
-    <label class="block text-sm text-slate-300 mb-1">Descrição</label>
-    <textarea name="descricao" rows="3"
-              class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">{{ old('descricao', $categoria->descricao ?? '') }}</textarea>
-    @error('descricao')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label class="ui-form-label">Descricao</label>
+    <textarea name="descricao" rows="3" class="ui-form-control ui-category-textarea">{{ old('descricao', $categoria->descricao ?? '') }}</textarea>
+    @error('descricao')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
   <div>
-  <label class="block text-sm text-slate-300 mb-1">Ícone (imagem)</label>
-  <input type="file" name="icone" accept="image/*"
-         class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-  @error('icone')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label class="ui-form-label">Icone (imagem)</label>
+    <input type="file" name="icone" accept="image/*" class="ui-banner-highlight-file">
+    @error('icone')<p class="ui-form-error">{{ $message }}</p>@enderror
 
-  @if($isEdit && ($categoria->icone_url ?? null))
-    <div class="mt-2 flex items-center gap-3">
-      <img src="{{ $categoria->icone_url }}" alt="Ícone atual"
-           class="h-10 w-10 rounded-md object-cover border border-white/10">
-      <label class="inline-flex items-center gap-2 text-sm text-rose-200">
-        <input type="checkbox" name="remover_icone" value="1"
-               class="rounded border-white/20 bg-white/5">
-        Remover ícone
-      </label>
-    </div>
-  @endif
-</div>
-
+    @if($isEdit && ($categoria->icone_url ?? null))
+      <div class="ui-category-icon-edit mt-3">
+        <img src="{{ $categoria->icone_url }}" alt="Icone atual" class="ui-category-icon-preview">
+        <label class="inline-flex items-center gap-2 text-sm text-[var(--ui-danger)]">
+          <input type="checkbox" name="remover_icone" value="1" class="ui-form-check rounded">
+          Remover icone
+        </label>
+      </div>
+    @endif
+  </div>
 
   <div>
-    <label class="block text-sm text-slate-300 mb-1">Ordem</label>
-    <input type="number" name="ordem" min="0" value="{{ old('ordem', $categoria->ordem ?? 0) }}"
-           class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-slate-100">
-    @error('ordem')<p class="text-xs text-rose-300 mt-1">{{ $message }}</p>@enderror
+    <label class="ui-form-label">Ordem</label>
+    <input type="number" name="ordem" min="0" value="{{ old('ordem', $categoria->ordem ?? 0) }}" class="ui-form-control">
+    @error('ordem')<p class="ui-form-error">{{ $message }}</p>@enderror
+  </div>
+
+  <div class="md:col-span-2">
+    @php
+      $empresasSelecionadas = collect(old('empresas', $categoria->relationLoaded('empresas') ? $categoria->empresas->pluck('id')->all() : []))
+        ->map(fn($id) => (int) $id)
+        ->all();
+    @endphp
+
+    <label class="ui-form-label">Empresas relacionadas</label>
+    <div class="ui-category-company-picker" role="group" aria-label="Empresas relacionadas">
+      @forelse(($empresas ?? []) as $empresa)
+        <label class="ui-category-company-option">
+          <input
+            type="checkbox"
+            name="empresas[]"
+            value="{{ $empresa->id }}"
+            @checked(in_array((int) $empresa->id, $empresasSelecionadas, true))
+          >
+          <span>{{ $empresa->nome }}</span>
+        </label>
+      @empty
+        <div class="ui-category-company-empty">Nenhuma empresa disponivel no momento.</div>
+      @endforelse
+    </div>
+    @error('empresas')<p class="ui-form-error">{{ $message }}</p>@enderror
+    @error('empresas.*')<p class="ui-form-error">{{ $message }}</p>@enderror
+    <p class="ui-profile-help">Selecione uma ou mais empresas relacionadas a esta categoria.</p>
   </div>
 </div>

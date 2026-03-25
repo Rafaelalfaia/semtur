@@ -217,6 +217,13 @@ class Empresa extends Model
         return $this->hasMany(EmpresaRecomendacao::class);
     }
 
+    public function galeriaFotos()
+    {
+        return $this->hasMany(EmpresaFoto::class)
+            ->orderBy('ordem')
+            ->orderBy('id');
+    }
+
     public function scopeComRecomendacaoGlobalAtiva($q)
     {
         return $q->whereHas('recomendacoes', function($r){

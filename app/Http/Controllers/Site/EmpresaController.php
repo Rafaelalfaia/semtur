@@ -16,15 +16,21 @@ class EmpresaController extends Controller
             ->where('status', 'publicado')
             ->with([
                 'categorias:id,nome,slug',
+                'galeriaFotos',
+                'pontos' => fn ($q) => $q
+                    ->where('status', 'publicado')
+                    ->with('categorias:id,nome,slug')
+                    ->orderBy('ordem')
+                    ->orderBy('nome'),
             ]);
 
         $modelo = is_numeric($empresa)
             ? $query->where('id', $empresa)->firstOrFail()
             : $query->where('slug', $empresa)->firstOrFail();
 
-        // View de detalhe (ajuste o caminho se o seu for diferente)
         return view('site.empresas.show', [
             'empresa' => $modelo,
+            'pontosRelacionados' => $modelo->pontos,
         ]);
     }
 }

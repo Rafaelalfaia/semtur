@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use App\Models\Catalogo\EmpresaRecomendacao;
 use App\Models\Catalogo\Categoria;
+use App\Models\Catalogo\EmpresaFoto;
 use Illuminate\Support\Facades\Schema;
 
 class EmpresaController extends Controller
@@ -19,16 +20,17 @@ class EmpresaController extends Controller
     {
         $busca  = trim((string)$request->input('busca',''));
         $status = $request->input('status');
+        $buscaAtiva = mb_strlen($busca) >= 3;
 
         $q = Empresa::query()
-            ->when($status && $status!=='todos', fn($qq)=>$qq->where('status',$status))
-            ->when($busca!=='' , function($qq) use($busca){
+            ->when($buscaAtiva && $status && $status!=='todos', fn($qq)=>$qq->where('status',$status))
+            ->when($buscaAtiva , function($qq) use($busca){
                 $like = DB::connection()->getDriverName()==='pgsql' ? 'ilike' : 'like';
                 $qq->where(function($w) use($busca,$like){
                     $w->where('nome',$like,"%{$busca}%")
                       ->orWhere('descricao',$like,"%{$busca}%");
                 });
-            })
+            }, fn($qq) => $qq->whereRaw('1 = 0'))
             // Flag "em_destaque" para Home (global = categoria_id null) — evita N+1:
             ->withExists(['recomendacoes as em_destaque' => function($q){
                 $q->whereNull('categoria_id')
@@ -84,7 +86,7 @@ class EmpresaController extends Controller
                 fn($q) => $q->where('id', (int) $slugOrId),
                 fn($q) => $q->where('slug', $slugOrId)
             )
-            ->with(['categorias'])
+            ->with(['categorias', 'galeriaFotos'])
             ->firstOrFail();
 
         return view('site.empresas.show', compact('empresa'));
@@ -206,6 +208,8 @@ private function extractCoordsFromUrl(?string $url): array
             'contatos.maps'      => ['nullable','url','max:2048'],
             'contatos.email'     => ['nullable','email','max:190'],
 
+            'galeria'       => ['nullable','array','max:12'],
+            'galeria.*'     => ['image','mimes:jpg,jpeg,png,webp','max:5120'],
 
             // >>> AGORA OBRIGATÓRIOS NA CRIAÇÃO <<<
             'capa'        => ['required','image','max:5120'],
@@ -268,6 +272,8 @@ private function extractCoordsFromUrl(?string $url): array
                 $empresa->{$col} = ltrim($path, '/');
                 $empresa->save();
             }
+
+            $this->storeGaleria($request, $empresa);
         });
 
         return redirect()
@@ -279,6 +285,7 @@ private function extractCoordsFromUrl(?string $url): array
     {
         $categorias    = Categoria::orderBy('ordem')->orderBy('nome')->get(['id','nome']);
         $selecionadas  = $empresa->categorias()->pluck('categorias.id')->all();
+        $empresa->load('galeriaFotos');
         return view('coordenador.empresas.edit', compact('empresa','categorias','selecionadas'));
     }
 
@@ -307,6 +314,11 @@ private function extractCoordsFromUrl(?string $url): array
 
             'categorias'  => ['nullable','array'],
             'categorias.*'=> ['integer','exists:categorias,id'],
+
+            'galeria'       => ['nullable','array','max:12'],
+            'galeria.*'     => ['image','mimes:jpg,jpeg,png,webp','max:5120'],
+            'remover_fotos'   => ['nullable','array'],
+            'remover_fotos.*' => ['integer'],
 
             'capa'        => ['nullable','image','max:5120'],
             'perfil'      => ['nullable','image','max:5120'],
@@ -365,6 +377,9 @@ private function extractCoordsFromUrl(?string $url): array
                     $empresa->save();
                 }
             }
+
+            $this->removeSelectedFotos($request, $empresa);
+            $this->storeGaleria($request, $empresa);
         });
 
         return redirect()
@@ -409,6 +424,50 @@ private function stripHandleOrKeepUrl(string $v, string $net): string
         $v = trim($v);
         if ($v === '') return '';
         return str_starts_with($v, 'http') ? $v : "https://{$v}";
+    }
+
+    private function storeGaleria(Request $request, Empresa $empresa): void
+    {
+        if (!$request->hasFile('galeria')) {
+            return;
+        }
+
+        $ordemBase = ((int) $empresa->galeriaFotos()->max('ordem')) + 1;
+
+        foreach ($request->file('galeria') as $i => $file) {
+            if (!$file || !$file->isValid()) {
+                continue;
+            }
+
+            $empresa->galeriaFotos()->create([
+                'path' => ltrim($file->store('empresas/galeria', 'public'), '/'),
+                'alt' => $empresa->nome,
+                'ordem' => $ordemBase + $i,
+            ]);
+        }
+    }
+
+    private function removeSelectedFotos(Request $request, Empresa $empresa): void
+    {
+        $ids = collect($request->input('remover_fotos', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->values()
+            ->all();
+
+        if (empty($ids)) {
+            return;
+        }
+
+        $fotos = $empresa->galeriaFotos()->whereIn('id', $ids)->get();
+
+        foreach ($fotos as $foto) {
+            if ($foto->path && Storage::disk('public')->exists($foto->path)) {
+                Storage::disk('public')->delete($foto->path);
+            }
+
+            $foto->delete();
+        }
     }
 
 

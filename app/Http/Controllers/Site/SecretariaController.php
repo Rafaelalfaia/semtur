@@ -10,7 +10,15 @@ class SecretariaController extends Controller
 {
     public function show()
     {
-        $sec = Secretaria::instance();
+        $sec = Secretaria::publicados()
+            ->orderBy('ordem')
+            ->orderByDesc('published_at')
+            ->first();
+
+        if (!$sec) {
+            $sec = Secretaria::makePublicFallback();
+        }
+
         $membros = EquipeMembro::publicados()->ordenados()->get();
 
         return view('site.semtur.show', compact('sec','membros'));

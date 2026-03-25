@@ -1,198 +1,243 @@
 @extends('site.layouts.app')
-@section('title','Descubra Altamira')
-@section('title','Explorar — VisitAltamira')
+
+@php
+    use Illuminate\Support\Facades\Route as R;
+
+    $categorias = collect($categorias ?? []);
+    $pontos = $pontos ?? collect();
+    $empresas = $empresas ?? collect();
+    $currentCat = $currentCat ?? null;
+    $buscaAtual = trim((string) request('busca', ''));
+    $pointSource = collect(method_exists($pontos, 'items') ? $pontos->items() : $pontos);
+    $companySource = collect(method_exists($empresas, 'items') ? $empresas->items() : $empresas);
+    $categoriaSlugAtual = $currentCat?->slug ?? request('categoria') ?? request('cat');
+    $explorarCanonical = R::has('site.explorar') ? route('site.explorar') : url()->current();
+    $explorarTitle = $currentCat?->nome ? 'Explorar '.$currentCat->nome : 'Explorar Altamira';
+    $explorarDescription = $buscaAtual !== ''
+        ? 'Resultados públicos em Altamira para a busca "'.$buscaAtual.'", com continuidade entre lista, mapa e páginas de detalhe.'
+        : ($currentCat?->nome
+            ? 'Explore '.$currentCat->nome.' em Altamira com conteúdos publicados, leitura geográfica e acesso direto ao mapa turístico.'
+            : 'Explore pontos e empresas publicadas de Altamira com filtros editoriais, busca e conexão direta com o mapa turístico.');
+
+    $explorarItems = $pointSource
+        ->take(3)
+        ->map(fn ($item) => [
+            '@type' => 'ListItem',
+            'position' => null,
+            'url' => R::has('site.ponto') ? route('site.ponto', $item->slug ?? $item->id) : null,
+            'name' => $item->nome ?? 'Ponto turistico',
+        ])
+        ->values()
+        ->concat(
+            $companySource->take(3)->map(fn ($item) => [
+                '@type' => 'ListItem',
+                'position' => null,
+                'url' => R::has('site.empresa') ? route('site.empresa', $item->slug ?? $item->id) : null,
+                'name' => $item->nome ?? 'Empresa',
+            ])->values()
+        )
+        ->values()
+        ->map(function ($item, $index) {
+            $item['position'] = $index + 1;
+            return $item;
+        })
+        ->filter(fn ($item) => filled($item['url']))
+        ->values()
+        ->all();
+
+    $explorarSchema = [
+        [
+            '@type' => 'BreadcrumbList',
+            '@id' => $explorarCanonical.'#breadcrumbs',
+            'itemListElement' => array_values(array_filter([
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Inicio',
+                    'item' => R::has('site.home') ? route('site.home') : url('/'),
+                ],
+                [
+                    '@type' => 'ListItem',
+                    'position' => 2,
+                    'name' => $explorarTitle,
+                    'item' => $explorarCanonical,
+                ],
+            ])),
+        ],
+        array_filter([
+            '@type' => 'CollectionPage',
+            '@id' => $explorarCanonical.'#collection',
+            'url' => $explorarCanonical,
+            'name' => $explorarTitle,
+            'description' => $explorarDescription,
+            'about' => [
+                '@type' => 'TouristDestination',
+                'name' => 'Altamira',
+            ],
+            'mainEntity' => $explorarItems ? [
+                '@type' => 'ItemList',
+                'itemListElement' => $explorarItems,
+            ] : null,
+        ], fn ($value) => $value !== null),
+    ];
+@endphp
+
+@section('title', $explorarTitle)
+@section('meta.description', $explorarDescription)
+@section('meta.image', theme_asset('hero_image'))
+@section('meta.canonical', $explorarCanonical)
+@section('meta.type', 'website')
+
+@push('structured-data')
+<script type="application/ld+json">@json(['@context' => 'https://schema.org', '@graph' => $explorarSchema], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
 
 @section('site.content')
 @php
-  use Illuminate\Support\Facades\Route as R;
+    $categoriaSlugAtual = $currentCat?->slug ?? request('categoria') ?? request('cat');
+    $mapHref = R::has('site.mapa')
+        ? route('site.mapa', array_filter([
+            'q' => $buscaAtual !== '' ? $buscaAtual : null,
+            'categoria' => $categoriaSlugAtual ?: null,
+        ]))
+        : '#';
 
-  $container = $container
-    ?? 'mx-auto w-full max-w-[420px] md:max-w-[1024px] lg:max-w-[1200px] px-4 md:px-6';
+    $totalPontos = method_exists($pontos, 'total') ? $pontos->total() : collect($pontos)->count();
+    $totalEmpresas = method_exists($empresas, 'total') ? $empresas->total() : collect($empresas)->count();
 
-  $hasPonto     = R::has('site.ponto');
-  $hasEmpresa   = R::has('site.empresa');
+    $buildItem = function ($item, string $type) use ($categoriaSlugAtual, $buscaAtual) {
+        $href = $type === 'empresa' && R::has('site.empresa')
+            ? route('site.empresa', $item->slug ?? $item->id)
+            : (R::has('site.ponto') ? route('site.ponto', $item->slug ?? $item->id) : '#');
 
-  // Coleções seguras
-  $categorias = collect($categorias ?? []);
-  $pontos     = $pontos ?? collect();
-  $empresas   = $empresas ?? collect();
+        $mapHref = R::has('site.mapa')
+            ? route('site.mapa', array_filter([
+                'focus' => $type.':'.($item->slug ?? $item->id),
+                'lat' => is_numeric($item->lat ?? null) ? (float) $item->lat : null,
+                'lng' => is_numeric($item->lng ?? null) ? (float) $item->lng : null,
+                'open' => 1,
+                'q' => $buscaAtual !== '' ? $buscaAtual : null,
+                'categoria' => $categoriaSlugAtual ?: null,
+            ]))
+            : '#';
 
-  // Filtra categorias: mantém só as que têm conteúdo publicado (se contagens existirem)
-  $categorias = $categorias->filter(function($c){
-      $pc = $c->pontos_publicados_count ?? null;
-      $ec = $c->empresas_publicadas_count ?? null;
-      if ($pc !== null || $ec !== null) return (int)($pc ?? 0) + (int)($ec ?? 0) > 0;
-      if (isset($c->pontos) || isset($c->empresas)) return (count($c->pontos ?? []) + count($c->empresas ?? [])) > 0;
-      return true;
-  })->values();
+        return [
+            'title' => $item->nome,
+            'subtitle' => $item->cidade ?? 'Altamira',
+            'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 120),
+            'image' => $item->capa_url ?? $item->foto_capa_url ?? $item->perfil_url ?? null,
+            'href' => $href,
+            'badge' => $type === 'empresa' ? 'Empresa' : 'Ponto turistico',
+            'meta' => R::has('site.mapa') ? 'Abrir no mapa' : null,
+            'cta' => $type === 'empresa' ? 'Ver empresa' : 'Ver ponto',
+            'map_href' => $mapHref,
+        ];
+    };
 
-  // nome da categoria selecionada (se vier do controller)
-  $currentCat = $currentCat ?? null;
+    $pointItems = $pointSource->map(fn ($item) => $buildItem($item, 'ponto'));
+    $companyItems = $companySource->map(fn ($item) => $buildItem($item, 'empresa'));
 @endphp
 
-{{-- topo com gradiente estendido para contraste --}}
-<section class="relative overflow-hidden pb-4 md:pb-6"
-         style="background: linear-gradient(180deg,
-                  #00837B 0%,
-                  #00837B 40%,
-                  rgba(255,255,255,0.92) 72%,
-                  #FFFFFF 100%);">
+<div class="site-page site-page-shell">
+    @include('site.partials._page_hero', [
+        'backHref' => R::has('site.home') ? route('site.home') : url('/'),
+        'breadcrumbs' => [
+            ['label' => 'Inicio', 'href' => R::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Explorar'],
+        ],
+        'badge' => 'Descoberta',
+        'title' => $currentCat?->nome ? 'Explorar '.$currentCat->nome : 'Explorar Altamira',
+        'subtitle' => $buscaAtual !== ''
+            ? 'Resultados públicos conectados ao mapa e aos detalhes para continuar a descoberta sem perder contexto.'
+            : 'Encontre atrativos, empresas e caminhos para montar a viagem com continuidade entre lista, mapa e detalhe.',
+        'meta' => [
+            $totalPontos.' pontos',
+            $totalEmpresas.' empresas',
+            $currentCat?->nome,
+            $buscaAtual !== '' ? 'Busca: '.$buscaAtual : null,
+        ],
+        'primaryActionLabel' => R::has('site.mapa') ? 'Ver esta busca no mapa' : null,
+        'primaryActionHref' => R::has('site.mapa') ? $mapHref : null,
+        'secondaryActionLabel' => $buscaAtual !== '' || $categoriaSlugAtual ? 'Limpar filtros' : (R::has('site.home') ? 'Voltar ao inicio' : null),
+        'secondaryActionHref' => ($buscaAtual !== '' || $categoriaSlugAtual)
+            ? route('site.explorar')
+            : (R::has('site.home') ? route('site.home') : null),
+        'image' => theme_asset('hero_image'),
+        'imageAlt' => 'Explorar Altamira',
+        'compact' => true,
+    ])
 
-  {{-- título + voltar/compartilhar --}}
-  <div class="{{ $container }} pt-3 text-white">
-    <div class="flex items-start justify-between gap-3">
-        <button onclick="history.back()" class="rounded-full bg-black/20 p-2 shrink-0">
-            <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="m15 18l-6-6l6-6"/></svg>
-        </button>
+    <section class="site-section">
+        <div class="site-surface site-search-shell">
+            <x-section-head
+                eyebrow="Busca e filtros"
+                title="Refine sua descoberta"
+                subtitle="Use os filtros para navegar pelas publicações e levar essa mesma leitura geográfica direto para o mapa."
+            />
 
-        <div class="flex-1 min-w-0 text-center">
-            <p class="text-[11px] uppercase tracking-[0.18em] text-white/75">
-            Explorar
-            </p>
-
-            @if($currentCat)
-            <div class="mt-1 inline-flex max-w-full items-center gap-2 rounded-2xl bg-white px-4 py-2 text-[#00837B] shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
-                @if(!empty($currentCat->icone_path))
-                <img
-                    src="{{ \Illuminate\Support\Facades\Storage::url($currentCat->icone_path) }}"
-                    alt="{{ $currentCat->nome }}"
-                    class="w-5 h-5 object-contain shrink-0"
+            <form method="get" class="site-search-form">
+                <input
+                    type="search"
+                    name="busca"
+                    value="{{ $buscaAtual }}"
+                    placeholder="Buscar pontos ou empresas..."
+                    class="ui-input"
                 >
+
+                @if(request('categoria_id'))
+                    <input type="hidden" name="categoria_id" value="{{ request('categoria_id') }}">
+                @elseif($categoriaSlugAtual)
+                    <input type="hidden" name="categoria" value="{{ $categoriaSlugAtual }}">
                 @endif
 
-                <span class="text-lg md:text-xl font-bold truncate">
-                {{ $currentCat->nome }}
-                </span>
-            </div>
-            @else
-            <h1 class="text-lg font-semibold truncate">
-                Explorar
-            </h1>
-            @endif
+                <button class="site-button-primary" type="submit">Buscar</button>
+            </form>
+
+            @include('site.partials._categories_chips', [
+                'categorias' => $categorias,
+                'currentCat' => $currentCat,
+            ])
         </div>
+    </section>
 
-  <button
-    onclick="navigator.share ? navigator.share({title:document.title, url: location.href}) : (navigator.clipboard?.writeText(location.href), alert('Link copiado'))"
-    class="rounded-full bg-black/20 p-2 shrink-0"
-  >
-    <svg class="w-6 h-6" viewBox="0 0 24 24"><path fill="currentColor" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.27 3.27 0 0 0 0-1.39l7.02-4.11A2.99 2.99 0 1 0 14 5a3 3 0 0 0 .06.58L7.03 9.69a3 3 0 1 0 0 4.62l7.03 4.1c-.04.19-.06.39-.06.59a3 3 0 1 0 3-3Z"/></svg>
-  </button>
-</div>
-  </div>
+    <section class="site-section">
+        <div class="site-surface-soft site-context-strip">
+            <div class="site-context-strip-copy">
+                <span class="site-badge">Mapa e lista integrados</span>
+                <h2 class="site-section-head-title">Continue a leitura no formato que fizer mais sentido agora</h2>
+                <p class="site-section-head-subtitle">Os mesmos conteúdos públicos podem ser vistos em lista para comparar ou no mapa para entender proximidade, rota e contexto geográfico.</p>
+            </div>
+            <div class="site-context-strip-actions">
+                <a href="{{ $mapHref }}" class="site-button-primary">Abrir no mapa</a>
+                @if($currentCat && R::has('site.categoria'))
+                    <a href="{{ route('site.categoria', $currentCat->slug) }}" class="site-button-secondary">Ver categoria</a>
+                @endif
+            </div>
+        </div>
+    </section>
 
-  {{-- busca --}}
-  <div class="{{ $container }} pt-3">
-    <form method="get" class="mb-1">
-      <div class="flex gap-2">
-        <input type="text" name="busca" value="{{ request('busca','') }}"
-               placeholder="Buscar pontos ou empresas..."
-               class="w-full rounded-full border border-teal-600/30 bg-white/90 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-600/30" />
-        @php
-          $catId = request('categoria_id');
-          $catSlug = request('categoria') ?? request('cat');
-        @endphp
-        @if($catId)
-          <input type="hidden" name="categoria_id" value="{{ $catId }}">
-        @elseif($catSlug)
-          <input type="hidden" name="categoria" value="{{ $catSlug }}">
-        @endif
-      </div>
-    </form>
-
-    @if(request('categoria_id') || request('categoria') || request('busca'))
-      <div class="text-xs text-white/90 pb-2 flex items-center gap-2">
-        @if(request('busca'))
-          <span>Buscando por “{{ request('busca') }}”</span>
-        @endif
-        @if($currentCat)
-          <span>| Categoria: {{ $currentCat->nome }}</span>
-        @elseif(request('categoria_id'))
-          <span>| Categoria #{{ request('categoria_id') }}</span>
-        @elseif(request('categoria') || request('cat'))
-          <span>| Categoria: {{ request('categoria') ?? request('cat') }}</span>
-        @endif
-        <a href="{{ url()->current() }}" class="underline">Limpar</a>
-      </div>
-    @endif
-  </div>
-
-  {{-- chips de categorias (só mostram se houver) --}}
-  @if($categorias->isNotEmpty())
-    <div class="{{ $container }}">
-      @includeIf('site.partials._categories_top', [
-    'categorias' => $categorias,
-    'currentCat' => $currentCat,
-    'href' => function($cat) {
-        return route('site.explorar', ['categoria' => $cat->slug]);
-    }
+    @include('site.partials._category_section', [
+        'eyebrow' => 'Pontos',
+        'title' => 'Atrativos turisticos',
+        'subtitle' => 'Pontos publicados encontrados para a navegação atual.',
+        'items' => $pointItems,
+        'empty' => 'Nenhum atrativo apareceu com os filtros atuais. Tente ampliar a busca ou limpar os filtros.',
     ])
-    </div>
-  @endif
-</section>
 
-{{-- PONTOS --}}
-@if(($pontos instanceof \Illuminate\Support\Collection && $pontos->isNotEmpty())
-   || ($pontos instanceof \Illuminate\Contracts\Pagination\Paginator && $pontos->count()))
-<section class="bg-gradient-to-b from-white to-[#EAF4F2] py-3 md:py-5">
-  <div class="{{ $container }}">
-    <h2 class="text-[16px] md:text-lg font-semibold text-[#2B3536] mb-3">Atrativos Turísticos</h2>
-
-    <div class="space-y-3">
-      @foreach($pontos as $p)
-        @php
-          $img  = $p->capa_url ?? $p->foto_capa_url ?? optional($p->midias->first())->url ?? null;
-          $href = $hasPonto ? route('site.ponto', $p->id) : '#';
-        @endphp
-        <x-card-list
-          :title="$p->nome"
-          :subtitle="$p->cidade ?? 'Altamira'"
-          :image="$img"
-          :href="$href"
-          logo="/imagens/visitpreto.png" />
-      @endforeach
-    </div>
+    @include('site.partials._category_section', [
+        'eyebrow' => 'Empresas',
+        'title' => 'Empresas',
+        'subtitle' => 'Empresas públicas relacionadas ao contexto atual.',
+        'items' => $companyItems,
+        'empty' => 'Nenhuma empresa apareceu com os filtros atuais. Vale testar outra categoria ou uma busca mais ampla.',
+    ])
 
     @if($pontos instanceof \Illuminate\Contracts\Pagination\Paginator && $pontos->hasPages())
-      <div class="mt-4">
-        {{ $pontos->onEachSide(1)->links() }}
-      </div>
+        <div class="site-section">{{ $pontos->onEachSide(1)->links() }}</div>
     @endif
-  </div>
-</section>
-@endif
-
-{{-- EMPRESAS --}}
-@if(($empresas instanceof \Illuminate\Support\Collection && $empresas->isNotEmpty())
-   || ($empresas instanceof \Illuminate\Contracts\Pagination\Paginator && $empresas->count()))
-<section class="bg-gradient-to-b from-white to-[#F5F7F7] py-3 md:py-5">
-  <div class="{{ $container }}">
-    <h2 class="text-[16px] md:text-lg font-semibold text-[#2B3536] mb-3">Empresas</h2>
-
-    <div class="space-y-3">
-      @foreach($empresas as $e)
-        @php
-          $img  = $e->capa_url ?? $e->perfil_url ?? $e->foto_capa_url ?? null;
-          $href = $hasEmpresa ? route('site.empresa', $e->slug ?? $e->id) : '#';
-        @endphp
-        <x-card-list
-          :title="$e->nome"
-          :subtitle="$e->cidade ?? 'Altamira'"
-          :image="$img"
-          :href="$href"
-          logo="/imagens/visitpreto.png" />
-      @endforeach
-    </div>
 
     @if($empresas instanceof \Illuminate\Contracts\Pagination\Paginator && $empresas->hasPages())
-      <div class="mt-4">
-        {{ $empresas->onEachSide(1)->links() }}
-      </div>
+        <div class="site-section">{{ $empresas->onEachSide(1)->links() }}</div>
     @endif
-  </div>
-</section>
-@endif
-
-{{-- espaçador para não colidir com a bottom-nav --}}
-<div class="h-[80px] pb-[env(safe-area-inset-bottom)] md:hidden"></div>
-@includeIf('site.partials._bottom_nav')
+</div>
 @endsection

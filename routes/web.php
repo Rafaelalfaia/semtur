@@ -28,14 +28,25 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Site\EventoPublicController;
-
+use App\Http\Controllers\Site\PortalController;
+use App\Http\Controllers\Site\EspacoCulturalPublicController;
+use App\Http\Controllers\Site\EspacoCulturalAgendamentoPublicController;
+use App\Http\Controllers\Site\RoteiroController as SiteRoteiroController;
+use App\Http\Controllers\Site\OndeComerController as SiteOndeComerController;
+use App\Http\Controllers\Site\OndeFicarController as SiteOndeFicarController;
+use App\Http\Controllers\Site\GuiaController as SiteGuiaController;
+use App\Http\Controllers\Site\VideoController as SiteVideoController;
+use App\Http\Controllers\Site\RotaDoCacauController as SiteRotaDoCacauController;
 
 
 // =========================
 // ADMIN
 // =========================
 use App\Http\Controllers\Admin\DashboardController as AdminDash;
+use App\Http\Controllers\Admin\ThemeController as AdminThemeController;
 use App\Http\Controllers\Admin\UsuarioController as AdminUsuario;
+
+
 
 // =========================
 // COORDENADOR
@@ -47,6 +58,7 @@ use App\Http\Controllers\Coordenador\PontoTuristicoController;
 use App\Http\Controllers\Coordenador\BannerController;
 use App\Http\Controllers\Coordenador\BannerDestaqueController;
 use App\Http\Controllers\Coordenador\SecretariaController;
+use App\Http\Controllers\Coordenador\ThemeExecutionController;
 use App\Http\Controllers\Coordenador\EquipeMembroController;
 use App\Http\Controllers\Coordenador\AvisoController;
 use App\Http\Controllers\Coordenador\EventoController;
@@ -54,6 +66,22 @@ use App\Http\Controllers\System\MaintenanceController;
 use App\Http\Controllers\Coordenador\RelatorioController;
 use App\Http\Controllers\Coordenador\TecnicoController;
 use App\Http\Controllers\Coordenador\EspacoCulturalController;
+use App\Http\Controllers\Coordenador\EspacoCulturalAgendamentoController;
+use App\Http\Controllers\Coordenador\RoteiroController as CoordRoteiroController;
+use App\Http\Controllers\Coordenador\OndeComerController as CoordOndeComerController;
+use App\Http\Controllers\Coordenador\OndeFicarController as CoordOndeFicarController;
+use App\Http\Controllers\Coordenador\GuiaRevistaController as CoordGuiaRevistaController;
+use App\Http\Controllers\Coordenador\VideoController as CoordVideoController;
+use App\Http\Controllers\Coordenador\JogosIndigenasController as CoordJogosIndigenasController;
+use App\Http\Controllers\Coordenador\JogosIndigenasEdicaoController as CoordJogosIndigenasEdicaoController;
+use App\Http\Controllers\Coordenador\JogosIndigenasEdicaoFotoController as CoordJogosIndigenasEdicaoFotoController;
+use App\Http\Controllers\Coordenador\JogosIndigenasEdicaoVideoController as CoordJogosIndigenasEdicaoVideoController;
+use App\Http\Controllers\Coordenador\JogosIndigenasEdicaoPatrocinadorController as CoordJogosIndigenasEdicaoPatrocinadorController;
+use App\Http\Controllers\Coordenador\RotaDoCacauController as CoordRotaDoCacauController;
+use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoController as CoordRotaDoCacauEdicaoController;
+use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoFotoController as CoordRotaDoCacauEdicaoFotoController;
+use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoVideoController as CoordRotaDoCacauEdicaoVideoController;
+use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoPatrocinadorController as CoordRotaDoCacauEdicaoPatrocinadorController;
 
 // =========================
 /* SITE – PÚBLICO (WEB) */
@@ -62,6 +90,53 @@ Route::get('/',         [HomeController::class, 'index'])->name('site.home');
 Route::get('/explorar', [HomeController::class, 'explorar'])->name('site.explorar');
 Route::get('/mapa',     [MapaController::class, 'index'])->name('site.mapa');
 Route::view('/orgaos',  'site.orgaos')->name('site.orgaos');
+
+Route::get('/descubra-altamira', [PortalController::class, 'descubra'])->name('site.descubra');
+
+Route::get('/roteiros', [SiteRoteiroController::class, 'index'])->name('site.roteiros');
+Route::get('/roteiros/{slug}', [SiteRoteiroController::class, 'show'])->name('site.roteiros.show');
+
+Route::get('/agenda', [PortalController::class, 'agenda'])->name('site.agenda');
+
+Route::get('/onde-comer', [SiteOndeComerController::class, 'show'])
+    ->name('site.onde_comer');
+
+Route::get('/onde-ficar', [SiteOndeFicarController::class, 'show'])
+    ->name('site.onde_ficar');
+
+Route::get('/videos', [SiteVideoController::class, 'index'])->name('site.videos');
+Route::get('/videos/{slug}', [SiteVideoController::class, 'show'])->name('site.videos.show');
+
+
+Route::get('/guias', [SiteGuiaController::class, 'index'])->name('site.guias');
+Route::get('/guias/{slug}', [SiteGuiaController::class, 'show'])->name('site.guias.show');
+
+Route::get('/informacoes-uteis', [PortalController::class, 'informacoes'])->name('site.informacoes');
+Route::get('/contato', [PortalController::class, 'contato'])->name('site.contato');
+Route::view('/jogos-indigenas', 'site.jogos_indigenas.index')->name('site.jogos_indigenas.index');
+Route::get('/rota-do-cacau', [SiteRotaDoCacauController::class, 'index'])->name('site.rota_do_cacau.index');
+Route::get('/rota-do-cacau/{slug}', [SiteRotaDoCacauController::class, 'show'])->name('site.rota_do_cacau.show');
+
+Route::prefix('museus-e-teatros')->group(function () {
+    Route::get('/', [EspacoCulturalPublicController::class, 'index'])
+        ->name('site.museus');
+
+    Route::get('/solicitacoes/{protocolo}', [EspacoCulturalAgendamentoPublicController::class, 'show'])
+        ->name('site.museus.agendamentos.show');
+
+    Route::get('/solicitacoes/{protocolo}/whatsapp', [EspacoCulturalAgendamentoPublicController::class, 'whatsapp'])
+        ->name('site.museus.agendamentos.whatsapp');
+
+    Route::get('/{espaco:slug}/agendar', [EspacoCulturalAgendamentoPublicController::class, 'create'])
+        ->name('site.museus.agendar');
+
+    Route::post('/{espaco:slug}/agendar', [EspacoCulturalAgendamentoPublicController::class, 'store'])
+        ->name('site.museus.agendar.store');
+
+    Route::get('/{slug}', [EspacoCulturalPublicController::class, 'show'])
+        ->name('site.museus.show');
+});
+
 
 Route::get('/banner-destaque-feed', [BannerDestaqueFeedController::class,'index'])
     ->name('site.banner_destaque.feed');
@@ -207,7 +282,7 @@ Route::middleware(['auth'])->group(function () {
                 ['perm' => 'banners_destaque.view', 'route' => 'coordenador.banners-destaque.index'],
                 ['perm' => 'banners.view',          'route' => 'coordenador.banners.index'],
                 ['perm' => 'avisos.view',           'route' => 'coordenador.avisos.index'],
-                ['perm' => 'relatorios.view',       'route' => 'coord.relatorios.index'],
+                ['perm' => 'relatorios.view',       'route' => 'coordenador.coord.relatorios.index'],
                 ['perm' => 'secretaria.edit',       'route' => 'coordenador.secretaria.edit'],
             ];
             foreach ($preferencias as $p) {
@@ -240,7 +315,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth','role:Admin'])
   ->prefix('admin')->name('admin.')
   ->group(function () {
-    Route::view('/dashboard', 'admin.dashboard')->name('dashboard');
+    Route::get('/dashboard', [AdminDash::class, 'index'])->name('dashboard');
 
     Route::prefix('config')->name('config.')->group(function () {
       Route::get('perfil',        [ConsoleProfile::class,'edit'])->name('perfil.edit');
@@ -249,14 +324,48 @@ Route::middleware(['auth','role:Admin'])
     });
 
     Route::resource('usuarios', \App\Http\Controllers\Admin\UsuarioController::class)->except(['show']);
+
+    Route::prefix('temas')->name('temas.')->group(function () {
+        Route::get('/', [AdminThemeController::class, 'index'])
+            ->middleware('permission:themes.view')
+            ->name('index');
+        Route::get('/create', [AdminThemeController::class, 'create'])
+            ->middleware('permission:themes.create')
+            ->name('create');
+        Route::post('/', [AdminThemeController::class, 'store'])
+            ->middleware('permission:themes.create')
+            ->name('store');
+        Route::post('/preview/clear', [AdminThemeController::class, 'clearPreview'])
+            ->middleware('permission:themes.preview')
+            ->name('preview.clear');
+        Route::post('/{tema}/preview', [AdminThemeController::class, 'preview'])
+            ->middleware('permission:themes.preview')
+            ->name('preview');
+        Route::get('/{tema}/edit', [AdminThemeController::class, 'edit'])
+            ->middleware('permission:themes.edit')
+            ->name('edit');
+        Route::put('/{tema}', [AdminThemeController::class, 'update'])
+            ->middleware('permission:themes.edit')
+            ->name('update');
+        Route::patch('/{tema}/activate', [AdminThemeController::class, 'activate'])
+            ->middleware('permission:themes.activate')
+            ->name('activate');
+        Route::patch('/restore-default', [AdminThemeController::class, 'restoreDefault'])
+            ->middleware('permission:themes.activate')
+            ->name('restore-default');
+        Route::patch('/{tema}/archive', [AdminThemeController::class, 'archive'])
+            ->middleware('permission:themes.activate')
+            ->name('archive');
+    });
   });
 
 // =========================
 /* COORDENADOR */
 // =========================
-Route::middleware(['auth','role:Coordenador|Tecnico'])
+Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
     ->prefix('coordenador')->name('coordenador.')
     ->group(function () {
+
 
         Route::get('/dashboard', [CoordDash::class,'index'])->name('dashboard');
 
@@ -265,6 +374,25 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
             Route::put('perfil',       [ConsoleProfile::class,'update'])->name('perfil.update');
             Route::delete('perfil/foto',[ConsoleProfile::class,'destroyPhoto'])->name('perfil.foto.destroy');
         });
+
+        Route::middleware(['role:Coordenador', 'permission:themes.view'])
+            ->prefix('temas')
+            ->name('temas.')
+            ->group(function () {
+                Route::get('/', [ThemeExecutionController::class, 'index'])->name('index');
+                Route::post('/preview-console/clear', [ThemeExecutionController::class, 'clearPreview'])
+                    ->middleware('permission:themes.preview')
+                    ->name('preview-console.clear');
+                Route::post('/{tema}/preview-console', [ThemeExecutionController::class, 'previewConsole'])
+                    ->middleware('permission:themes.preview')
+                    ->name('preview-console');
+                Route::patch('/{tema}/activate-console', [ThemeExecutionController::class, 'activateConsole'])
+                    ->middleware('permission:themes.execute.console')
+                    ->name('activate-console');
+                Route::patch('/{tema}/activate-site', [ThemeExecutionController::class, 'activateSite'])
+                    ->middleware('permission:themes.execute.site')
+                    ->name('activate-site');
+            });
 
         // Categorias
         Route::resource('categorias', CategoriaController::class)->except(['show']);
@@ -327,13 +455,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
         Route::post('banners-destaque/reordenar', [BannerDestaqueController::class,'reordenar'])
             ->name('banners-destaque.reordenar');
 
-        Route::get('secretaria', [SecretariaController::class,'edit'])
-            ->middleware('permission:secretaria.edit')
-            ->name('secretaria.edit');
 
-        Route::put('secretaria', [SecretariaController::class,'update'])
-            ->middleware('permission:secretaria.edit')
-            ->name('secretaria.update');
         // Equipe
         Route::resource('equipe', EquipeMembroController::class)
         ->middleware('permission:equipe.manage')
@@ -374,19 +496,30 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
         Route::delete('atrativos/{atrativo}',                     [EventoController::class,'atrativosDestroy'])->name('atrativos.destroy');
         Route::post('edicoes/{edicao}/atrativos/reordenar',       [EventoController::class,'atrativosReordenar'])->name('edicoes.atrativos.reordenar');
 
+        Route::prefix('espacos-culturais/agendamentos')
+            ->name('espacos-culturais.agendamentos.')
+            ->group(function () {
+                Route::get('/', [EspacoCulturalAgendamentoController::class, 'index'])->name('index');
+                Route::get('/{agendamento}', [EspacoCulturalAgendamentoController::class, 'show'])->name('show');
+
+                Route::patch('/{agendamento}/confirmar', [EspacoCulturalAgendamentoController::class, 'confirmar'])->name('confirmar');
+                Route::patch('/{agendamento}/cancelar', [EspacoCulturalAgendamentoController::class, 'cancelar'])->name('cancelar');
+                Route::patch('/{agendamento}/concluir', [EspacoCulturalAgendamentoController::class, 'concluir'])->name('concluir');
+                Route::patch('/{agendamento}/atribuir-tecnico', [EspacoCulturalAgendamentoController::class, 'atribuirTecnico'])->name('atribuir-tecnico');
+                Route::patch('/{agendamento}/observacao-interna', [EspacoCulturalAgendamentoController::class, 'observacaoInterna'])->name('observacao-interna');
+            });
+
         //ESPAÇO CULTURAL
         Route::resource('espacos-culturais', EspacoCulturalController::class)
             ->parameters(['espacos-culturais' => 'espaco'])
             ->except(['show']);
 
-        Route::patch('espacos-culturais/{espaco}/publicar', [EspacoCulturalController::class, 'publicar'])
-            ->name('espacos-culturais.publicar');
+        //ONDE COMER
+        Route::get('/onde-comer', [CoordOndeComerController::class, 'edit'])
+            ->name('onde_comer.edit');
 
-        Route::patch('espacos-culturais/{espaco}/arquivar', [EspacoCulturalController::class, 'arquivar'])
-            ->name('espacos-culturais.arquivar');
-
-        Route::patch('espacos-culturais/{espaco}/rascunho', [EspacoCulturalController::class, 'rascunho'])
-            ->name('espacos-culturais.rascunho');
+        Route::put('/onde-comer', [CoordOndeComerController::class, 'update'])
+            ->name('onde_comer.update');
 
 
         // GALERIA
@@ -401,8 +534,157 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
         Route::put('/secretaria', [SecretariaController::class, 'update'])
             ->name('secretaria.update');
 
+        //ONDE FICAR
+        Route::get('/onde-ficar', [CoordOndeFicarController::class, 'edit'])
+            ->name('onde_ficar.edit');
+
+        Route::put('/onde-ficar', [CoordOndeFicarController::class, 'update'])
+            ->name('onde_ficar.update');
+
+
+        // Roteiros
+        Route::resource('roteiros', CoordRoteiroController::class)->except(['show']);
+        Route::patch('roteiros/{roteiro}/publicar', [CoordRoteiroController::class, 'publicar'])->name('roteiros.publicar');
+        Route::patch('roteiros/{roteiro}/arquivar', [CoordRoteiroController::class, 'arquivar'])->name('roteiros.arquivar');
+        Route::patch('roteiros/{roteiro}/rascunho', [CoordRoteiroController::class, 'rascunho'])->name('roteiros.rascunho');
+
+        // Guias e Revistas
+        Route::resource('guias', CoordGuiaRevistaController::class)
+            ->parameters(['guias' => 'guia'])
+            ->except(['show']);
+
+        Route::patch('guias/{guia}/publicar', [CoordGuiaRevistaController::class, 'publicar'])
+            ->name('guias.publicar');
+
+        Route::patch('guias/{guia}/arquivar', [CoordGuiaRevistaController::class, 'arquivar'])
+            ->name('guias.arquivar');
+
+        Route::patch('guias/{guia}/rascunho', [CoordGuiaRevistaController::class, 'rascunho'])
+            ->name('guias.rascunho');
+
+        //VÍDEOS
+        Route::resource('videos', CoordVideoController::class)
+            ->parameters(['videos' => 'video'])
+            ->except(['show']);
+
+        Route::patch('videos/{video}/publicar', [CoordVideoController::class, 'publicar'])
+            ->name('videos.publicar');
+
+        Route::patch('videos/{video}/arquivar', [CoordVideoController::class, 'arquivar'])
+            ->name('videos.arquivar');
+
+        Route::patch('videos/{video}/rascunho', [CoordVideoController::class, 'rascunho'])
+            ->name('videos.rascunho');
+
+        // Jogos Indígenas
+        Route::resource('jogos-indigenas', CoordJogosIndigenasController::class)
+            ->parameters(['jogos-indigenas' => 'jogosIndigena'])
+            ->except(['show']);
+
+        Route::prefix('jogos-indigenas/{jogosIndigena}/edicoes')
+            ->name('jogos-indigenas.edicoes.')
+            ->group(function () {
+                Route::get('/', [CoordJogosIndigenasEdicaoController::class, 'index'])->name('index');
+                Route::get('/create', [CoordJogosIndigenasEdicaoController::class, 'create'])->name('create');
+                Route::post('/', [CoordJogosIndigenasEdicaoController::class, 'store'])->name('store');
+            });
+
+        Route::prefix('jogos-indigenas/{jogosIndigena}/edicoes/{edicao}')
+            ->name('jogos-indigenas.edicoes.')
+            ->group(function () {
+                Route::get('/edit', [CoordJogosIndigenasEdicaoController::class, 'edit'])->name('edit');
+                Route::put('/', [CoordJogosIndigenasEdicaoController::class, 'update'])->name('update');
+                Route::delete('/', [CoordJogosIndigenasEdicaoController::class, 'destroy'])->name('destroy');
+            });
+
+        Route::prefix('jogos-indigenas/{jogosIndigena}/edicoes/{edicao}/fotos')
+            ->name('jogos-indigenas.edicoes.fotos.')
+            ->group(function () {
+                Route::get('/', [CoordJogosIndigenasEdicaoFotoController::class, 'index'])->name('index');
+                Route::get('/create', [CoordJogosIndigenasEdicaoFotoController::class, 'create'])->name('create');
+                Route::post('/', [CoordJogosIndigenasEdicaoFotoController::class, 'store'])->name('store');
+                Route::get('/{foto}/edit', [CoordJogosIndigenasEdicaoFotoController::class, 'edit'])->name('edit');
+                Route::put('/{foto}', [CoordJogosIndigenasEdicaoFotoController::class, 'update'])->name('update');
+                Route::delete('/{foto}', [CoordJogosIndigenasEdicaoFotoController::class, 'destroy'])->name('destroy');
+            });
+
+        Route::prefix('jogos-indigenas/{jogosIndigena}/edicoes/{edicao}/videos')
+            ->name('jogos-indigenas.edicoes.videos.')
+            ->group(function () {
+                Route::get('/', [CoordJogosIndigenasEdicaoVideoController::class, 'index'])->name('index');
+                Route::get('/create', [CoordJogosIndigenasEdicaoVideoController::class, 'create'])->name('create');
+                Route::post('/', [CoordJogosIndigenasEdicaoVideoController::class, 'store'])->name('store');
+                Route::get('/{video}/edit', [CoordJogosIndigenasEdicaoVideoController::class, 'edit'])->name('edit');
+                Route::put('/{video}', [CoordJogosIndigenasEdicaoVideoController::class, 'update'])->name('update');
+                Route::delete('/{video}', [CoordJogosIndigenasEdicaoVideoController::class, 'destroy'])->name('destroy');
+            });
+
+        Route::prefix('jogos-indigenas/{jogosIndigena}/edicoes/{edicao}/patrocinadores')
+            ->name('jogos-indigenas.edicoes.patrocinadores.')
+            ->group(function () {
+                Route::get('/', [CoordJogosIndigenasEdicaoPatrocinadorController::class, 'index'])->name('index');
+                Route::get('/create', [CoordJogosIndigenasEdicaoPatrocinadorController::class, 'create'])->name('create');
+                Route::post('/', [CoordJogosIndigenasEdicaoPatrocinadorController::class, 'store'])->name('store');
+                Route::get('/{patrocinador}/edit', [CoordJogosIndigenasEdicaoPatrocinadorController::class, 'edit'])->name('edit');
+                Route::put('/{patrocinador}', [CoordJogosIndigenasEdicaoPatrocinadorController::class, 'update'])->name('update');
+                Route::delete('/{patrocinador}', [CoordJogosIndigenasEdicaoPatrocinadorController::class, 'destroy'])->name('destroy');
+            });
+
 
         // Relatórios
+        Route::resource('rota-do-cacau', CoordRotaDoCacauController::class)
+            ->parameters(['rota-do-cacau' => 'rotaDoCacau'])
+            ->except(['show']);
+
+        Route::prefix('rota-do-cacau/{rotaDoCacau}/edicoes')
+            ->name('rota-do-cacau.edicoes.')
+            ->group(function () {
+                Route::get('/', [CoordRotaDoCacauEdicaoController::class, 'index'])->name('index');
+                Route::get('/create', [CoordRotaDoCacauEdicaoController::class, 'create'])->name('create');
+                Route::post('/', [CoordRotaDoCacauEdicaoController::class, 'store'])->name('store');
+            });
+
+        Route::prefix('rota-do-cacau/{rotaDoCacau}/edicoes/{edicao}')
+            ->name('rota-do-cacau.edicoes.')
+            ->group(function () {
+                Route::get('/edit', [CoordRotaDoCacauEdicaoController::class, 'edit'])->name('edit');
+                Route::put('/', [CoordRotaDoCacauEdicaoController::class, 'update'])->name('update');
+                Route::delete('/', [CoordRotaDoCacauEdicaoController::class, 'destroy'])->name('destroy');
+            });
+
+        Route::prefix('rota-do-cacau/{rotaDoCacau}/edicoes/{edicao}/fotos')
+            ->name('rota-do-cacau.edicoes.fotos.')
+            ->group(function () {
+                Route::get('/', [CoordRotaDoCacauEdicaoFotoController::class, 'index'])->name('index');
+                Route::get('/create', [CoordRotaDoCacauEdicaoFotoController::class, 'create'])->name('create');
+                Route::post('/', [CoordRotaDoCacauEdicaoFotoController::class, 'store'])->name('store');
+                Route::get('/{foto}/edit', [CoordRotaDoCacauEdicaoFotoController::class, 'edit'])->name('edit');
+                Route::put('/{foto}', [CoordRotaDoCacauEdicaoFotoController::class, 'update'])->name('update');
+                Route::delete('/{foto}', [CoordRotaDoCacauEdicaoFotoController::class, 'destroy'])->name('destroy');
+            });
+
+        Route::prefix('rota-do-cacau/{rotaDoCacau}/edicoes/{edicao}/videos')
+            ->name('rota-do-cacau.edicoes.videos.')
+            ->group(function () {
+                Route::get('/', [CoordRotaDoCacauEdicaoVideoController::class, 'index'])->name('index');
+                Route::get('/create', [CoordRotaDoCacauEdicaoVideoController::class, 'create'])->name('create');
+                Route::post('/', [CoordRotaDoCacauEdicaoVideoController::class, 'store'])->name('store');
+                Route::get('/{video}/edit', [CoordRotaDoCacauEdicaoVideoController::class, 'edit'])->name('edit');
+                Route::put('/{video}', [CoordRotaDoCacauEdicaoVideoController::class, 'update'])->name('update');
+                Route::delete('/{video}', [CoordRotaDoCacauEdicaoVideoController::class, 'destroy'])->name('destroy');
+            });
+
+        Route::prefix('rota-do-cacau/{rotaDoCacau}/edicoes/{edicao}/patrocinadores')
+            ->name('rota-do-cacau.edicoes.patrocinadores.')
+            ->group(function () {
+                Route::get('/', [CoordRotaDoCacauEdicaoPatrocinadorController::class, 'index'])->name('index');
+                Route::get('/create', [CoordRotaDoCacauEdicaoPatrocinadorController::class, 'create'])->name('create');
+                Route::post('/', [CoordRotaDoCacauEdicaoPatrocinadorController::class, 'store'])->name('store');
+                Route::get('/{patrocinador}/edit', [CoordRotaDoCacauEdicaoPatrocinadorController::class, 'edit'])->name('edit');
+                Route::put('/{patrocinador}', [CoordRotaDoCacauEdicaoPatrocinadorController::class, 'update'])->name('update');
+                Route::delete('/{patrocinador}', [CoordRotaDoCacauEdicaoPatrocinadorController::class, 'destroy'])->name('destroy');
+            });
+
         Route::get('/relatorios', [RelatorioController::class, 'index'])
             ->middleware('permission:relatorios.view')
             ->name('coord.relatorios.index');
@@ -410,7 +692,11 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
             ->middleware('permission:relatorios.view')
             ->name('coord.relatorios.csv');
 
-        Route::middleware('permission:tecnicos.manage')->prefix('tecnicos')->name('tecnicos.')->group(function () {
+    Route::middleware(['role:Coordenador', 'permission:tecnicos.manage'])
+        ->prefix('tecnicos')
+        ->name('tecnicos.')
+        ->group(function () {
+
             Route::get('/',           [TecnicoController::class,'index'])->name('index');
             Route::get('/create',     [TecnicoController::class,'create'])->name('create');
             Route::post('/',          [TecnicoController::class,'store'])->name('store');
@@ -422,31 +708,43 @@ Route::middleware(['auth','role:Coordenador|Tecnico'])
 
     });
 
-        Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
-        ->middleware(['auth','role:Admin|Coordenador|Tecnico','throttle:3,1'])
-        ->name('console.cache.clear');
+Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
+    ->middleware(['auth', 'permission:console.cache.clear', 'throttle:3,1'])
+    ->name('console.cache.clear');
 
 
 
 
     // TÉCNICO (compatibilidade de URL)
     Route::middleware(['auth','role:Tecnico'])
-    ->prefix('tecnico')->name('tecnico.')
-    ->group(function () {
-        // /tecnico/dashboard -> para o módulo do coordenador que o técnico pode ver
-        Route::get('/dashboard', function () {
-            $u = auth()->user();
-            if ($u->can('pontos.view') && Route::has('coordenador.pontos.index')) {
-                return redirect()->route('coordenador.pontos.index');
-            }
-            return redirect()->route('dashboard');
-        })->name('dashboard');
+        ->prefix('tecnico')->name('tecnico.')
+        ->group(function () {
 
-        // (opcional) manter URL /tecnico/config/perfil funcionando, apontando para a tela única
-        Route::get('config/perfil', function () {
-            return redirect()->route('coordenador.config.perfil.edit');
-        })->name('config.perfil.edit');
-    });
+            // /tecnico/dashboard -> para o módulo do coordenador que o técnico pode ver
+            Route::get('/dashboard', function () {
+                $u = auth()->user();
+
+                $targets = [
+                    ['perm' => 'pontos.view',   'route' => 'coordenador.pontos.index'],
+                    ['perm' => 'roteiros.view', 'route' => 'coordenador.roteiros.index'],
+                    ['perm' => 'guias.view',    'route' => 'coordenador.guias.index'],
+                    ['perm' => 'videos.view', 'route' => 'coordenador.videos.index'],
+                ];
+
+                foreach ($targets as $target) {
+                    if ($u->can($target['perm']) && Route::has($target['route'])) {
+                        return redirect()->route($target['route']);
+                    }
+                }
+
+                return redirect()->route('dashboard');
+            })->name('dashboard');
+
+            // (opcional) manter URL /tecnico/config/perfil funcionando, apontando para a tela única
+            Route::get('config/perfil', function () {
+                return redirect()->route('coordenador.config.perfil.edit');
+            })->name('config.perfil.edit');
+        });
 
 
 

@@ -113,33 +113,15 @@ class PontoTuristico extends Model
 
     public function midias()
     {
-        // Detecta nome da tabela e coluna FK corretos
-        $tableCandidates = ['ponto_midias', 'pontos_midias'];
-        $table = null;
-        foreach ($tableCandidates as $t) {
-            if (\Illuminate\Support\Facades\Schema::hasTable($t)) {
-                $table = $t; break;
-            }
-        }
-        // Fallback: assume 'ponto_midias' se não conseguir detectar (evita null)
-        $table ??= 'ponto_midias';
+        $table = (new \App\Models\Catalogo\PontoMidia())->getTable();
 
-        // Detecta a coluna FK existente nessa tabela
-        $fk = null;
-        foreach (['ponto_id', 'ponto_turistico_id'] as $col) {
-            if (\Illuminate\Support\Facades\Schema::hasColumn($table, $col)) {
-                $fk = $col; break;
-            }
-        }
-        // Fallback final para não quebrar
-        $fk ??= 'ponto_id';
+        $foreignKey = \Illuminate\Support\Facades\Schema::hasColumn($table, 'ponto_turistico_id')
+            ? 'ponto_turistico_id'
+            : 'ponto_id';
 
-        // Força o model a apontar para a tabela detectada (sem alterar schema)
-        $midia = new \App\Models\Catalogo\PontoMidia();
-        $midia->setTable($table);
-
-        // hasMany(model, foreignKey, localKey)
-        return $this->hasMany($midia, $fk, 'id')->orderBy('ordem')->orderBy('id');
+        return $this->hasMany(\App\Models\Catalogo\PontoMidia::class, $foreignKey, 'id')
+            ->orderBy('ordem')
+            ->orderBy('id');
     }
 
 

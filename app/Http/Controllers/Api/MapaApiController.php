@@ -105,11 +105,17 @@ class MapaApiController extends Controller
         $empQ = \App\Models\Catalogo\Empresa::query()->publicados();
         $ptoQ = \App\Models\Catalogo\PontoTuristico::query()->publicados();
 
+        $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
         if ($q !== '') {
-            $empQ->where('nome', 'ilike', "%{$q}%");
-            $ptoQ->where(function ($qq) use ($q) {
-                $qq->where('nome', 'ilike', "%{$q}%")
-                ->orWhere('descricao', 'ilike', "%{$q}%");
+            $empQ->where('nome', $like, "%{$q}%");
+            $ptoQ->where(function ($qq) use ($q, $like) {
+                $qq->where('nome', $like, "%{$q}%")
+                ->orWhere('descricao', $like, "%{$q}%");
             });
         }
 

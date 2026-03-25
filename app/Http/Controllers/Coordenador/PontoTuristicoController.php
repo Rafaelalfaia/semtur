@@ -17,14 +17,15 @@ class PontoTuristicoController extends Controller
     {
         $busca  = trim((string)$r->input('busca',''));
         $status = $r->input('status');
+        $buscaAtiva = mb_strlen($busca) >= 3;
 
         $isPg = \DB::getDriverName()==='pgsql';
         $like = $isPg ? 'ilike' : 'like';
 
         $q = \App\Models\Catalogo\PontoTuristico::query()
-            ->when($status && $status!=='todos', fn($qq)=>$qq->where('status',$status))
-            ->when($busca!=='' , fn($qq)=>$qq->where(fn($w)=>$w
-                ->where('nome',$like,"%{$busca}%")->orWhere('descricao',$like,"%{$busca}%")))
+            ->when($buscaAtiva && $status && $status!=='todos', fn($qq)=>$qq->where('status',$status))
+            ->when($buscaAtiva , fn($qq)=>$qq->where(fn($w)=>$w
+                ->where('nome',$like,"%{$busca}%")->orWhere('descricao',$like,"%{$busca}%")), fn($qq) => $qq->whereRaw('1 = 0'))
             ->with(['midias' => fn($m)=>$m->orderBy('ordem')->limit(1)]) // pra usar $ponto->capa_url sem N+1
             ->orderBy('ordem')->orderBy('nome');
 
@@ -398,41 +399,51 @@ private function alreadyProcessed(Request $request): ?int
 
     public function adicionarVideoLink(Request $r, PontoTuristico $ponto)
     {
-        $r->validate(['video_url'=>['required','url','max:500']]);
+        $r->validate(['video_url' => ['required', 'url', 'max:500']]);
+
+        if (!PontoMidia::supportsExternalUrl()) {
+            return back()->withErrors([
+                'video_url' => 'Este ambiente ainda não suporta link de vídeo para pontos turísticos.',
+            ]);
+        }
 
         PontoMidia::create([
             'ponto_turistico_id' => $ponto->id,
-            'tipo'               => 'video_link',
+            'tipo'               => PontoMidia::TIPO_VIDEO_LINK,
             'url'                => $r->video_url,
             'ordem'              => 0,
         ]);
-        return back()->with('ok','Vídeo (link) adicionado.');
+
+        return back()->with('ok', 'Vídeo (link) adicionado.');
     }
 
     public function adicionarVideoFile(Request $r, PontoTuristico $ponto)
     {
-        $r->validate(['video_file'=>['required','file','mimes:mp4,webm','max:20480']]);
+        $r->validate(['video_file' => ['required', 'file', 'mimes:mp4,webm', 'max:20480']]);
 
-        $path = str_replace('\\','/',$r->file('video_file')->store('pontos/videos','public'));
+        $path = str_replace('\\', '/', $r->file('video_file')->store('pontos/videos', 'public'));
+
         PontoMidia::create([
             'ponto_turistico_id' => $ponto->id,
-            'tipo'               => 'video_file',
-            'path'               => ltrim($path,'/'),
+            'tipo'               => PontoMidia::normalizeFileVideoType(),
+            'path'               => ltrim($path, '/'),
             'ordem'              => 0,
         ]);
 
-        return back()->with('ok','Vídeo enviado.');
+        return back()->with('ok', 'Vídeo enviado.');
     }
 
     public function removerMidia(PontoMidia $midia)
     {
-        if (in_array($midia->tipo,['image','video_file'], true) && $midia->path) {
+        if (($midia->isImage() || $midia->isVideoFile()) && $midia->path) {
             if (Storage::disk('public')->exists($midia->path)) {
                 Storage::disk('public')->delete($midia->path);
             }
         }
+
         $midia->delete();
-        return back()->with('ok','Mídia removida.');
+
+        return back()->with('ok', 'Mídia removida.');
     }
 
     /* ===== Recomendações / Destaques ===== */

@@ -1,38 +1,92 @@
-{{-- resources/views/partials/_instagram_carousel.blade.php --}}
-@php $items = collect($instagram ?? []); @endphp
+@php $items = collect($instagram ?? [])->values(); @endphp
 
 @if($items->isNotEmpty())
-  <section class="mt-6">
-    <div class="flex items-baseline justify-between mb-2">
-      <h2 class="text-lg font-semibold">No Instagram</h2>
-      <a href="https://www.instagram.com/visitaltamira/" class="text-sm opacity-80 hover:opacity-100 underline" target="_blank" rel="noopener">Ver perfil</a>
-    </div>
+    <section class="site-section site-home-instagram-section" x-data="{
+        canPrev: false,
+        canNext: true,
+        update() {
+            const el = this.$refs.viewport;
+            if (!el) return;
+            this.canPrev = el.scrollLeft > 12;
+            this.canNext = (el.scrollWidth - el.clientWidth - el.scrollLeft) > 12;
+        },
+        scrollBy(direction) {
+            const el = this.$refs.viewport;
+            if (!el) return;
+            const step = Math.max(el.clientWidth * 0.82, 260);
+            el.scrollBy({ left: step * direction, behavior: 'smooth' });
+            window.setTimeout(() => this.update(), 220);
+        }
+    }" x-init="$nextTick(() => update())">
+        <x-section-head
+            eyebrow="Siga no Instagram"
+            title="@visitaltamira"
+            href="https://www.instagram.com/visitaltamira/"
+        />
 
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-      @foreach($items as $post)
-        <a href="{{ $post['url'] ?? 'https://www.instagram.com/visitaltamira/' }}"
-           target="_blank" rel="noopener"
-           class="block group overflow-hidden rounded-xl border border-white/10 bg-white/5">
-          <div class="aspect-square overflow-hidden">
-            @if(!empty($post['image']))
-              <img
-                src="{{ $post['image'] }}"
-                alt="Post do Instagram"
-                class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                loading="lazy" decoding="async">
-            @else
-              <div class="h-full w-full bg-slate-800 animate-pulse"></div>
-            @endif
-          </div>
-          @if(!empty($post['caption']))
-            <p class="p-3 text-xs leading-snug line-clamp-2 opacity-80">
-              {{ $post['caption'] }}
-            </p>
-          @endif
-        </a>
-      @endforeach
-    </div>
-  </section>
-@else
-  {{-- estado vazio silencioso (não quebra layout) --}}
+        <div class="site-instagram-shell">
+            <div class="site-instagram-headerline">
+                <div class="site-instagram-profile">
+                    <span class="site-badge">VisitAltamira</span>
+                    <span class="site-instagram-profile-copy">Imagens recentes e inspirações do destino</span>
+                </div>
+
+                <div class="site-instagram-controls" aria-hidden="true">
+                    <button type="button" class="site-instagram-control" @click="scrollBy(-1)" :disabled="!canPrev" :aria-disabled="!canPrev">
+                        <span>&larr;</span>
+                    </button>
+                    <button type="button" class="site-instagram-control" @click="scrollBy(1)" :disabled="!canNext" :aria-disabled="!canNext">
+                        <span>&rarr;</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="site-instagram-track" x-ref="viewport" @scroll.debounce.50ms="update()" x-on:resize.window.debounce.120ms="update()">
+                @foreach($items as $post)
+                    @php
+                        $rawImage = $post['image'] ?? null;
+                        $resolvedImage = $rawImage && \Illuminate\Support\Facades\Route::has('proxy.ig')
+                            ? route('proxy.ig', ['u' => $rawImage])
+                            : $rawImage;
+                    @endphp
+                    <a
+                        href="{{ $post['url'] ?? 'https://www.instagram.com/visitaltamira/' }}"
+                        target="_blank"
+                        rel="noopener"
+                        class="site-instagram-card"
+                    >
+                        <div class="site-instagram-card-media">
+                            @if(!empty($resolvedImage))
+                                <img
+                                    src="{{ $resolvedImage }}"
+                                    alt="Post do Instagram de VisitAltamira"
+                                    class="site-instagram-card-image"
+                                    loading="lazy"
+                                    decoding="async"
+                                    referrerpolicy="no-referrer"
+                                >
+                            @else
+                                <div class="site-instagram-card-placeholder"></div>
+                            @endif
+                        </div>
+
+                        <div class="site-instagram-card-body">
+                            <span class="site-badge">Instagram</span>
+                            @if(!empty($post['caption']))
+                                <p class="site-instagram-card-caption">
+                                    {{ \Illuminate\Support\Str::limit(trim($post['caption']), 120) }}
+                                </p>
+                            @else
+                                <p class="site-instagram-card-caption">
+                                    Veja mais registros visuais e inspirações recentes do destino.
+                                </p>
+                            @endif
+
+                            <span class="site-instagram-card-cta">Abrir no Instagram</span>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    </section>
 @endif

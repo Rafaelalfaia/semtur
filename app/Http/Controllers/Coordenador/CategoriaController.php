@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Coordenador;
 
 use App\Http\Controllers\Controller;
 use App\Models\Catalogo\Categoria;
+use App\Models\Catalogo\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -19,10 +20,15 @@ class CategoriaController extends Controller
     {
         $busca  = trim((string) $request->input('busca', ''));
         $status = $request->input('status'); // rascunho|publicado|arquivado|todos
+        $buscaAtiva = mb_strlen($busca) >= 3;
 
-        $q = Categoria::query()->when($status && $status !== 'todos', function($qq) use ($status) {
-            $qq->where('status', $status);
-        })->busca($busca)->orderBy('ordem')->orderBy('nome');
+        if ($buscaAtiva) {
+            $q = Categoria::query()->when($status && $status !== 'todos', function($qq) use ($status) {
+                $qq->where('status', $status);
+            })->busca($busca)->orderBy('ordem')->orderBy('nome');
+        } else {
+            $q = Categoria::query()->whereRaw('1 = 0');
+        }
 
         $categorias = $q->paginate(12)->withQueryString();
 
@@ -37,7 +43,8 @@ class CategoriaController extends Controller
     public function create()
     {
         $categoria = new Categoria(['status' => Categoria::STATUS_RASCUNHO, 'ordem' => 0]);
-        return view('coordenador.categorias.create', compact('categoria'));
+        $empresas = Empresa::orderBy('nome')->get(['id', 'nome']);
+        return view('coordenador.categorias.create', compact('categoria', 'empresas'));
     }
 
    protected function uniqueSlug(string $base, ?int $ignoreId = null): string
@@ -71,6 +78,8 @@ class CategoriaController extends Controller
             ],
             'status' => ['required','in:publicado,rascunho,arquivado'],
             'ordem'  => ['nullable','integer','min:0'],
+            'empresas'   => ['nullable','array'],
+            'empresas.*' => ['integer','exists:empresas,id'],
 
             // validação do arquivo (igual ao update)
             'icone'  => ['nullable','file','mimes:png,jpg,jpeg,webp,svg','max:2048'],
@@ -90,7 +99,11 @@ class CategoriaController extends Controller
             $data['icone_path'] = $r->file('icone')->store('categorias/icones','public');
         }
 
+        $empresas = $data['empresas'] ?? [];
+        unset($data['empresas']);
+
         $cat = Categoria::create($data);
+        $cat->empresas()->sync($empresas);
 
         // 🔁 volta para o INDEX (como você quer)
         return redirect()
@@ -103,7 +116,9 @@ class CategoriaController extends Controller
 
     public function edit(Categoria $categoria)
     {
-        return view('coordenador.categorias.edit', compact('categoria'));
+        $categoria->load('empresas:id,nome');
+        $empresas = Empresa::orderBy('nome')->get(['id', 'nome']);
+        return view('coordenador.categorias.edit', compact('categoria', 'empresas'));
     }
 
 // ...
@@ -123,7 +138,12 @@ class CategoriaController extends Controller
             'ordem'     => ['nullable','integer','min:0'],
             'status'    => ['required','in:rascunho,publicado,arquivado'],
             'remover_icone' => ['nullable','boolean'],
+            'empresas'   => ['nullable','array'],
+            'empresas.*' => ['integer','exists:empresas,id'],
         ]);
+
+        $empresas = $data['empresas'] ?? [];
+        unset($data['empresas']);
 
         // slug: mantém o digitado se único; gera a partir do nome quando vazio
         $base        = trim($data['slug'] ?? '') ?: $data['nome'];
@@ -148,6 +168,7 @@ class CategoriaController extends Controller
         }
 
         $categoria->save();
+        $categoria->empresas()->sync($empresas);
 
         // se o getRouteKeyName() usa slug, garantir URL correta após alteração
         return redirect()

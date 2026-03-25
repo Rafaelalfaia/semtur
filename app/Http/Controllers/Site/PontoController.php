@@ -17,15 +17,20 @@ class PontoController extends Controller
             ->with([
                 'categorias:id,nome,slug',
                 'midias' => fn ($q) => $q->orderBy('ordem')->orderBy('id'),
+                'empresas' => fn ($q) => $q
+                    ->where('status', 'publicado')
+                    ->with('categorias:id,nome,slug')
+                    ->orderBy('ordem')
+                    ->orderBy('nome'),
             ]);
 
         $modelo = is_numeric($ponto)
             ? $query->where('id', $ponto)->firstOrFail()
             : $query->where('slug', $ponto)->firstOrFail();
 
-        // View de detalhe (ajuste o caminho se o seu for diferente)
         return view('site.pontos.show', [
             'ponto' => $modelo,
+            'empresasRelacionadas' => $modelo->empresas,
         ]);
     }
 }

@@ -1,7 +1,25 @@
-@props(['title','href'=>null,'label'=>'Ver todos'])
-<div class="flex items-center justify-between mb-3 px-4">
-  <h2 class="text-base font-semibold">{{ $title }}</h2>
-  @if($href)
-    <a href="{{ $href }}" class="text-emerald-700 text-sm hover:underline">{{ $label }}</a>
-  @endif
+@props([
+    'title',
+    'subtitle' => null,
+    'href' => null,
+    'label' => 'Ver todos',
+    'eyebrow' => null,
+])
+
+<div {{ $attributes->class('site-section-head') }}>
+    <div class="site-section-head-copy">
+        @if($eyebrow)
+            <p class="site-section-head-eyebrow">{{ $eyebrow }}</p>
+        @endif
+        <h2 class="site-section-head-title">{{ $title }}</h2>
+        @if($subtitle)
+            <p class="site-section-head-subtitle">{{ $subtitle }}</p>
+        @endif
+    </div>
+
+    @if($href)
+        <a href="{{ $href }}" class="site-link site-section-head-link">
+            {{ $label }}
+        </a>
+    @endif
 </div>
