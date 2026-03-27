@@ -4,7 +4,7 @@
 @endphp
 
 <div class="site-chips-shell">
-    <div class="site-chips-scroll" role="list" aria-label="Categorias">
+    <div class="site-chips-scroll" role="list" aria-label="Categorias" @if(!empty($scrollId)) id="{{ $scrollId }}" @endif>
         @forelse($categorias as $categoria)
             @php
                 $isActive = $activeSlug === ($categoria->slug ?? null);

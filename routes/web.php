@@ -89,9 +89,6 @@ use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoPatrocinadorController as 
 Route::get('/',         [HomeController::class, 'index'])->name('site.home');
 Route::get('/explorar', [HomeController::class, 'explorar'])->name('site.explorar');
 Route::get('/mapa',     [MapaController::class, 'index'])->name('site.mapa');
-Route::view('/orgaos',  'site.orgaos')->name('site.orgaos');
-
-Route::get('/descubra-altamira', [PortalController::class, 'descubra'])->name('site.descubra');
 
 Route::get('/roteiros', [SiteRoteiroController::class, 'index'])->name('site.roteiros');
 Route::get('/roteiros/{slug}', [SiteRoteiroController::class, 'show'])->name('site.roteiros.show');

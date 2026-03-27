@@ -115,64 +115,56 @@
     <div class="site-map-gradient" aria-hidden="true"></div>
 
     <div class="site-map-searchwrap site-map-searchwrap-intro">
-      <div class="site-surface site-map-heading">
+      <div class="site-surface site-map-heading site-map-heading--floating">
         <div class="site-map-heading-copy">
           <x-section-head
             eyebrow="Mapa turistico"
-            title="{{ $currentCategory?->nome ? 'Mapa de '.$currentCategory->nome : 'Mapa turistico de Altamira' }}"
-            subtitle="{{ $currentQuery !== '' ? 'Resultados publicos filtrados pela sua busca atual, com continuidade entre mapa, explorar e detalhes.' : 'Explore pontos e empresas publicados e use o mapa para ler proximidade, rota e contexto geografico.' }}"
+            title="{{ $currentCategory?->nome ? 'Mapa de '.$currentCategory->nome : 'Altamira no mapa' }}"
+            subtitle="{{ $currentQuery !== '' ? 'Busca ativa com leitura geografica leve.' : 'Empresas e pontos publicados com leitura simples e direta.' }}"
           />
 
           <p class="site-map-heading-note">
-            {{ $currentQuery !== '' ? 'A busca atual continua ativa no mapa para ajudar a comparar proximidade, detalhe e rota no mesmo fluxo.' : 'Arraste o mapa, toque nos cards e use as categorias para descobrir o que combina melhor com o seu roteiro.' }}
+            {{ $currentQuery !== '' ? 'Arraste, aproxime e siga pelos cards sem perder o contexto.' : 'Comece no centro de Altamira e ajuste o mapa como preferir.' }}
           </p>
-
-          <div class="site-map-heading-actions">
-            @if($explorarHref !== '#')
-              <a href="{{ $explorarHref }}" class="site-button-secondary">Voltar para a lista</a>
-            @endif
-            @if(R::has('site.home'))
-              <a href="{{ route('site.home') }}" class="site-button-secondary">Inicio</a>
-            @endif
-          </div>
         </div>
+      </div>
+    </div>
 
+    <div class="site-map-searchwrap">
+      <div class="site-map-searchpanel">
+        <div class="site-map-searchpill">
+          <svg class="site-map-searchicon" viewBox="0 0 24 24" fill="none" role="img" aria-hidden="true">
+            <path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+          <input id="q" type="search" class="site-map-searchinput" placeholder="Buscar ponto ou empresa" autocomplete="off" value="{{ $currentQuery }}" />
+          <button type="button" class="site-map-searchclear" id="map-search-clear" @if($currentQuery === '') hidden @endif aria-label="Limpar busca">Limpar</button>
+        </div>
         @if(collect($categorias ?? [])->isNotEmpty())
-          <div class="site-map-category-row">
+          <div class="site-map-category-row site-map-category-row--top">
+            <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="map-categories-track" data-map-scroll-direction="-1" aria-label="Categorias anteriores">&larr;</button>
             @include('site.partials._categories_chips', [
                 'categorias' => $categorias,
                 'currentCat' => $currentCategory,
+                'scrollId' => 'map-categories-track',
                 'href' => fn ($cat) => route('site.mapa', array_filter([
                     'categoria' => $cat->slug,
                     'q' => $currentQuery !== '' ? $currentQuery : null,
                 ])),
             ])
+            <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="map-categories-track" data-map-scroll-direction="1" aria-label="Proximas categorias">&rarr;</button>
           </div>
         @endif
-      </div>
-    </div>
-
-    <div class="site-map-searchwrap">
-      <div class="site-map-searchpill">
-        <svg class="site-map-searchicon" viewBox="0 0 24 24" fill="none" role="img" aria-hidden="true">
-          <path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/>
-        </svg>
-        <input id="q" type="search" class="site-map-searchinput" placeholder="Buscar ponto ou empresa" autocomplete="off" value="{{ $currentQuery }}" />
       </div>
     </div>
 
     <section class="site-map-nearby" id="nearby" aria-label="Itens proximos">
       <div class="site-map-handle" aria-hidden="true"></div>
       <div class="site-map-sheet-head">
-        <div>
-          <p class="site-badge">Descoberta guiada</p>
-          <h2 class="site-map-sheet-title">O que esta por perto agora</h2>
-          <p class="site-map-sheet-subtitle">Toque em um card para focar no mapa, abrir o detalhe ou seguir a rota.</p>
+        <div class="site-map-sheet-actions">
+          <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="cards" data-map-scroll-direction="-1" aria-label="Itens anteriores">&larr;</button>
+          <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="cards" data-map-scroll-direction="1" aria-label="Proximos itens">&rarr;</button>
         </div>
-        @if($explorarHref !== '#')
-          <a href="{{ $explorarHref }}" class="site-link">Ver em lista</a>
-        @endif
       </div>
       <div class="site-map-cards" id="cards" aria-label="Itens proximos"></div>
     </section>
@@ -193,17 +185,28 @@
           'initialItems' => $initItems->values()->all(),
           'initialCategory' => $currentCategory?->slug ?? null,
           'initialQuery' => $currentQuery,
-          'defaultCenter' => [-3.2049, -52.2176],
-          'defaultZoom' => 13,
+          'defaultCenter' => [-3.2041, -52.2063],
+          'defaultZoom' => 14,
           'focusedZoom' => 15,
           'resultLimit' => 12,
           'requestLimit' => 200,
           'fitPadding' => [40, 40],
-          'fitToResultsOnFirstLoad' => true,
+          'fitToResultsOnFirstLoad' => false,
           'useBoundsAfterFirstLoad' => true,
           'readFocusFromUrl' => true,
-          'statusId' => null,
+          'statusId' => 'map-status',
+          'currentCategoryLabel' => $currentCategory?->nome ?? null,
           'filterButtonSelector' => null,
+          'markerSizes' => [
+              'mobile' => ['width' => 14, 'height' => 14, 'anchorX' => 7, 'anchorY' => 7, 'dot' => 4],
+              'tablet' => ['width' => 16, 'height' => 16, 'anchorX' => 8, 'anchorY' => 8, 'dot' => 5],
+              'desktop' => ['width' => 18, 'height' => 18, 'anchorX' => 9, 'anchorY' => 9, 'dot' => 5],
+          ],
+          'pingRadii' => [
+              'mobile' => 4,
+              'tablet' => 5,
+              'desktop' => 6,
+          ],
           'emptyTitle' => 'Nada apareceu nesta area',
           'emptyCopy' => 'Mova o mapa, limpe a busca ou troque de categoria para continuar explorando.',
       ],

@@ -75,34 +75,31 @@
     $membroCards = collect($membros ?? [])->map(fn ($membro) => [
         'title' => $membro->nome,
         'subtitle' => $membro->cargo ?: 'Equipe SEMTUR',
-        'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $membro->resumo), 130),
+        'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $membro->resumo), 96),
         'image' => $membro->foto_url ?: asset('imagens/avatar.png'),
         'href' => null,
         'badge' => 'Equipe',
     ]);
 @endphp
 
-<div class="site-page site-page-shell">
+<div class="site-page site-page-shell site-semtur-page">
     @include('site.partials._page_hero', [
         'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
         'breadcrumbs' => [
             ['label' => 'Inicio', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
             ['label' => 'Secretaria'],
         ],
-        'badge' => 'Institucional',
+        'badge' => 'Secretaria',
         'title' => $sec->nome ?? 'SEMTUR',
         'subtitle' => 'Informações institucionais, equipe e canais públicos da Secretaria Municipal de Turismo de Altamira.',
-        'meta' => [
-            'Altamira',
-            $membroCards->count().' membros',
-            $redeItems->count() ? $redeItems->count().' canais' : null,
-        ],
+        'meta' => [],
         'primaryActionLabel' => Route::has('site.mapa') ? 'Ver mapa turístico' : null,
         'primaryActionHref' => Route::has('site.mapa') ? route('site.mapa') : null,
         'secondaryActionLabel' => Route::has('site.contato') ? 'Contato' : null,
         'secondaryActionHref' => Route::has('site.contato') ? route('site.contato') : null,
         'image' => $heroUrl,
         'imageAlt' => $sec->nome ?? 'SEMTUR',
+        'compact' => true,
     ])
 
     <section class="site-section">

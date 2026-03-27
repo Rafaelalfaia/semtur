@@ -6,14 +6,14 @@
 <div class="ui-auth-shell">
     <div class="ui-auth-card">
         <div class="ui-auth-media">
-            <img src="{{ theme_asset('login_background') }}" alt="Paisagem institucional da SEMTUR" class="ui-auth-media-image">
+            <img src="{{ asset('imagens/altamira.jpg') }}" alt="Paisagem de Altamira" class="ui-auth-media-image">
             <div class="ui-auth-media-overlay"></div>
             <div class="ui-auth-media-copy">
                 <img src="{{ theme_asset('logo') }}" alt="Logo da SEMTUR" class="ui-auth-media-logo">
                 <div>
-                    <div class="ui-auth-eyebrow">Console institucional</div>
-                    <h1 class="ui-auth-heading">Acesso ao ambiente administrativo</h1>
-                    <p class="ui-auth-subtitle">O tema ativo do sistema também prepara esta entrada com identidade visual coerente e fallback seguro.</p>
+                    <div class="ui-auth-eyebrow">Visit Altamira</div>
+                    <h1 class="ui-auth-heading">Entre para continuar</h1>
+                    <p class="ui-auth-subtitle">Acesse sua conta com uma entrada mais direta, leve e alinhada ao restante do produto.</p>
                 </div>
             </div>
         </div>
@@ -91,7 +91,7 @@
                 </div>
 
                 <button type="submit" class="ui-btn-primary w-full justify-center">
-                    Entrar no console
+                    Entrar
                 </button>
 
                 @if(Route::has('register'))

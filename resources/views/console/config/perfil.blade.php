@@ -76,7 +76,7 @@
               </form>
             </div>
 
-            @error('avatar')<p class="mt-2 text-xs text-rose-500">{{ $message }}</p>@enderror
+            @error('avatar')<p class="mt-2 text-xs text-[var(--ui-danger)]">{{ $message }}</p>@enderror
           </div>
         </div>
       </x-dashboard.section-card>
@@ -94,13 +94,13 @@
             <div>
               <label class="ui-profile-label" for="name">Nome</label>
               <input id="name" type="text" name="name" value="{{ old('name', $u->name) }}" class="ui-profile-input">
-              @error('name')<p class="mt-1 text-xs text-rose-500">{{ $message }}</p>@enderror
+              @error('name')<p class="mt-1 text-xs text-[var(--ui-danger)]">{{ $message }}</p>@enderror
             </div>
 
             <div>
               <label class="ui-profile-label" for="email">E-mail</label>
               <input id="email" type="email" name="email" value="{{ old('email', $u->email) }}" class="ui-profile-input">
-              @error('email')<p class="mt-1 text-xs text-rose-500">{{ $message }}</p>@enderror
+              @error('email')<p class="mt-1 text-xs text-[var(--ui-danger)]">{{ $message }}</p>@enderror
             </div>
           </div>
 
@@ -116,7 +116,7 @@
                 class="ui-profile-input"
               >
               <input id="cpf" name="cpf" type="hidden" value="{{ old('cpf', $cpfDigits) }}">
-              @error('cpf')<p class="mt-1 text-xs text-rose-500">{{ $message }}</p>@enderror
+              @error('cpf')<p class="mt-1 text-xs text-[var(--ui-danger)]">{{ $message }}</p>@enderror
             </div>
           </div>
 
@@ -127,7 +127,7 @@
               <label class="ui-profile-label" for="password">Nova senha</label>
               <input id="password" name="password" type="password" class="ui-profile-input" autocomplete="new-password">
               <p class="ui-profile-help">Preencha apenas se quiser redefinir o acesso.</p>
-              @error('password')<p class="mt-1 text-xs text-rose-500">{{ $message }}</p>@enderror
+              @error('password')<p class="mt-1 text-xs text-[var(--ui-danger)]">{{ $message }}</p>@enderror
             </div>
 
             <div>

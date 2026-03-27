@@ -102,7 +102,7 @@
                         <article class="overflow-hidden rounded-[26px] border {{ $isActive ? 'border-[var(--ui-primary)] shadow-[0_24px_60px_rgba(12,33,22,0.18)]' : 'border-[var(--ui-border)] shadow-[var(--ui-shadow-surface)]' }} bg-[var(--ui-surface)]">
                             <div class="relative h-44 w-full overflow-hidden bg-[var(--ui-surface-soft)]">
                                 <img src="{{ $theme->preview_image_url ?: theme_asset('hero_image', $theme) }}" alt="Preview do tema {{ $theme->name }}" class="h-full w-full object-cover">
-                                <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></div>
+                                <div class="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(to_top,color-mix(in_srgb,var(--ui-text-title)_34%,transparent),transparent)]"></div>
                                 <div class="absolute left-4 top-4 flex flex-wrap gap-2">
                                     @if($isActive)
                                         <span class="ui-badge ui-badge-success">Ativo</span>

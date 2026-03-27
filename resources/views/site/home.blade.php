@@ -256,7 +256,7 @@
 
                             <div class="site-home-video-rail-body">
                                 <div class="site-home-video-rail-top">
-                                    <span class="site-badge">Video</span>
+                                    <span class="site-badge">Vídeo</span>
                                     @if($item['meta'])
                                         <span class="site-home-video-meta">{{ $item['meta'] }}</span>
                                     @endif

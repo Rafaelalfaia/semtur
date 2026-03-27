@@ -3,20 +3,11 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Models\Evento;
+use App\Models\EventoEdicao;
 
 class PortalController extends Controller
 {
-    public function descubra()
-    {
-        return $this->page('descubra');
-    }
-
-    // Alias temporário para compatibilidade
-    public function descobra()
-    {
-        return $this->descubra();
-    }
-
     public function roteiros()
     {
         return $this->page('roteiros');
@@ -63,9 +54,34 @@ class PortalController extends Controller
 
         abort_unless(isset($pages[$key]), 404);
 
-        return view('site.portal.index', [
+        $payload = [
             'page' => $pages[$key],
-        ]);
+        ];
+
+        if ($key === 'agenda') {
+            $payload['agendaEvents'] = $this->agendaPreviewEvents();
+        }
+
+        return view('site.portal.index', $payload);
+    }
+
+    private function agendaPreviewEvents()
+    {
+        return Evento::query()
+            ->select('eventos.*')
+            ->addSelect(['ano_max' => EventoEdicao::selectRaw('MAX(ano)')
+                ->whereColumn('evento_id', 'eventos.id')
+                ->where('status', 'publicado')])
+            ->whereExists(function ($query) {
+                $query->selectRaw(1)
+                    ->from('evento_edicoes')
+                    ->whereColumn('evento_edicoes.evento_id', 'eventos.id')
+                    ->where('evento_edicoes.status', 'publicado');
+            })
+            ->orderByDesc('ano_max')
+            ->with(['edicoes' => fn ($query) => $query->where('status', 'publicado')->orderByDesc('ano')])
+            ->limit(6)
+            ->get();
     }
 
     private function pages(): array

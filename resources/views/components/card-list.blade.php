@@ -20,31 +20,58 @@
     </div>
 
     <div class="site-card-list-body">
-        <div class="site-card-list-head">
-            <div>
+        @if($variant === 'compact')
+            <div class="site-card-list-copy">
                 @if($badge)
                     <span class="site-badge">{{ $badge }}</span>
                 @endif
 
                 <h3 class="site-card-list-title">{{ $title }}</h3>
+
+                @if($subtitle || $meta)
+                    <div class="site-card-list-meta">
+                        @if($subtitle)
+                            <span>{{ $subtitle }}</span>
+                        @endif
+                        @if($meta)
+                            <span>{{ $meta }}</span>
+                        @endif
+                    </div>
+                @endif
+
+                @if($summary)
+                    <p class="site-card-list-summary">{{ $summary }}</p>
+                @endif
             </div>
 
             <span class="site-button-secondary site-card-list-cta">{{ $cta }}</span>
-        </div>
+        @else
+            <div class="site-card-list-head">
+                <div>
+                    @if($badge)
+                        <span class="site-badge">{{ $badge }}</span>
+                    @endif
 
-        @if($subtitle || $meta)
-            <div class="site-card-list-meta">
-                @if($subtitle)
-                    <span>{{ $subtitle }}</span>
-                @endif
-                @if($meta)
-                    <span>{{ $meta }}</span>
-                @endif
+                    <h3 class="site-card-list-title">{{ $title }}</h3>
+                </div>
+
+                <span class="site-button-secondary site-card-list-cta">{{ $cta }}</span>
             </div>
-        @endif
 
-        @if($summary)
-            <p class="site-card-list-summary">{{ $summary }}</p>
+            @if($subtitle || $meta)
+                <div class="site-card-list-meta">
+                    @if($subtitle)
+                        <span>{{ $subtitle }}</span>
+                    @endif
+                    @if($meta)
+                        <span>{{ $meta }}</span>
+                    @endif
+                </div>
+            @endif
+
+            @if($summary)
+                <p class="site-card-list-summary">{{ $summary }}</p>
+            @endif
         @endif
     </div>
 </a>

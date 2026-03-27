@@ -6,7 +6,6 @@
         return R::has($name) ? route($name) : $fallback;
     };
 
-    $homeHref = $routeUrl('site.home', url('/'));
     $perfilHref = R::has('login') ? route('login') : url('/login');
     $perfilLabel = 'Entrar';
 
@@ -17,10 +16,8 @@
         if (method_exists($u, 'hasRole')) {
             if ($u->hasRole('Admin') && R::has('admin.dashboard')) {
                 $perfilHref = route('admin.dashboard');
-                $perfilLabel = 'Painel';
             } elseif ($u->hasRole('Coordenador') && R::has('coordenador.dashboard')) {
                 $perfilHref = route('coordenador.dashboard');
-                $perfilLabel = 'Painel';
             } elseif ($u->hasRole('Cidadao') && R::has('site.perfil.index')) {
                 $perfilHref = route('site.perfil.index');
             } elseif (R::has('dashboard')) {
@@ -31,19 +28,17 @@
 
     $sections = collect([
         [
-            'label' => 'Início',
+            'label' => json_decode('"In\u00edcio"'),
             'href' => $routeUrl('site.home', url('/')),
             'match' => ['site.home'],
         ],
         [
-            'label' => 'Descubra',
-            'href' => R::has('site.explorar')
-                ? route('site.explorar')
-                : $routeUrl('site.descubra'),
-            'match' => ['site.descubra', 'site.explorar*'],
+            'label' => 'Explorar',
+            'href' => $routeUrl('site.explorar'),
+            'match' => ['site.explorar*'],
         ],
         [
-            'label' => 'Eventos',
+            'label' => 'Agenda',
             'href' => $routeUrl('site.agenda'),
             'match' => ['site.agenda', 'eventos.*'],
         ],
@@ -52,32 +47,31 @@
             'href' => $routeUrl('site.mapa'),
             'match' => ['site.mapa*'],
         ],
+        [
+            'label' => $perfilLabel,
+            'href' => $perfilHref,
+            'match' => ['site.perfil*', 'profile*', 'dashboard', 'admin.*', 'coordenador.*', 'login'],
+        ],
     ])->filter(fn ($item) => filled($item['href']) && $item['href'] !== '#')->values();
+
+    $navLabel = json_decode('"Se\u00e7\u00f5es do portal"');
 @endphp
 
 <header class="site-topbar">
     <div class="site-topbar-inner">
-        <a href="{{ $homeHref }}" class="site-brand">
+        <a href="{{ $routeUrl('site.home', url('/')) }}" class="site-brand">
             <img src="{{ theme_asset('logo') }}" alt="VisitAltamira" class="site-brand-logo" loading="lazy" decoding="async">
-            <span class="site-brand-copy">
-                <strong>VisitAltamira</strong>
-                <span>Guia oficial</span>
-            </span>
         </a>
 
-        <div class="site-topbar-actions">
-            <a href="{{ $perfilHref }}" class="site-button-secondary">{{ $perfilLabel }}</a>
-        </div>
+        <nav class="site-topbar-nav" aria-label="{{ $navLabel }}">
+            @foreach($sections as $item)
+                @php $active = request()->routeIs($item['match']); @endphp
+                <a href="{{ $item['href'] }}"
+                   class="{{ $active ? 'site-chip site-chip-active' : 'site-chip' }}"
+                   @if($active) aria-current="page" @endif>
+                    {{ $item['label'] }}
+                </a>
+            @endforeach
+        </nav>
     </div>
-
-    <nav class="site-topbar-nav" aria-label="Seções do portal">
-        @foreach($sections as $item)
-            @php $active = request()->routeIs($item['match']); @endphp
-            <a href="{{ $item['href'] }}"
-               class="{{ $active ? 'site-chip site-chip-active' : 'site-chip' }}"
-               @if($active) aria-current="page" @endif>
-                {{ $item['label'] }}
-            </a>
-        @endforeach
-    </nav>
 </header>

@@ -41,23 +41,23 @@
   });
 @endphp
 
-<div class="site-page site-page-shell">
+<div class="site-page site-page-shell site-agenda-page">
     @include('site.partials._page_hero', [
         'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
         'breadcrumbs' => [
             ['label' => 'Inicio', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
             ['label' => 'Agenda'],
         ],
-        'badge' => 'Agenda publica',
+        'badge' => 'Agenda 2.0',
         'title' => 'Eventos de Altamira',
-        'subtitle' => 'Edições publicadas para quem quer descobrir o calendário cultural e turístico com mais clareza.',
+        'subtitle' => 'Descubra os eventos publicados com leitura rapida, foco em datas e clima de app.',
         'meta' => [
             $eventCards->count().' eventos',
             $anoAtual ? 'Ano '.$anoAtual : 'Multiplos anos',
         ],
         'primaryActionLabel' => Route::has('site.explorar') ? 'Explorar a cidade' : null,
         'primaryActionHref' => Route::has('site.explorar') ? route('site.explorar') : null,
-        'secondaryActionLabel' => Route::has('site.mapa') ? 'Ver mapa turístico' : null,
+        'secondaryActionLabel' => Route::has('site.mapa') ? 'Ver mapa turistico' : null,
         'secondaryActionHref' => Route::has('site.mapa') ? route('site.mapa') : null,
         'image' => theme_asset('hero_image'),
         'imageAlt' => 'Agenda de eventos de Altamira',
@@ -66,9 +66,9 @@
 
     @if($anosDisponiveis->isNotEmpty())
         <section class="site-section">
-            <div class="site-surface-soft">
-                <x-section-head eyebrow="Filtros" title="Refine por ano" subtitle="Use os chips para focar nas edições publicadas do período desejado." />
-                <div class="site-filter-row">
+            <div class="site-surface-soft site-agenda-filter-shell">
+                <x-section-head eyebrow="Filtros" title="Escolha o ano" subtitle="Troque rapidamente o recorte da agenda." />
+                <div class="site-filter-row site-agenda-filter-row">
                     @foreach($anosDisponiveis as $ano)
                         <a href="{{ route('eventos.index', array_filter(['ano' => $ano])) }}" class="{{ (string) $ano === (string) $anoAtual ? 'site-year-chip is-active' : 'site-year-chip' }}">
                             {{ $ano }}
@@ -83,33 +83,25 @@
     @endif
 
     <section class="site-section">
-        <x-section-head
-            eyebrow="Programacao"
-            title="Eventos publicados"
-            subtitle="Uma grade editorial alinhada ao restante do portal, com leitura leve e foco em descoberta."
-        />
-
         @if($eventCards->isEmpty())
             <div class="site-empty-state">
                 <p class="site-empty-state-copy">Nenhum evento apareceu neste recorte. Tente outro ano ou volte em breve.</p>
             </div>
         @else
-            <div class="site-card-list-grid">
-                @foreach($eventCards as $item)
-                    <x-card-list
-                        :title="$item['title']"
-                        :subtitle="$item['subtitle']"
-                        :summary="$item['summary']"
-                        :image="$item['image']"
-                        :href="$item['href']"
-                        :badge="$item['badge']"
-                        :cta="$item['cta']"
-                    />
-                @endforeach
+            <div class="site-agenda-events-section">
+                @include('site.partials._category_section', [
+                    'eyebrow' => 'Programacao',
+                    'title' => 'Eventos publicados',
+                    'subtitle' => 'Passe pelos cards e abra os detalhes do evento que fizer sentido para a viagem.',
+                    'items' => $eventCards,
+                    'layout' => 'carousel',
+                    'cardVariant' => 'compact',
+                    'empty' => 'Nenhum evento apareceu neste recorte. Tente outro ano ou volte em breve.',
+                ])
             </div>
 
             @if($isPaginator)
-                <div class="site-surface-soft">
+                <div class="site-surface-soft site-agenda-pagination-shell">
                     {{ $eventos->withQueryString()->links() }}
                 </div>
             @endif

@@ -30,8 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const pontoPatterns = Array.isArray(config.pontoPatterns) ? config.pontoPatterns : [];
         const initialItems = Array.isArray(config.initialItems) ? config.initialItems : [];
         const searchInput = document.getElementById(config.searchId || '');
+        const searchClearButton = document.getElementById('map-search-clear');
         const cardsElement = document.getElementById(config.cardsId || '');
         const statusElement = config.statusId ? document.getElementById(config.statusId) : null;
+        const railControls = Array.from(root.querySelectorAll('[data-map-scroll-target]'));
         const filterButtons = config.filterButtonSelector
             ? Array.from(root.querySelectorAll(config.filterButtonSelector))
             : [];
@@ -111,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const map = window.L.map(config.mapId, {
         zoomControl: true,
-        scrollWheelZoom: false,
+        scrollWheelZoom: true,
         dragging: true,
         touchZoom: true,
         doubleClickZoom: true,
@@ -141,7 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (map.scrollWheelZoom) {
-            map.scrollWheelZoom.disable();
+            if (locked) {
+                map.scrollWheelZoom.disable();
+            } else {
+                map.scrollWheelZoom.enable();
+            }
         }
 
         if (map.boxZoom) {
@@ -197,6 +203,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 timer = window.setTimeout(() => fn(...args), ms);
             };
         };
+
+        railControls.forEach((button) => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-map-scroll-target');
+                const direction = Number(button.getAttribute('data-map-scroll-direction') || '1');
+                const target = targetId ? document.getElementById(targetId) : null;
+
+                if (!target) {
+                    return;
+                }
+
+                const step = Math.max(120, Math.round(target.clientWidth * 0.72));
+                target.scrollBy({ left: step * direction, behavior: 'smooth' });
+            });
+        });
 
         const keyFor = (item) => `${item.type}:${item.id}`;
         const ensureAbs = (href) => {
@@ -307,9 +328,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const total = items.length;
-            const categoryLabel = filterButtons.find((button) => button.dataset.category === currentCategory)?.dataset.label || 'Tudo';
+            const categoryLabel = filterButtons.find((button) => button.dataset.category === currentCategory)?.dataset.label
+                || config.currentCategoryLabel
+                || 'Tudo';
+            const queryLabel = currentQuery ? ` para "${currentQuery}"` : '';
             statusElement.textContent = total
-                ? `${total} locais publicados${categoryLabel && categoryLabel !== 'Tudo' ? ` em ${categoryLabel}` : ''}`
+                ? `${total} locais publicados${categoryLabel && categoryLabel !== 'Tudo' ? ` em ${categoryLabel}` : ''}${queryLabel}`
                 : 'Nenhum local publicado nesta leitura.';
         }
 
@@ -340,13 +364,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.innerHTML = `
                     ${item.foto ? `<button type="button" class="site-map-card-media"><img src="${ensureAbs(item.foto)}" alt="${String(item.nome || '').replace(/"/g, '&quot;')}" class="site-map-card-image"></button>` : '<button type="button" class="site-map-card-media site-map-card-media-placeholder"></button>'}
                     <div class="site-map-card-body">
-                        <span class="site-badge">${item.type === 'empresa' ? 'Empresa' : 'Ponto turistico'}</span>
                         <h3 class="site-map-card-title">${item.nome || 'Item turistico'}</h3>
                         <p class="site-map-card-subtitle">${item.cidade || 'Altamira'}</p>
-                        <p class="site-map-card-helper">${directionsHref ? 'Veja no mapa, abra o detalhe ou siga a rota.' : 'Veja no mapa e abra o detalhe para continuar explorando.'}</p>
+                        <p class="site-map-card-helper">${directionsHref ? 'Foque, abra ou siga a rota.' : 'Foque no mapa ou abra o detalhe.'}</p>
                         <div class="site-map-card-actions">
-                            <button type="button" class="site-map-card-link is-primary">Focar no mapa</button>
-                            <a href="${href}" class="site-map-card-link">Ver detalhe</a>
+                            <button type="button" class="site-map-card-link is-primary">Focar</button>
+                            <a href="${href}" class="site-map-card-link">Detalhe</a>
                             ${directionsHref ? `<a href="${directionsHref}" target="_blank" rel="noopener noreferrer" class="site-map-card-link">Rota</a>` : ''}
                         </div>
                     </div>
@@ -457,10 +480,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (searchInput) {
             searchInput.value = currentQuery;
+            const syncSearchClearButton = () => {
+                if (!searchClearButton) {
+                    return;
+                }
+
+                searchClearButton.hidden = !currentQuery;
+            };
+
             searchInput.addEventListener('input', debounce((event) => {
                 currentQuery = event.target.value || '';
+                syncSearchClearButton();
                 fetchFeedDebounced();
             }));
+
+            syncSearchClearButton();
+
+            searchClearButton?.addEventListener('click', () => {
+                currentQuery = '';
+                searchInput.value = '';
+                syncSearchClearButton();
+                searchInput.focus();
+                fetchFeedDebounced();
+            });
         }
 
         if (filterButtons.length) {
@@ -486,16 +528,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (initialItems.length) {
             syncMarkers(initialItems);
             renderCards(initialItems);
-            try {
-                map.fitBounds(
-                    initialItems
-                        .filter((item) => typeof item.lat === 'number' && typeof item.lng === 'number')
-                        .map((item) => [item.lat, item.lng]),
-                    { padding: [30, 30] }
-                );
-            } catch (error) {
-                // noop
-            }
         }
 
         const invalidateMapSize = debounce(() => {
