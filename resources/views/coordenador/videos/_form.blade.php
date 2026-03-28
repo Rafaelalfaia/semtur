@@ -58,19 +58,19 @@
         <div class="space-y-6">
             <section class="rounded-2xl border border-white/10 bg-[#0F1412] p-5">
                 <div class="mb-5">
-                    <div class="text-xs uppercase tracking-[0.18em] text-sky-300/80">Conteudo</div>
+                    <div class="text-xs uppercase tracking-[0.18em] text-sky-300/80">Conteúdo</div>
                     <h2 class="mt-1 text-lg font-semibold text-slate-100">Dados principais</h2>
                 </div>
 
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="md:col-span-2">
-                        <label class="mb-1 block text-sm text-slate-300">Titulo</label>
+                        <label class="mb-1 block text-sm text-slate-300">Título</label>
                         <input
                             type="text"
                             name="titulo"
                             value="{{ old('titulo', $video->titulo ?? '') }}"
                             class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-slate-100"
-                            placeholder="Ex.: Video institucional de Altamira"
+                            placeholder="Ex.: Vídeo institucional de Altamira"
                             required
                         >
                         @error('titulo')<p class="mt-1 text-xs text-rose-300">{{ $message }}</p>@enderror
@@ -101,12 +101,12 @@
                     </div>
 
                     <div class="md:col-span-2">
-                        <label class="mb-1 block text-sm text-slate-300">Descricao</label>
+                        <label class="mb-1 block text-sm text-slate-300">Descrição</label>
                         <textarea
                             name="descricao"
                             rows="7"
                             class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-slate-100"
-                            placeholder="Descreva o conteudo do video, sua proposta e o que o visitante vai encontrar."
+                            placeholder="Descreva o conteúdo do vídeo, sua proposta e o que o visitante vai encontrar."
                             required
                         >{{ old('descricao', $video->descricao ?? '') }}</textarea>
                         @error('descricao')<p class="mt-1 text-xs text-rose-300">{{ $message }}</p>@enderror
@@ -138,7 +138,7 @@
                     <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                         <div class="text-[11px] uppercase tracking-wide text-slate-500">Preview interno</div>
                         <p class="mt-2 text-sm leading-6 text-slate-300">
-                            No site publico, o video sera aberto dentro do projeto usando um visualizador embutido.
+                            No site público, o vídeo será aberto dentro do projeto usando um visualizador embutido.
                         </p>
 
                         <div class="mt-3 flex flex-wrap gap-2">
@@ -170,8 +170,8 @@
         <div class="space-y-6">
             <section class="rounded-2xl border border-white/10 bg-[#0F1412] p-5">
                 <div class="mb-5">
-                    <div class="text-xs uppercase tracking-[0.18em] text-sky-300/80">Publicacao</div>
-                    <h2 class="mt-1 text-lg font-semibold text-slate-100">Status do video</h2>
+                    <div class="text-xs uppercase tracking-[0.18em] text-sky-300/80">Publicação</div>
+                    <h2 class="mt-1 text-lg font-semibold text-slate-100">Status do vídeo</h2>
                 </div>
 
                 <div>
@@ -193,7 +193,7 @@
                 <div class="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
                     <div class="font-semibold">Regra importante</div>
                     <p class="mt-1 leading-6">
-                        Para publicar, o video precisa ter uma capa valida e um link do Google Drive com acesso permitido.
+                        Para publicar, o vídeo precisa ter uma capa válida e um link do Google Drive com acesso permitido.
                     </p>
                 </div>
             </section>
@@ -201,7 +201,7 @@
             <section class="rounded-2xl border border-white/10 bg-[#0F1412] p-5">
                 <div class="mb-5">
                     <div class="text-xs uppercase tracking-[0.18em] text-sky-300/80">Imagem</div>
-                    <h2 class="mt-1 text-lg font-semibold text-slate-100">Capa do video</h2>
+                    <h2 class="mt-1 text-lg font-semibold text-slate-100">Capa do vídeo</h2>
                 </div>
 
                 <div>
@@ -218,7 +218,7 @@
                     <div class="ui-video-cover-preview mt-4 overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60">
                         <div class="relative h-56 w-full bg-slate-800">
                             <template x-if="coverPreview && !removeCurrentCover">
-                                <img :src="coverPreview" alt="Previa da capa" class="h-full w-full object-cover">
+                                <img :src="coverPreview" alt="Prévia da capa" class="h-full w-full object-cover">
                             </template>
 
                             <template x-if="!coverPreview || removeCurrentCover">
@@ -227,7 +227,7 @@
                         </div>
 
                         <div class="p-3 text-xs text-slate-400">
-                            A capa sera usada na listagem publica e na pagina individual do video.
+                            A capa será usada na listagem pública e na página individual do vídeo.
                         </div>
                     </div>
 

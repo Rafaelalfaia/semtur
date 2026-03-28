@@ -6,16 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Theme;
 use App\Services\ThemeManager;
 use App\Services\ThemeResolver;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File as FileFacade;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use ZipArchive;
 
 class ThemeController extends Controller
 {
+    private const PACKAGE_SCHEMA_VERSION = 1;
+
     public function index(Request $request, ThemeResolver $resolver)
     {
         $filters = [
@@ -39,6 +44,9 @@ class ThemeController extends Controller
         return view('admin.temas.index', [
             'themes' => $themes,
             'activeTheme' => $resolver->activeTheme(Theme::SCOPE_CONSOLE),
+            'activeConsoleTheme' => $resolver->activeTheme(Theme::SCOPE_CONSOLE),
+            'activeSiteTheme' => $resolver->activeTheme(Theme::SCOPE_SITE),
+            'activeAuthTheme' => $resolver->activeTheme(Theme::SCOPE_AUTH),
             'previewTheme' => $resolver->previewThemeFor(auth()->user(), Theme::SCOPE_CONSOLE),
             'filters' => $filters,
             'statuses' => Theme::STATUSES,
@@ -80,6 +88,197 @@ class ThemeController extends Controller
             ->with('ok', 'Tema criado com sucesso.');
     }
 
+    public function import(Request $request, ThemeResolver $resolver)
+    {
+        $data = $request->validate([
+            'package' => ['required', 'file', 'mimes:zip', 'max:12288'],
+            'import_mode' => ['required', Rule::in(['create_copy', 'update_existing'])],
+        ], [
+            'package.required' => 'Selecione um pacote .zip do tema.',
+            'package.mimes' => 'Envie um arquivo .zip válido.',
+            'import_mode.in' => 'Selecione um modo de importação válido.',
+        ]);
+
+        $tempDir = storage_path('app/tmp/theme-import-' . Str::uuid());
+        FileFacade::ensureDirectoryExists($tempDir);
+
+        try {
+            $packagePath = $request->file('package')->getRealPath();
+            $zip = new ZipArchive();
+
+            if ($zip->open($packagePath) !== true) {
+                throw ValidationException::withMessages([
+                    'package' => 'Não foi possível abrir o pacote do tema.',
+                ]);
+            }
+
+            if ($zip->locateName('manifest.json') === false) {
+                $zip->close();
+
+                throw ValidationException::withMessages([
+                    'package' => 'O pacote não contém manifest.json.',
+                ]);
+            }
+
+            $zip->extractTo($tempDir);
+            $zip->close();
+
+            $manifestPath = $tempDir . DIRECTORY_SEPARATOR . 'manifest.json';
+            $manifestRaw = FileFacade::get($manifestPath);
+            $manifest = json_decode($manifestRaw, true);
+
+            if (! is_array($manifest)) {
+                throw ValidationException::withMessages([
+                    'package' => 'O manifest.json do pacote é inválido.',
+                ]);
+            }
+
+            $schemaVersion = (int) ($manifest['schema_version'] ?? 0);
+            if ($schemaVersion !== self::PACKAGE_SCHEMA_VERSION) {
+                throw ValidationException::withMessages([
+                    'package' => 'A versão do pacote do tema não é suportada.',
+                ]);
+            }
+
+            $themeData = $manifest['theme'] ?? null;
+            if (! is_array($themeData)) {
+                throw ValidationException::withMessages([
+                    'package' => 'O pacote não contém a definição do tema.',
+                ]);
+            }
+
+            $normalized = $this->validateImportedThemeData($themeData);
+            $slug = Theme::uniqueSlug($normalized['slug'] ?: $normalized['name']);
+            $existing = Theme::query()->where('slug', $normalized['slug'])->first();
+            $mode = $data['import_mode'];
+
+            if ($mode === 'update_existing' && ! $existing) {
+                throw ValidationException::withMessages([
+                    'package' => 'Não existe tema com o mesmo slug para atualizar neste ambiente.',
+                ]);
+            }
+
+            $theme = DB::transaction(function () use ($normalized, $existing, $mode, $tempDir, &$slug) {
+                $target = $mode === 'update_existing' && $existing
+                    ? $existing
+                    : new Theme();
+
+                if ($target->exists) {
+                    $slug = $target->slug;
+                }
+
+                $storedAssetPaths = [];
+
+                try {
+                    $managedAssets = $target->persistedAssets();
+                    foreach (Theme::assetKeys() as $field) {
+                        $assetReference = data_get($normalized, "assets.{$field}");
+                        if (! filled($assetReference)) {
+                            continue;
+                        }
+
+                        if ($this->isPackagedAssetPath((string) $assetReference)) {
+                            if ($target->hasPersistedAsset($field)) {
+                                $this->deleteAssetIfStored((string) $target->persistedAssetPath($field));
+                            }
+
+                            $stored = $this->storeImportedAsset(
+                                $tempDir,
+                                (string) $assetReference,
+                                "themes/{$field}",
+                                $slug
+                            );
+                            $storedAssetPaths[] = $stored;
+                            $managedAssets[$field] = $stored;
+                        } else {
+                            $managedAssets[$field] = (string) $assetReference;
+                        }
+                    }
+
+                    $previewImagePath = $target->preview_image_path;
+                    $previewReference = data_get($normalized, 'preview_image');
+                    if (filled($previewReference)) {
+                        if ($this->isPackagedAssetPath((string) $previewReference)) {
+                            if ($previewImagePath) {
+                                $this->deleteAssetIfStored((string) $previewImagePath);
+                            }
+
+                            $previewImagePath = $this->storeImportedAsset(
+                                $tempDir,
+                                (string) $previewReference,
+                                'themes/preview-image',
+                                $slug
+                            );
+                            $storedAssetPaths[] = $previewImagePath;
+                        } else {
+                            $previewImagePath = (string) $previewReference;
+                        }
+                    }
+
+                    $tokens = $target->mergeManagedTokens($normalized['tokens']);
+                    $assets = $target->mergeManagedAssets($managedAssets);
+
+                    $isCreating = ! $target->exists;
+                    $payload = [
+                        'name' => $normalized['name'],
+                        'slug' => $mode === 'update_existing'
+                            ? $target->slug
+                            : Theme::uniqueSlug($normalized['slug'] ?: $normalized['name']),
+                        'base_theme' => $normalized['base_theme'],
+                        'type' => $normalized['type'] ?? null,
+                        'status' => $normalized['status'],
+                        'description' => $normalized['description'] ?? null,
+                        'starts_at' => $normalized['starts_at'] ?? null,
+                        'ends_at' => $normalized['ends_at'] ?? null,
+                        'is_default' => false,
+                        'tokens' => $tokens,
+                        'assets' => $assets,
+                        'config_json' => $normalized['config_json'] ?? null,
+                        'application_scopes' => $normalized['application_scopes'],
+                    ];
+
+                    if (Schema::hasColumn('themes', 'created_by')) {
+                        $payload['created_by'] = $isCreating ? auth()->id() : $target->created_by;
+                    }
+
+                    if (Schema::hasColumn('themes', 'updated_by')) {
+                        $payload['updated_by'] = auth()->id();
+                    }
+
+                    $target->fill($payload);
+                    $target->preview_image_path = $previewImagePath;
+                    $target->save();
+
+                    app(ThemeManager::class)->logActivity(
+                        $target,
+                        $isCreating ? Theme::LOG_ACTION_CREATED : Theme::LOG_ACTION_UPDATED,
+                        [
+                            'source' => 'package_import',
+                            'status' => $target->status,
+                            'scopes' => $target->normalizedScopes(),
+                        ]
+                    );
+
+                    return $target->refresh();
+                } catch (\Throwable $e) {
+                    foreach ($storedAssetPaths as $path) {
+                        $this->deleteAssetIfStored($path);
+                    }
+
+                    throw $e;
+                }
+            });
+
+            $resolver->forgetCache();
+
+            return redirect()
+                ->route('admin.temas.edit', $theme)
+                ->with('ok', 'Tema importado com sucesso. Nenhum escopo foi ativado automaticamente.');
+        } finally {
+            FileFacade::deleteDirectory($tempDir);
+        }
+    }
+
     public function edit(Theme $tema, ThemeResolver $resolver)
     {
         return view('admin.temas.edit', [
@@ -90,8 +289,75 @@ class ThemeController extends Controller
             'tokenGroups' => $this->tokenGroups(),
             'assetGroups' => $this->assetGroups(),
             'activeTheme' => $resolver->activeTheme(Theme::SCOPE_CONSOLE),
+            'activeConsoleTheme' => $resolver->activeTheme(Theme::SCOPE_CONSOLE),
+            'activeSiteTheme' => $resolver->activeTheme(Theme::SCOPE_SITE),
+            'activeAuthTheme' => $resolver->activeTheme(Theme::SCOPE_AUTH),
             'previewTheme' => $resolver->previewThemeFor(auth()->user(), Theme::SCOPE_CONSOLE),
         ]);
+    }
+
+    public function export(Theme $tema)
+    {
+        $tempDir = storage_path('app/tmp/theme-export-' . Str::uuid());
+        FileFacade::ensureDirectoryExists($tempDir);
+        FileFacade::ensureDirectoryExists($tempDir . DIRECTORY_SEPARATOR . 'assets');
+
+        try {
+            $manifest = [
+                'schema_version' => self::PACKAGE_SCHEMA_VERSION,
+                'exported_at' => now()->toIso8601String(),
+                'theme' => [
+                    'name' => $tema->name,
+                    'slug' => $tema->slug,
+                    'base_theme' => $tema->base_theme,
+                    'type' => $tema->type,
+                    'description' => $tema->description,
+                    'status' => $tema->normalizedStatus(),
+                    'application_scopes' => $tema->normalizedScopes(),
+                    'starts_at' => optional($tema->starts_at)?->toIso8601String(),
+                    'ends_at' => optional($tema->ends_at)?->toIso8601String(),
+                    'tokens' => $tema->persistedTokens(),
+                    'config_json' => $this->exportableConfig($tema),
+                    'assets' => [],
+                    'preview_image' => null,
+                ],
+            ];
+
+            foreach ($tema->persistedAssets() as $key => $path) {
+                $manifest['theme']['assets'][$key] = $this->copyAssetToPackage($path, $key, $tempDir);
+            }
+
+            if ($tema->preview_image_path) {
+                $manifest['theme']['preview_image'] = $this->copyAssetToPackage($tema->preview_image_path, 'preview_image', $tempDir);
+            }
+
+            FileFacade::put(
+                $tempDir . DIRECTORY_SEPARATOR . 'manifest.json',
+                json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            );
+
+            $zipPath = storage_path('app/tmp/' . ($tema->slug ?: 'tema') . '-theme-package.zip');
+            if (FileFacade::exists($zipPath)) {
+                FileFacade::delete($zipPath);
+            }
+
+            $zip = new ZipArchive();
+            if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+                abort(500, 'Não foi possível gerar o pacote do tema.');
+            }
+
+            $files = FileFacade::allFiles($tempDir);
+            foreach ($files as $file) {
+                $relative = ltrim(Str::after($file->getPathname(), $tempDir), DIRECTORY_SEPARATOR);
+                $zip->addFile($file->getPathname(), str_replace(DIRECTORY_SEPARATOR, '/', $relative));
+            }
+
+            $zip->close();
+
+            return response()->download($zipPath, ($tema->slug ?: 'tema') . '-theme-package.zip')->deleteFileAfterSend(true);
+        } finally {
+            FileFacade::deleteDirectory($tempDir);
+        }
     }
 
     public function update(Request $request, Theme $tema, ThemeResolver $resolver)
@@ -151,6 +417,8 @@ class ThemeController extends Controller
             $tema->update($updates);
         }
 
+        abort_unless($tema->isAvailableFor(Theme::SCOPE_CONSOLE), 422, 'Este tema nao esta disponivel para o console.');
+
         $manager->activate($tema);
 
         return back()->with('ok', 'Tema ativado globalmente no console.');
@@ -161,6 +429,66 @@ class ThemeController extends Controller
         $manager->restoreDefault();
 
         return back()->with('ok', 'Tema padrão restaurado no console.');
+    }
+
+    public function activateSite(Theme $tema, ThemeManager $manager)
+    {
+        abort_if($tema->normalizedStatus() === Theme::STATUS_ARQUIVADO, 422, 'Tema arquivado nao pode ser ativado.');
+
+        if ($tema->normalizedStatus() === Theme::STATUS_RASCUNHO) {
+            $updates = [
+                'status' => Theme::STATUS_DISPONIVEL,
+            ];
+
+            if (Schema::hasColumn('themes', 'updated_by')) {
+                $updates['updated_by'] = auth()->id();
+            }
+
+            $tema->update($updates);
+        }
+
+        abort_unless($tema->isAvailableFor(Theme::SCOPE_SITE), 422, 'Este tema nao esta disponivel para o site.');
+
+        $manager->activateForScope($tema, Theme::SCOPE_SITE);
+
+        return back()->with('ok', 'Tema ativado no site.');
+    }
+
+    public function activateAuth(Theme $tema, ThemeManager $manager)
+    {
+        abort_if($tema->normalizedStatus() === Theme::STATUS_ARQUIVADO, 422, 'Tema arquivado nao pode ser ativado.');
+
+        if ($tema->normalizedStatus() === Theme::STATUS_RASCUNHO) {
+            $updates = [
+                'status' => Theme::STATUS_DISPONIVEL,
+            ];
+
+            if (Schema::hasColumn('themes', 'updated_by')) {
+                $updates['updated_by'] = auth()->id();
+            }
+
+            $tema->update($updates);
+        }
+
+        abort_unless($tema->isAvailableFor(Theme::SCOPE_AUTH), 422, 'Este tema nao esta disponivel para o auth/login.');
+
+        $manager->activateForScope($tema, Theme::SCOPE_AUTH);
+
+        return back()->with('ok', 'Tema ativado no auth/login.');
+    }
+
+    public function restoreDefaultSite(ThemeManager $manager)
+    {
+        $manager->restoreDefaultForScope(Theme::SCOPE_SITE);
+
+        return back()->with('ok', 'Tema padrao restaurado no site.');
+    }
+
+    public function restoreDefaultAuth(ThemeManager $manager)
+    {
+        $manager->restoreDefaultForScope(Theme::SCOPE_AUTH);
+
+        return back()->with('ok', 'Tema padrao restaurado no auth/login.');
     }
 
     public function archive(Theme $tema, ThemeManager $manager, ThemeResolver $resolver)
@@ -189,6 +517,49 @@ class ThemeController extends Controller
         $manager->archive($tema);
 
         return back()->with('ok', 'Tema arquivado com sucesso.');
+    }
+
+    public function destroy(Theme $tema, ThemeResolver $resolver)
+    {
+        $activeConsole = $resolver->activeTheme(Theme::SCOPE_CONSOLE);
+        $activeSite = $resolver->activeTheme(Theme::SCOPE_SITE);
+        $activeAuth = $resolver->activeTheme(Theme::SCOPE_AUTH);
+
+        if ($tema->is_default) {
+            return back()->with('erro', 'O tema default não pode ser apagado.');
+        }
+
+        if (
+            ($activeConsole && $activeConsole->is($tema))
+            || ($activeSite && $activeSite->is($tema))
+            || ($activeAuth && $activeAuth->is($tema))
+        ) {
+            return back()->with('erro', 'Desative este tema em todos os escopos antes de apagar.');
+        }
+
+        if (Theme::query()->count() <= 1) {
+            return back()->with('erro', 'Mantenha pelo menos um tema no sistema.');
+        }
+
+        DB::transaction(function () use ($tema) {
+            foreach ($tema->persistedAssets() as $path) {
+                if (is_string($path) && $path !== '') {
+                    $this->deleteAssetIfStored($path);
+                }
+            }
+
+            if ($tema->preview_image_path) {
+                $this->deleteAssetIfStored((string) $tema->preview_image_path);
+            }
+
+            $tema->delete();
+        });
+
+        $resolver->forgetCache();
+
+        return redirect()
+            ->route('admin.temas.index')
+            ->with('ok', 'Tema apagado com sucesso.');
     }
 
     private function validateTheme(Request $request, ?Theme $theme = null): array
@@ -362,6 +733,131 @@ class ThemeController extends Controller
         }
 
         Storage::disk('public')->delete($path);
+    }
+
+    private function validateImportedThemeData(array $themeData): array
+    {
+        $name = trim((string) ($themeData['name'] ?? ''));
+        if ($name === '') {
+            throw ValidationException::withMessages([
+                'package' => 'O pacote não informa o nome do tema.',
+            ]);
+        }
+
+        $baseTheme = (string) ($themeData['base_theme'] ?? '');
+        if (! array_key_exists($baseTheme, $this->baseThemes())) {
+            throw ValidationException::withMessages([
+                'package' => 'O pacote informa um tema base inválido.',
+            ]);
+        }
+
+        $status = (string) ($themeData['status'] ?? Theme::STATUS_DISPONIVEL);
+        if (! in_array($status, Theme::STATUSES, true)) {
+            throw ValidationException::withMessages([
+                'package' => 'O pacote informa um status inválido.',
+            ]);
+        }
+
+        $scopes = $this->normalizeScopes((array) ($themeData['application_scopes'] ?? [Theme::SCOPE_GLOBAL]));
+        $config = $themeData['config_json'] ?? null;
+        if ($config !== null) {
+            if (! is_array($config)) {
+                throw ValidationException::withMessages([
+                    'package' => 'O config_json do pacote deve ser um objeto válido.',
+                ]);
+            }
+
+            unset($config[Theme::CONFIG_SCOPE_KEY], $config[Theme::LEGACY_CONFIG_SCOPE_KEY]);
+            $config = $this->sanitizeConfigJson($config);
+        }
+
+        $tokens = collect(Theme::tokenDefinitions())
+            ->mapWithKeys(function ($label, $key) use ($themeData) {
+                $value = data_get($themeData, "tokens.{$key}");
+                $value = is_string($value) ? trim($value) : null;
+
+                return [$key => filled($value) ? Str::limit($value, 120, '') : null];
+            })
+            ->filter(fn ($value) => $value !== null)
+            ->all();
+
+        $assets = [];
+        foreach (Theme::assetKeys() as $key) {
+            $value = data_get($themeData, "assets.{$key}");
+            if (filled($value)) {
+                $assets[$key] = (string) $value;
+            }
+        }
+
+        return [
+            'name' => Str::limit($name, 140, ''),
+            'slug' => Str::slug((string) ($themeData['slug'] ?? $name)),
+            'base_theme' => $baseTheme,
+            'type' => filled($themeData['type'] ?? null) ? Str::limit((string) $themeData['type'], 80, '') : null,
+            'description' => filled($themeData['description'] ?? null) ? (string) $themeData['description'] : null,
+            'status' => $status,
+            'application_scopes' => $scopes,
+            'starts_at' => filled($themeData['starts_at'] ?? null) ? $themeData['starts_at'] : null,
+            'ends_at' => filled($themeData['ends_at'] ?? null) ? $themeData['ends_at'] : null,
+            'tokens' => $tokens,
+            'assets' => $assets,
+            'preview_image' => filled($themeData['preview_image'] ?? null) ? (string) $themeData['preview_image'] : null,
+            'config_json' => $config,
+        ];
+    }
+
+    private function copyAssetToPackage(string $path, string $key, string $tempDir): string
+    {
+        if (Str::startsWith($path, ['/', 'http://', 'https://', 'imagens/', 'images/'])) {
+            return $path;
+        }
+
+        $source = storage_path('app/public/' . ltrim($path, '/'));
+        if (! FileFacade::exists($source)) {
+            return $path;
+        }
+
+        $extension = pathinfo($source, PATHINFO_EXTENSION) ?: 'bin';
+        $relative = 'assets/' . $key . '.' . $extension;
+        $target = $tempDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+        FileFacade::ensureDirectoryExists(dirname($target));
+        FileFacade::copy($source, $target);
+
+        return $relative;
+    }
+
+    private function isPackagedAssetPath(string $path): bool
+    {
+        return Str::startsWith($path, 'assets/');
+    }
+
+    private function storeImportedAsset(string $tempDir, string $relativePath, string $directory, string $slug): string
+    {
+        $source = $tempDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, ltrim($relativePath, '/'));
+
+        if (! FileFacade::exists($source)) {
+            throw ValidationException::withMessages([
+                'package' => 'O pacote referencia um asset que não foi encontrado: ' . $relativePath,
+            ]);
+        }
+
+        $extension = pathinfo($source, PATHINFO_EXTENSION) ?: 'bin';
+        $filename = Str::slug($slug ?: 'tema') . '-' . Str::random(8) . '.' . $extension;
+
+        return Storage::disk('public')->putFileAs($directory, new File($source), $filename);
+    }
+
+    private function exportableConfig(Theme $theme): ?array
+    {
+        $config = $theme->resolvedConfig();
+
+        if (! is_array($config) || $config === []) {
+            return null;
+        }
+
+        unset($config[Theme::CONFIG_SCOPE_KEY], $config[Theme::LEGACY_CONFIG_SCOPE_KEY]);
+
+        return $this->sanitizeConfigJson($config);
     }
 
     private function baseThemes(): array

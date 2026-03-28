@@ -1,12 +1,12 @@
 @extends('console.layout')
 
 @section('title', 'Patrocinadores - '.$edicao->titulo)
-@section('page.title', 'Patrocinadores da edicao')
-@section('topbar.description', 'Gerencie os patrocinadores vinculados a esta edicao no mesmo padrao do console.')
+@section('page.title', 'Patrocinadores da edição')
+@section('topbar.description', 'Gerencie os patrocinadores vinculados a esta edição no mesmo padrão do console.')
 
 @section('topbar.nav')
-  <a href="{{ route('coordenador.jogos-indigenas.index') }}" class="ui-console-topbar-tab">Jogos Indigenas</a>
-  <a href="{{ route('coordenador.jogos-indigenas.edicoes.index', $jogo) }}" class="ui-console-topbar-tab">Edicoes</a>
+  <a href="{{ route('coordenador.jogos-indigenas.index') }}" class="ui-console-topbar-tab">Jogos Indígenas</a>
+  <a href="{{ route('coordenador.jogos-indigenas.edicoes.index', $jogo) }}" class="ui-console-topbar-tab">Edições</a>
   <span class="ui-console-topbar-tab is-active">Patrocinadores</span>
 @endsection
 
@@ -14,16 +14,16 @@
 <div class="ui-console-page">
   @include('coordenador.partials.flash')
 
-  <x-dashboard.page-header title="Patrocinadores da edicao" subtitle="Cadastre logo, URL e ordem de exibicao para os apoiadores desta edicao.">
+  <x-dashboard.page-header title="Patrocinadores da edição" subtitle="Cadastre logo, URL e ordem de exibição para os apoiadores desta edição.">
     <x-slot:actions>
       <div class="flex flex-wrap gap-2">
         <a href="{{ route('coordenador.jogos-indigenas.edicoes.patrocinadores.create', [$jogo, $edicao]) }}" class="ui-btn-primary">Novo patrocinador</a>
-        <a href="{{ route('coordenador.jogos-indigenas.edicoes.edit', [$jogo, $edicao]) }}" class="ui-btn-secondary">Voltar a edicao</a>
+        <a href="{{ route('coordenador.jogos-indigenas.edicoes.edit', [$jogo, $edicao]) }}" class="ui-btn-secondary">Voltar à edição</a>
       </div>
     </x-slot:actions>
   </x-dashboard.page-header>
 
-  <x-dashboard.section-card title="Lista de patrocinadores" subtitle="Os patrocinadores pertencem exclusivamente a esta edicao." class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Lista de patrocinadores" subtitle="Os patrocinadores pertencem exclusivamente a esta edição." class="ui-coord-dashboard-panel mt-5">
     @if($patrocinadores->count())
       <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         @foreach($patrocinadores as $patrocinador)
@@ -60,7 +60,7 @@
       <div class="rounded-3xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-8 text-center">
         <h2 class="text-lg font-semibold text-[var(--ui-text-title)]">Nenhum patrocinador cadastrado</h2>
         <p class="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[var(--ui-text-soft)]">
-          Cadastre os apoiadores desta edicao com opcao de logo, link e ordem de exibicao.
+          Cadastre os apoiadores desta edição com opção de logo, link e ordem de exibição.
         </p>
         <a href="{{ route('coordenador.jogos-indigenas.edicoes.patrocinadores.create', [$jogo, $edicao]) }}" class="ui-btn-primary mt-5 inline-flex">Adicionar patrocinador</a>
       </div>

@@ -10,14 +10,14 @@
   @endif
 
   <section class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-    <x-dashboard.section-card title="Dados do video" subtitle="Use o link original do Google Drive como base do preview.">
+    <x-dashboard.section-card title="Dados do vídeo" subtitle="Use o link original do Google Drive como base do preview.">
       <div class="grid gap-4">
         <div>
-          <label class="ui-form-label">Titulo</label>
+          <label class="ui-form-label">Título</label>
           <input type="text" name="titulo" value="{{ old('titulo', $video->titulo ?? '') }}" class="ui-form-control" required>
         </div>
         <div>
-          <label class="ui-form-label">Descricao</label>
+          <label class="ui-form-label">Descrição</label>
           <textarea name="descricao" rows="6" class="ui-form-control">{{ old('descricao', $video->descricao ?? '') }}</textarea>
         </div>
         <div>
@@ -35,14 +35,14 @@
       </div>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Preview" subtitle="O sistema usa o helper do model para resolver o link de preview quando possivel.">
+    <x-dashboard.section-card title="Preview" subtitle="O sistema usa o helper do model para resolver o link de preview quando possível.">
       <div class="space-y-3 text-sm text-[var(--ui-text-soft)]">
-        <p>Se a URL de embed nao for informada, a aplicacao tenta gerar automaticamente o preview a partir do link do Google Drive.</p>
+        <p>Se a URL de embed não for informada, a aplicação tenta gerar automaticamente o preview a partir do link do Google Drive.</p>
         @if(($video->embed_url_resolvida ?? null) || old('embed_url') || old('drive_url'))
           <div class="rounded-2xl border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] px-4 py-4">
             <div class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--ui-text-soft)]">Preview resolvida</div>
             <div class="mt-2 break-all text-[var(--ui-text)]">
-              {{ old('embed_url', $video->embed_url_resolvida ?? ($video->embed_url ?? 'Sera resolvida ao salvar.')) }}
+              {{ old('embed_url', $video->embed_url_resolvida ?? ($video->embed_url ?? 'Será resolvida ao salvar.')) }}
             </div>
           </div>
         @endif

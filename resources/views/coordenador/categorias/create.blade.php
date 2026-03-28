@@ -23,13 +23,13 @@
 
   <x-dashboard.page-header
     title="Nova categoria"
-    subtitle="Crie uma nova categoria com metadados, status e icone no mesmo padrao visual premium do console."
+    subtitle="Crie uma nova categoria com metadados, status e ícone no mesmo padrão visual premium do console."
   />
 
   <form method="POST" action="{{ route('coordenador.categorias.store') }}" enctype="multipart/form-data" class="mt-5 space-y-5">
     @csrf
 
-    <x-dashboard.section-card title="Dados da categoria" subtitle="Informacoes essenciais para a catalogacao" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados da categoria" subtitle="Informações essenciais para a catalogação" class="ui-coord-dashboard-panel">
       @include('coordenador.categorias._form', [
         'categoria' => new \App\Models\Catalogo\Categoria(),
         'empresas'  => $empresas ?? collect(),

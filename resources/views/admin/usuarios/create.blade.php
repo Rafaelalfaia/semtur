@@ -1,12 +1,12 @@
 @extends('console.layout')
 
-@section('title', 'Novo Usuario')
+@section('title', 'Novo Usuário')
 
-@section('topbar.description', 'Cadastro administrativo de usuarios, com papeis e permissoes opcionais.')
+@section('topbar.description', 'Cadastro administrativo de usuários, com papéis e permissões opcionais.')
 
 @section('topbar.nav')
-    <a href="{{ route('admin.usuarios.index') }}" class="ui-console-topbar-tab">Usuarios</a>
-    <span class="ui-console-topbar-tab is-active">Novo usuario</span>
+    <a href="{{ route('admin.usuarios.index') }}" class="ui-console-topbar-tab">Usuários</a>
+    <span class="ui-console-topbar-tab is-active">Novo usuário</span>
 @endsection
 
 @section('content')
@@ -16,8 +16,8 @@
 
 <div class="ui-console-page">
     <x-dashboard.page-header
-        title="Novo usuario"
-        subtitle="Crie uma nova conta administrativa preservando o padrao visual do console."
+        title="Novo usuário"
+        subtitle="Crie uma nova conta administrativa preservando o padrão visual do console."
     >
         <x-slot:actions>
             <a href="{{ route('admin.usuarios.index') }}" class="ui-btn-secondary">
@@ -29,7 +29,7 @@
     <form method="POST" action="{{ route('admin.usuarios.store') }}" class="mt-5 space-y-4">
         @csrf
 
-        <x-dashboard.section-card title="Dados basicos" subtitle="Informacoes principais da conta">
+        <x-dashboard.section-card title="Dados básicos" subtitle="Informações principais da conta">
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
                     <label class="ui-form-label" for="name">Nome</label>
@@ -52,7 +52,7 @@
             </div>
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="Acesso e seguranca" subtitle="Defina a senha inicial da conta">
+        <x-dashboard.section-card title="Acesso e segurança" subtitle="Defina a senha inicial da conta">
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
                     <label class="ui-form-label" for="password">Senha</label>
@@ -67,7 +67,7 @@
             </div>
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="Papeis" subtitle="Selecione apenas um papel">
+        <x-dashboard.section-card title="Papéis" subtitle="Selecione apenas um papel">
             @php
                 $oldRoles = collect(old('roles', []))->map(fn($v)=>(string)$v)->all();
                 $roleItems = collect($roles)->map(function($r){
@@ -86,7 +86,7 @@
             @error('roles')<p class="ui-form-error">{{ $message }}</p>@enderror
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="Permissoes (opcional)" subtitle="Refino manual das capacidades da conta">
+        <x-dashboard.section-card title="Permissões (opcional)" subtitle="Refino manual das capacidades da conta">
             @php
                 $groupLabel = function(string $g){
                     $map = [
@@ -98,10 +98,10 @@
                         'empresas' => 'Empresas',
                         'equipe' => 'Equipe',
                         'eventos' => 'Eventos',
-                        'pontos' => 'Pontos Turisticos',
-                        'relatorios' => 'Relatorios',
-                        'secretaria' => 'Pagina da Secretaria',
-                        'usuarios' => 'Usuarios',
+                        'pontos' => 'Pontos Turísticos',
+                        'relatorios' => 'Relatórios',
+                        'secretaria' => 'Página da Secretaria',
+                        'usuarios' => 'Usuários',
                     ];
                     return $map[$g] ?? \Illuminate\Support\Str::headline($g);
                 };
@@ -122,7 +122,7 @@
 
                 $resourceLabel = [
                     'atrativos' => 'Atrativos',
-                    'edicoes' => 'Edicoes',
+                    'edicoes' => 'Edições',
                     'midias' => 'Midias',
                     'cache' => 'Cache',
                 ];
@@ -145,7 +145,7 @@
             @endphp
 
             <div class="mb-4 flex items-center justify-between">
-                <span class="text-sm text-[var(--ui-text-soft)]">Selecao global e por grupo</span>
+                <span class="text-sm text-[var(--ui-text-soft)]">Seleção global e por grupo</span>
                 <label class="inline-flex items-center gap-2 text-xs text-[var(--ui-text-soft)]">
                     <input type="checkbox" id="perm_all_toggle" class="ui-form-check rounded">
                     Selecionar todas

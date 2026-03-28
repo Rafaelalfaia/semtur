@@ -1,25 +1,25 @@
 @extends('console.layout')
 
-@section('title', 'Usuarios')
+@section('title', 'Usuários')
 
-@section('topbar.description', 'Gestao administrativa de usuarios, papeis e filtros do console.')
+@section('topbar.description', 'Gestão administrativa de usuários, papéis e filtros do console.')
 
 @section('topbar.nav')
     <span class="ui-console-topbar-tab is-active">Listagem</span>
     <a href="#usuarios-filtros" class="ui-console-topbar-tab">Filtros</a>
     <a href="#usuarios-tabela" class="ui-console-topbar-tab">Tabela</a>
-    <a href="{{ route('admin.usuarios.create') }}" class="ui-console-topbar-tab">Novo usuario</a>
+    <a href="{{ route('admin.usuarios.create') }}" class="ui-console-topbar-tab">Novo usuário</a>
 @endsection
 
 @section('content')
 <div class="ui-console-page">
     <x-dashboard.page-header
-        title="Usuarios"
-        subtitle="Gerencie contas do console com filtros rapidos, listagem estavel e acoes administrativas."
+        title="Usuários"
+        subtitle="Gerencie contas do console com filtros rápidos, listagem estável e ações administrativas."
     >
         <x-slot:actions>
             <a href="{{ route('admin.usuarios.create') }}" class="ui-btn-primary">
-                Novo usuario
+                Novo usuário
             </a>
         </x-slot:actions>
     </x-dashboard.page-header>
@@ -67,8 +67,8 @@
 
         <x-dashboard.section-card
             id="usuarios-tabela"
-            title="Lista de usuarios"
-            subtitle="Visao atual das contas cadastradas no sistema"
+            title="Lista de usuários"
+            subtitle="Visão atual das contas cadastradas no sistema"
         >
             <div class="ui-table-shell">
                 <table class="min-w-full text-sm">
@@ -77,9 +77,9 @@
                             <th class="px-4 py-3 text-left font-semibold">Nome</th>
                             <th class="px-4 py-3 text-left font-semibold">CPF</th>
                             <th class="px-4 py-3 text-left font-semibold">E-mail</th>
-                            <th class="px-4 py-3 text-left font-semibold">Papeis</th>
+                            <th class="px-4 py-3 text-left font-semibold">Papéis</th>
                             <th class="px-4 py-3 text-left font-semibold">Criado em</th>
-                            <th class="px-4 py-3 text-right font-semibold">Acoes</th>
+                            <th class="px-4 py-3 text-right font-semibold">Ações</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[var(--ui-border)]">
@@ -106,7 +106,7 @@
                                         <a href="{{ route('admin.usuarios.edit', $u) }}" class="ui-btn-secondary">
                                             Editar
                                         </a>
-                                        <form method="POST" action="{{ route('admin.usuarios.destroy', $u) }}" onsubmit="return confirm('Excluir este usuario?');">
+                                        <form method="POST" action="{{ route('admin.usuarios.destroy', $u) }}" onsubmit="return confirm('Excluir este usuário?');">
                                             @csrf
                                             @method('DELETE')
                                             <button class="ui-btn-danger">
@@ -119,7 +119,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-4 py-8 text-center text-[var(--ui-text-soft)]">
-                                    Nenhum usuario encontrado.
+                                    Nenhum usuário encontrado.
                                 </td>
                             </tr>
                         @endforelse

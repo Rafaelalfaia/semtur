@@ -41,6 +41,11 @@
         ? ($banner->resolvedPosterMobileUrl($mobileFallbackImage) ?? $mobileFallbackImage)
         : $mobileFallbackImage;
 
+    $desktopFallbackImage = site_image_url($desktopFallbackImage, 'hero');
+    $mobileFallbackImage = site_image_url($mobileFallbackImage, 'hero-mobile');
+    $desktopPoster = site_image_url($desktopPoster, 'hero');
+    $mobilePoster = site_image_url($mobilePoster, 'hero-mobile');
+
     $desktopVideo = $banner?->video_desktop_url;
     $mobileVideo = $banner?->video_mobile_url ?: $desktopVideo;
 

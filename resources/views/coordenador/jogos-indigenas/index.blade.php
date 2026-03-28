@@ -1,11 +1,11 @@
 @extends('console.layout')
 
-@section('title', 'Jogos Indigenas')
-@section('page.title', 'Jogos Indigenas')
-@section('topbar.description', 'Gerencie o cadastro principal unico dos Jogos Indigenas e o acesso as edicoes vinculadas.')
+@section('title', 'Jogos Indígenas')
+@section('page.title', 'Jogos Indígenas')
+@section('topbar.description', 'Gerencie o cadastro principal único dos Jogos Indígenas e o acesso às edições vinculadas.')
 
 @section('topbar.nav')
-  <span class="ui-console-topbar-tab is-active">Jogos Indigenas</span>
+  <span class="ui-console-topbar-tab is-active">Jogos Indígenas</span>
   @if($jogo)
     @can('jogos_indigenas.update')
       <a href="{{ route('coordenador.jogos-indigenas.edit', $jogo) }}" class="ui-console-topbar-tab">Configuração</a>
@@ -25,8 +25,8 @@
   @include('coordenador.partials.flash')
 
   <x-dashboard.page-header
-    title="Jogos Indigenas"
-    subtitle="O modulo trabalha com um unico cadastro institucional principal e varias edicoes vinculadas por ano."
+    title="Jogos Indígenas"
+    subtitle="O módulo trabalha com um único cadastro institucional principal e várias edições vinculadas por ano."
   >
     @if($jogo)
       <div class="flex flex-wrap items-center gap-3">
@@ -46,12 +46,12 @@
 
   @if(($registrosExtras ?? 0) > 0)
     <div class="ui-alert ui-alert-warning mt-5">
-      Existem {{ $registrosExtras }} registro(s) extra(s) na base. O painel esta operando apenas sobre o primeiro cadastro principal, sem alterar nem remover os demais.
+      Existem {{ $registrosExtras }} registro(s) extra(s) na base. O painel está operando apenas sobre o primeiro cadastro principal, sem alterar nem remover os demais.
     </div>
   @endif
 
   @if($jogo)
-    <x-dashboard.section-card title="Cadastro principal" subtitle="Configuracao institucional unica dos Jogos Indigenas" class="ui-coord-dashboard-panel mt-5">
+    <x-dashboard.section-card title="Cadastro principal" subtitle="Configuração institucional única dos Jogos Indígenas" class="ui-coord-dashboard-panel mt-5">
       <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div class="space-y-5">
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -86,7 +86,7 @@
               <div class="min-w-0">
                 <h2 class="text-lg font-semibold text-[var(--ui-text-title)]">{{ $jogo->titulo }}</h2>
                 <p class="mt-1 text-sm text-[var(--ui-text-soft)]">
-                  Publicado em {{ optional($jogo->published_at)->format('d/m/Y H:i') ?: 'nao definido' }}
+                  Publicado em {{ optional($jogo->published_at)->format('d/m/Y H:i') ?: 'não definido' }}
                 </p>
               </div>
               <div class="flex flex-wrap gap-2">
@@ -131,11 +131,11 @@
       </div>
     </x-dashboard.section-card>
   @else
-    <x-dashboard.section-card title="Cadastro principal" subtitle="Crie o primeiro registro institucional do modulo para depois gerenciar as edicoes." class="ui-coord-dashboard-panel mt-5">
+    <x-dashboard.section-card title="Cadastro principal" subtitle="Crie o primeiro registro institucional do módulo para depois gerenciar as edições." class="ui-coord-dashboard-panel mt-5">
       <div class="rounded-3xl border border-dashed border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-8 text-center">
         <h2 class="text-lg font-semibold text-[var(--ui-text-title)]">Nenhum cadastro principal encontrado</h2>
         <p class="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[var(--ui-text-soft)]">
-          O modulo de Jogos Indigenas trabalha com um unico registro principal. Crie esse cadastro uma unica vez e depois utilize o fluxo de edicoes normalmente.
+          O módulo de Jogos Indígenas trabalha com um único registro principal. Crie esse cadastro uma única vez e depois utilize o fluxo de edições normalmente.
         </p>
         @if(Route::has('coordenador.jogos-indigenas.create'))
           @can('jogos_indigenas.create')

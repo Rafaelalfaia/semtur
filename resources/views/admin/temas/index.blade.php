@@ -84,6 +84,34 @@
                     </div>
                 </form>
             </x-dashboard.section-card>
+
+            @can('themes.create')
+                <x-dashboard.section-card title="Importar pacote" subtitle="Traga um tema do localhost sem ativar automaticamente no deploy.">
+                    <form method="POST" action="{{ route('admin.temas.import') }}" enctype="multipart/form-data" class="space-y-4">
+                        @csrf
+
+                        <div>
+                            <label class="ui-form-label" for="package">Pacote .zip</label>
+                            <input id="package" name="package" type="file" accept=".zip,application/zip" class="ui-form-control" required>
+                            @error('package')<p class="ui-form-error">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div>
+                            <label class="ui-form-label" for="import_mode">Modo de importação</label>
+                            <select id="import_mode" name="import_mode" class="ui-form-select">
+                                <option value="create_copy" @selected(old('import_mode', 'create_copy') === 'create_copy')>Criar cópia segura</option>
+                                <option value="update_existing" @selected(old('import_mode') === 'update_existing')>Atualizar tema com mesmo slug</option>
+                            </select>
+                        </div>
+
+                        <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3 text-sm text-[var(--ui-text-soft)]">
+                            A importação não ativa o tema automaticamente e não altera o fallback institucional atual.
+                        </div>
+
+                        <button class="ui-btn-primary">Importar tema</button>
+                    </form>
+                </x-dashboard.section-card>
+            @endcan
         </div>
 
         <x-dashboard.section-card id="temas-lista" title="Biblioteca de temas" subtitle="Gerencie criação, edição, preview, ativação e arquivamento sem sair do fluxo administrativo.">
@@ -97,15 +125,27 @@
                     @foreach($themes as $theme)
                         @php
                             $isActive = $activeTheme && $activeTheme->is($theme);
+                            $isConsoleActive = $activeConsoleTheme && $activeConsoleTheme->is($theme);
+                            $isSiteActive = $activeSiteTheme && $activeSiteTheme->is($theme);
+                            $isAuthActive = $activeAuthTheme && $activeAuthTheme->is($theme);
                             $isPreview = $previewTheme && $previewTheme->is($theme);
+                            $supportsConsole = $theme->appliesTo(\App\Models\Theme::SCOPE_CONSOLE);
+                            $supportsSite = $theme->appliesTo(\App\Models\Theme::SCOPE_SITE);
+                            $supportsAuth = $theme->appliesTo(\App\Models\Theme::SCOPE_AUTH);
                         @endphp
-                        <article class="overflow-hidden rounded-[26px] border {{ $isActive ? 'border-[var(--ui-primary)] shadow-[0_24px_60px_rgba(12,33,22,0.18)]' : 'border-[var(--ui-border)] shadow-[var(--ui-shadow-surface)]' }} bg-[var(--ui-surface)]">
+                        <article class="overflow-hidden rounded-[26px] border {{ ($isActive || $isConsoleActive || $isSiteActive || $isAuthActive) ? 'border-[var(--ui-primary)] shadow-[0_24px_60px_rgba(12,33,22,0.18)]' : 'border-[var(--ui-border)] shadow-[var(--ui-shadow-surface)]' }} bg-[var(--ui-surface)]">
                             <div class="relative h-44 w-full overflow-hidden bg-[var(--ui-surface-soft)]">
                                 <img src="{{ $theme->preview_image_url ?: theme_asset('hero_image', $theme) }}" alt="Preview do tema {{ $theme->name }}" class="h-full w-full object-cover">
                                 <div class="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(to_top,color-mix(in_srgb,var(--ui-text-title)_34%,transparent),transparent)]"></div>
                                 <div class="absolute left-4 top-4 flex flex-wrap gap-2">
-                                    @if($isActive)
-                                        <span class="ui-badge ui-badge-success">Ativo</span>
+                                    @if($isConsoleActive)
+                                        <span class="ui-badge ui-badge-success">Ativo no console</span>
+                                    @endif
+                                    @if($isSiteActive)
+                                        <span class="ui-badge ui-badge-neutral">Ativo no site</span>
+                                    @endif
+                                    @if($isAuthActive)
+                                        <span class="ui-badge ui-badge-neutral">Ativo no auth</span>
                                     @endif
                                     @if($isPreview)
                                         <span class="ui-badge ui-badge-warning">{{ $isActive ? 'Preview ativo' : 'Preview local' }}</span>
@@ -159,6 +199,10 @@
                                         <a href="{{ route('admin.temas.edit', $theme) }}" class="ui-btn-secondary">Editar</a>
                                     @endcan
 
+                                    @can('themes.view')
+                                        <a href="{{ route('admin.temas.export', $theme) }}" class="ui-btn-secondary">Exportar</a>
+                                    @endcan
+
                                     @can('themes.preview')
                                         @if($isPreview)
                                             <form method="POST" action="{{ route('admin.temas.preview.clear') }}">
@@ -174,17 +218,45 @@
                                     @endcan
 
                                     @can('themes.activate')
-                                        @if($isActive && ! $theme->is_default)
+                                        @if($supportsConsole && $isConsoleActive && ! $theme->is_default)
                                             <form method="POST" action="{{ route('admin.temas.restore-default') }}">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button class="ui-btn-secondary">Voltar ao padrão</button>
                                             </form>
-                                        @elseif(! $isActive)
+                                        @elseif($supportsConsole && ! $isConsoleActive)
                                             <form method="POST" action="{{ route('admin.temas.activate', $theme) }}">
                                                 @csrf
                                                 @method('PATCH')
                                                 <button class="ui-btn-primary">Ativar</button>
+                                            </form>
+                                        @endif
+
+                                        @if($supportsSite && $isSiteActive && ! $theme->is_default)
+                                            <form method="POST" action="{{ route('admin.temas.restore-default-site') }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="ui-btn-secondary">Padrao no site</button>
+                                            </form>
+                                        @elseif($supportsSite && ! $isSiteActive)
+                                            <form method="POST" action="{{ route('admin.temas.activate-site', $theme) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="ui-btn-secondary">Ativar no site</button>
+                                            </form>
+                                        @endif
+
+                                        @if($supportsAuth && $isAuthActive && ! $theme->is_default)
+                                            <form method="POST" action="{{ route('admin.temas.restore-default-auth') }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="ui-btn-secondary">Padrao no auth</button>
+                                            </form>
+                                        @elseif($supportsAuth && ! $isAuthActive)
+                                            <form method="POST" action="{{ route('admin.temas.activate-auth', $theme) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="ui-btn-secondary">Ativar no auth</button>
                                             </form>
                                         @endif
                                     @endcan
@@ -195,6 +267,16 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <button class="ui-btn-danger">Arquivar</button>
+                                            </form>
+                                        @endif
+                                    @endcan
+
+                                    @can('themes.archive')
+                                        @if(! $theme->is_default)
+                                            <form method="POST" action="{{ route('admin.temas.destroy', $theme) }}" onsubmit="return confirm('Apagar este tema definitivamente? Esta ação remove o tema e seus assets importados.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="ui-btn-danger">Apagar</button>
                                             </form>
                                         @endif
                                     @endcan

@@ -1,11 +1,11 @@
 @extends('console.layout')
 @section('title', 'Editar atrativo')
 @section('page.title', 'Editar atrativo')
-@section('topbar.description', 'Atualize o atrativo da edicao sem sair do fluxo estrutural do console.')
+@section('topbar.description', 'Atualize o atrativo da edição sem sair do fluxo estrutural do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
-  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edicoes</a>
+  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edições</a>
   <a href="{{ route('coordenador.edicoes.atrativos.index', $edicao) }}" class="ui-console-topbar-tab">Atrativos</a>
   <span class="ui-console-topbar-tab is-active">Editar atrativo</span>
 @endsection
@@ -16,7 +16,7 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Editar atrativo"
-    subtitle="Atualize dados, thumb e status do atrativo relacionado a esta edicao."
+    subtitle="Atualize dados, thumb e status do atrativo relacionado a esta edição."
   >
     <a href="{{ route('coordenador.edicoes.atrativos.index', $edicao) }}" class="ui-btn-secondary">Voltar</a>
   </x-dashboard.page-header>
@@ -34,7 +34,7 @@
     @csrf
     @method('PUT')
 
-    <x-dashboard.section-card title="Dados do atrativo" subtitle="Edite informacoes, thumb e estado editorial" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados do atrativo" subtitle="Edite informações, thumb e estado editorial" class="ui-coord-dashboard-panel">
       <div class="space-y-4">
         <div>
           <label class="ui-form-label">Nome *</label>
@@ -53,7 +53,7 @@
         </div>
 
         <div>
-          <label class="ui-form-label">Descricao</label>
+          <label class="ui-form-label">Descrição</label>
           <textarea name="descricao" rows="4" class="ui-form-control">{{ old('descricao', $atrativo->descricao) }}</textarea>
         </div>
 

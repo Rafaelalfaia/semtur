@@ -1,11 +1,11 @@
-@extends('site.layouts.app')
+﻿@extends('site.layouts.app')
 
 @php
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\Storage;
 
     $pageTitle = $page['title'] ?? 'VisitAltamira';
-    $pageDescription = $page['description'] ?? 'Portal turistico de Altamira.';
+    $pageDescription = $page['description'] ?? __('ui.home.description');
     $isAgendaPage = request()->routeIs('site.agenda');
     $pageCards = collect($page['cards'] ?? []);
     $agendaEvents = collect($agendaEvents ?? []);
@@ -23,34 +23,34 @@
             ?? theme_asset('hero_image');
 
         return [
-            'title' => $evento->nome ?? 'Evento',
-            'subtitle' => $evento->cidade ?? 'Altamira',
+            'title' => $evento->nome ?? __('ui.agenda.title'),
+            'subtitle' => $evento->cidade ?? __('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) ($edicao->resumo ?? $evento->descricao ?? '')), 110),
             'image' => $image,
             'href' => Route::has('eventos.show')
                 ? route('eventos.show', [$evento->slug ?? $evento->id, $ano ?: now()->year])
                 : ($evento->slug ?? '#'),
-            'badge' => $periodo ?: ($ano ?: 'Evento'),
-            'meta' => filled($edicao->local ?? null) ? $edicao->local : 'Programacao publicada',
-            'cta' => 'Ver evento',
+            'badge' => $periodo ?: ($ano ?: __('ui.agenda.title')),
+            'meta' => filled($edicao->local ?? null) ? $edicao->local : __('ui.agenda.published_programming'),
+            'cta' => __('ui.agenda.view_event'),
         ];
     })->values();
 
     $agendaHeroImage = optional($agendaEventCards->shuffle()->first())['image'] ?? theme_asset('hero_image');
 
     $agendaCards = $pageCards->values()->map(function ($card, $index) {
-        $label = trim((string) ($card['label'] ?? 'Abrir'));
+        $label = trim((string) ($card['label'] ?? __('ui.common.view_more')));
         $href = $card['href'] ?? '#';
         $isSoon = str_contains(\Illuminate\Support\Str::lower($label), 'breve') || $href === '#';
 
         return [
-            'title' => $card['title'] ?? 'Agenda',
-            'subtitle' => 'Altamira',
+            'title' => $card['title'] ?? __('ui.agenda.title'),
+            'subtitle' => __('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit((string) ($card['text'] ?? ''), 108),
             'image' => theme_asset('hero_image'),
             'href' => $href,
-            'badge' => $isSoon ? 'Em breve' : ($index === 0 ? 'Agora' : 'Agenda'),
-            'meta' => $isSoon ? 'Planejamento' : 'Disponivel',
+            'badge' => $isSoon ? __('ui.agenda.soon') : ($index === 0 ? __('ui.agenda.available_now') : __('ui.agenda.title')),
+            'meta' => $isSoon ? __('ui.agenda.planning') : __('ui.agenda.available'),
             'cta' => $label,
         ];
     });
@@ -82,36 +82,36 @@
             @include('site.partials._page_hero', [
                 'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
                 'breadcrumbs' => [
-                    ['label' => 'Inicio', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
-                    ['label' => $page['title'] ?? 'Agenda'],
+                    ['label' => __('ui.common.home'), 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+                    ['label' => $page['title'] ?? __('ui.agenda.title')],
                 ],
-                'badge' => $page['eyebrow'] ?? 'Programacao da cidade',
-                'title' => $page['title'] ?? 'Agenda',
-                'subtitle' => 'Eventos, festivais e programacoes publicadas para descobrir Altamira com leitura rapida.',
+                'badge' => $page['eyebrow'] ?? __('ui.agenda.city_programming'),
+                'title' => $page['title'] ?? __('ui.agenda.title'),
+                'subtitle' => __('ui.agenda.subtitle'),
                 'meta' => [
-                    $agendaEventCards->isNotEmpty() ? $agendaEventCards->count().' eventos publicados' : null,
-                    'Altamira',
+                    $agendaEventCards->isNotEmpty() ? __('ui.agenda.events_published', ['count' => $agendaEventCards->count()]) : null,
+                    __('ui.common.altamira'),
                 ],
                 'primaryActionLabel' => $page['cta_label'] ?? null,
                 'primaryActionHref' => $page['cta_href'] ?? null,
-                'secondaryActionLabel' => Route::has('site.explorar') ? 'Explorar a cidade' : null,
+                'secondaryActionLabel' => Route::has('site.explorar') ? __('ui.agenda.explore_city') : null,
                 'secondaryActionHref' => Route::has('site.explorar') ? route('site.explorar') : null,
                 'image' => $agendaHeroImage,
-                'imageAlt' => $page['title'] ?? 'Agenda',
+                'imageAlt' => $page['title'] ?? __('ui.agenda.title'),
                 'compact' => true,
             ])
 
             <section class="site-section">
                 <div class="site-surface-soft site-agenda-portal-shortcuts">
-                    <div class="site-agenda-portal-shortcuts-row" role="navigation" aria-label="Atalhos da agenda">
+                    <div class="site-agenda-portal-shortcuts-row" role="navigation" aria-label="{{ __('ui.agenda.shortcuts_aria') }}">
                         @if($hasAgendaHighlight)
-                            <a href="#agenda-destaques" class="site-year-chip is-active">Destaques</a>
+                            <a href="#agenda-destaques" class="site-year-chip is-active">{{ __('ui.agenda.highlights') }}</a>
                         @endif
                         @if($hasAgendaCarousel)
-                            <a href="#agenda-atalhos" class="site-year-chip">Atalhos</a>
+                            <a href="#agenda-atalhos" class="site-year-chip">{{ __('ui.agenda.shortcuts') }}</a>
                         @endif
                         @if($hasAgendaCta)
-                            <a href="#agenda-completa" class="site-year-chip">Agenda completa</a>
+                            <a href="#agenda-completa" class="site-year-chip">{{ __('ui.agenda.full_agenda') }}</a>
                         @endif
                     </div>
                 </div>
@@ -121,9 +121,9 @@
                 <section class="site-section" id="agenda-destaques">
                     <div class="site-surface-soft site-agenda-portal-highlight">
                         <x-section-head
-                            eyebrow="Agora"
-                            title="Em destaque"
-                            subtitle="Capas e acesso rapido aos eventos publicados agora."
+                            :eyebrow="__('ui.agenda.now')"
+                            :title="__('ui.agenda.highlight_title')"
+                            :subtitle="__('ui.agenda.highlight_subtitle')"
                         />
 
                         <div
@@ -160,7 +160,7 @@
                                             x-transition.opacity.duration.500ms
                                             @if($index > 0) x-cloak @endif
                                         >
-                                            <img src="{{ $eventCard['image'] }}" alt="{{ $eventCard['title'] }}" loading="lazy" decoding="async" class="site-card-list-image">
+                                            <img src="{{ site_image_url($eventCard['image'], "hero") }}" alt="{{ $eventCard['title'] }}" loading="lazy" decoding="async" class="site-card-list-image">
                                         </a>
                                     @endforeach
                                 </div>
@@ -174,7 +174,7 @@
                                         x-transition.opacity.duration.350ms
                                         @if($index > 0) x-cloak @endif
                                     >
-                                        <span class="site-badge">Evento publicado</span>
+                                        <span class="site-badge">{{ __('ui.agenda.published_event') }}</span>
                                         <div class="site-card-list-meta">
                                             <span>{{ $eventCard['badge'] }}</span>
                                             <span>{{ $eventCard['subtitle'] }}</span>
@@ -185,7 +185,7 @@
                                             <p class="site-section-head-subtitle">{{ $eventCard['summary'] }}</p>
                                         @endif
                                         <div class="site-agenda-portal-highlight-actions">
-                                            <a href="{{ $eventCard['href'] }}" class="site-button-secondary">Ver evento</a>
+                                            <a href="{{ $eventCard['href'] }}" class="site-button-secondary">{{ __('ui.agenda.view_event') }}</a>
                                         </div>
                                     </div>
                                 @endforeach
@@ -198,13 +198,13 @@
             @if($hasAgendaCarousel)
                 <div id="agenda-atalhos">
                     @include('site.partials._category_section', [
-                        'eyebrow' => 'Proximos eventos',
-                        'title' => 'Continue explorando',
-                        'subtitle' => 'Deslize para ver mais eventos publicados.',
+                        'eyebrow' => __('ui.agenda.upcoming_eyebrow'),
+                        'title' => __('ui.agenda.continue_title'),
+                        'subtitle' => __('ui.agenda.continue_subtitle'),
                         'items' => $agendaSecondaryCards,
                         'layout' => 'carousel',
                         'cardVariant' => 'compact',
-                        'empty' => 'Nenhum outro evento apareceu agora.',
+                        'empty' => __('ui.agenda.empty_copy'),
                     ])
                 </div>
             @endif
@@ -213,15 +213,15 @@
                 <section class="site-section" id="agenda-completa">
                     <div class="site-surface-soft site-agenda-portal-cta">
                         <div class="site-agenda-portal-cta-copy">
-                            <span class="site-badge">Ver tudo</span>
-                            <h2 class="site-section-head-title">Veja os eventos reais publicados</h2>
-                            <p class="site-section-head-subtitle">Abra a agenda completa e siga pelos detalhes, edicoes e programacoes em andamento.</p>
+                            <span class="site-badge">{{ __('ui.agenda.cta_badge') }}</span>
+                            <h2 class="site-section-head-title">{{ __('ui.agenda.cta_title') }}</h2>
+                            <p class="site-section-head-subtitle">{{ __('ui.agenda.cta_subtitle') }}</p>
                         </div>
 
                         <div class="site-agenda-portal-cta-actions">
                             <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ $page['cta_label'] }}</a>
                             @if(Route::has('site.mapa'))
-                                <a href="{{ route('site.mapa') }}" class="site-button-secondary">Mapa</a>
+                                <a href="{{ route('site.mapa') }}" class="site-button-secondary">{{ __('ui.common.map') }}</a>
                             @endif
                         </div>
                     </div>
@@ -231,10 +231,10 @@
             @if(!$hasAgendaContent)
                 <section class="site-section">
                     <div class="site-empty-state">
-                        <p class="site-empty-state-title">Sem eventos publicados agora</p>
-                        <p class="site-empty-state-copy">Assim que uma nova programacao entrar no ar, ela aparece aqui.</p>
+                        <p class="site-empty-state-title">{{ __('ui.agenda.empty_title') }}</p>
+                        <p class="site-empty-state-copy">{{ __('ui.agenda.empty_copy') }}</p>
                         @if($hasAgendaCta)
-                            <a href="{{ $page['cta_href'] }}" class="site-button-primary">Ver agenda completa</a>
+                            <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ __('ui.agenda.view_full_agenda') }}</a>
                         @endif
                     </div>
                 </section>
@@ -247,8 +247,8 @@
             <div class="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 md:py-12">
                 @include('site.partials._breadcrumbs', [
                     'items' => [
-                        ['label' => 'Inicio', 'href' => route('site.home')],
-                        ['label' => $page['title'] ?? 'Secao'],
+                        ['label' => __('ui.common.home'), 'href' => route('site.home')],
+                        ['label' => $page['title'] ?? __('ui.common.view_more')],
                     ],
                 ])
 
@@ -260,7 +260,7 @@
                     @endif
 
                     <h1 class="mt-4 text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
-                        {{ $page['title'] ?? 'Secao publica' }}
+                        {{ $page['title'] ?? __('ui.common.view_more') }}
                     </h1>
 
                     @if(!empty($page['lead']))
@@ -281,36 +281,26 @@
             </div>
         </section>
 
-        <section class="py-10 md:py-14">
-            <div class="mx-auto w-full max-w-[1200px] px-4 md:px-6">
-                <div class="flex items-center justify-between gap-3 mb-6">
-                    <div>
-                        <h2 class="text-xl md:text-2xl font-semibold text-slate-900">Estrutura inicial da secao</h2>
-                        <p class="text-sm md:text-base text-slate-500 mt-1">
-                            Esta pagina ja funciona como ponto de entrada oficial da arquitetura publica.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    @foreach(($page['cards'] ?? []) as $card)
-                        <x-site.portal-entry
-                            :title="$card['title'] ?? ''"
-                            :text="$card['text'] ?? null"
-                            :href="$card['href'] ?? '#'"
-                            :label="$card['label'] ?? 'Abrir'"
-                        />
+        @if(($pageCards ?? collect())->isNotEmpty())
+            <section class="bg-white">
+                <div class="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 md:py-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach($pageCards as $card)
+                        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <div class="text-sm font-semibold text-emerald-700">{{ $card['title'] ?? __('ui.common.view_more') }}</div>
+                            @if(!empty($card['text']))
+                                <p class="mt-3 text-slate-600 leading-7">{{ $card['text'] }}</p>
+                            @endif
+                            @if(!empty($card['href']) && !empty($card['label']))
+                                <div class="mt-5">
+                                    <a href="{{ $card['href'] }}" class="inline-flex items-center rounded-xl border border-emerald-200 px-4 py-2 text-emerald-700 hover:bg-emerald-50 transition">
+                                        {{ $card['label'] }}
+                                    </a>
+                                </div>
+                            @endif
+                        </article>
                     @endforeach
                 </div>
-
-                <div class="mt-10 rounded-3xl border border-slate-200 bg-slate-50 p-6 md:p-8">
-                    <h3 class="text-lg font-semibold text-slate-900">Proximo passo desta secao</h3>
-                    <p class="mt-2 text-slate-600 leading-7">
-                        Nesta fase, a pagina entra como esqueleto funcional com SEO, rota, navegacao, breadcrumbs
-                        e padrao visual reutilizavel. O conteudo final sera conectado aos modulos especificos nas proximas etapas.
-                    </p>
-                </div>
-            </div>
-        </section>
+            </section>
+        @endif
     @endif
 @endsection

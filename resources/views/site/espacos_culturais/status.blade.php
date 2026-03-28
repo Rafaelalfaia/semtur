@@ -1,7 +1,7 @@
 @extends('site.layouts.app')
 
-@section('title', 'Status da solicitação • ' . $agendamento->protocolo)
-@section('meta.description', 'Acompanhe o status da solicitação de visita ' . $agendamento->protocolo . '.')
+@section('title', 'Status da solicita��o � ' . $agendamento->protocolo)
+@section('meta.description', 'Acompanhe o status da solicita��o de visita ' . $agendamento->protocolo . '.')
 
 @section('site.content')
 @php
@@ -16,11 +16,11 @@
             </span>
 
             <h1 class="mt-5 text-3xl font-bold tracking-tight sm:text-5xl">
-                Solicitação registrada
+                Solicita��o registrada
             </h1>
 
             <p class="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-                Aqui você pode acompanhar o status da sua solicitação de visita e continuar o atendimento pelo WhatsApp, quando disponível.
+                Aqui voc� pode acompanhar o status da sua solicita��o de visita e continuar o atendimento pelo WhatsApp, quando dispon�vel.
             </p>
         </div>
     </div>
@@ -38,8 +38,8 @@
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-xl font-bold tracking-tight text-slate-900">Resumo da solicitação</h2>
-                        <p class="mt-2 text-sm text-slate-500">Confira os dados enviados no formulário.</p>
+                        <h2 class="text-xl font-bold tracking-tight text-slate-900">Resumo da solicita��o</h2>
+                        <p class="mt-2 text-sm text-slate-500">Confira os dados enviados no formul�rio.</p>
                     </div>
 
                     <span class="rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em]
@@ -53,7 +53,7 @@
 
                 <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Espaço</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Espa�o</div>
                         <div class="mt-1 font-medium text-slate-900">{{ $agendamento->espaco?->nome }}</div>
                     </div>
 
@@ -70,14 +70,14 @@
                     </div>
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Horário</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Hor�rio</div>
                         <div class="mt-1 font-medium text-slate-900">
-                            {{ $agendamento->horario?->faixa_label ?: 'Não informado' }}
+                            {{ $agendamento->horario?->faixa_label ?: 'N�o informado' }}
                         </div>
                     </div>
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Responsável</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Respons�vel</div>
                         <div class="mt-1 font-medium text-slate-900">{{ $agendamento->nome }}</div>
                     </div>
 
@@ -101,7 +101,7 @@
 
                 @if ($agendamento->observacao_visitante)
                     <div class="mt-6 rounded-2xl bg-slate-50 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Observação enviada</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Observa��o enviada</div>
                         <div class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">
                             {{ $agendamento->observacao_visitante }}
                         </div>
@@ -112,20 +112,20 @@
 
         <aside class="space-y-6">
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold tracking-tight text-slate-900">Próximos passos</h2>
+                <h2 class="text-lg font-bold tracking-tight text-slate-900">Pr�ximos passos</h2>
 
                 <div class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
                     <p>
-                        Guarde o protocolo <span class="font-semibold text-slate-900">{{ $agendamento->protocolo }}</span> para consultar esta solicitação.
+                        Guarde o protocolo <span class="font-semibold text-slate-900">{{ $agendamento->protocolo }}</span> para consultar esta solicita��o.
                     </p>
 
                     <p>
-                        O status atual é <span class="font-semibold text-slate-900">{{ $statusAtual }}</span>.
+                        O status atual � <span class="font-semibold text-slate-900">{{ $statusAtual }}</span>.
                     </p>
 
                     @if ($agendamento->espaco?->agendamento_instrucoes)
                         <div class="rounded-2xl bg-slate-50 p-4">
-                            <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Orientações</div>
+                            <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Orienta��es</div>
                             <div class="mt-2 text-sm leading-6 text-slate-600">
                                 {{ $agendamento->espaco->agendamento_instrucoes }}
                             </div>
@@ -146,7 +146,7 @@
             </div>
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold tracking-tight text-slate-900">Navegação</h2>
+                <h2 class="text-lg font-bold tracking-tight text-slate-900">Navega��o</h2>
 
                 <div class="mt-4 flex flex-col gap-3">
                     @if ($agendamento->espaco)
@@ -154,7 +154,7 @@
                             href="{{ route('site.museus.show', $agendamento->espaco->slug) }}"
                             class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                         >
-                            Voltar ao espaço
+                            {{ __('ui.common.back_to_space') }}
                         </a>
                     @endif
 
@@ -162,7 +162,7 @@
                         href="{{ route('site.museus') }}"
                         class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     >
-                        Ver outros espaços
+                        Ver outros espa�os
                     </a>
                 </div>
             </div>

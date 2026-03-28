@@ -1,11 +1,11 @@
 @extends('console.layout')
 
-@section('title', 'Editar Usuario - '.($usuario->name ?? 'Usuario'))
+@section('title', 'Editar Usuário - '.($usuario->name ?? 'Usuário'))
 
-@section('topbar.description', 'Edicao administrativa de dados, papeis e permissoes da conta selecionada.')
+@section('topbar.description', 'Edição administrativa de dados, papéis e permissões da conta selecionada.')
 
 @section('topbar.nav')
-    <a href="{{ route('admin.usuarios.index') }}" class="ui-console-topbar-tab">Usuarios</a>
+    <a href="{{ route('admin.usuarios.index') }}" class="ui-console-topbar-tab">Usuários</a>
     <span class="ui-console-topbar-tab is-active">Editar</span>
 @endsection
 
@@ -23,8 +23,8 @@
 
 <div class="ui-console-page">
     <x-dashboard.page-header
-        title="Editar usuario"
-        subtitle="Atualize dados, papeis e permissoes sem sair do shell principal do console."
+        title="Editar usuário"
+        subtitle="Atualize dados, papéis e permissões sem sair do shell principal do console."
     >
         <x-slot:actions>
             <a href="{{ route('admin.usuarios.index') }}" class="ui-btn-secondary">
@@ -37,7 +37,7 @@
         @csrf
         @method('PUT')
 
-        <x-dashboard.section-card title="Dados basicos" subtitle="Informacoes principais da conta">
+        <x-dashboard.section-card title="Dados básicos" subtitle="Informações principais da conta">
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
                     <label class="ui-form-label" for="name">Nome</label>
@@ -60,7 +60,7 @@
             </div>
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="Acesso e seguranca" subtitle="Atualize a senha somente quando necessario">
+        <x-dashboard.section-card title="Acesso e segurança" subtitle="Atualize a senha somente quando necessário">
             <div class="grid gap-4 md:grid-cols-2">
                 <div>
                     <label class="ui-form-label" for="password">Nova senha (opcional)</label>
@@ -75,7 +75,7 @@
             </div>
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="Papeis" subtitle="Selecione um ou mais papeis">
+        <x-dashboard.section-card title="Papéis" subtitle="Selecione um ou mais papéis">
             @php
                 $roleItems = collect($roles)->map(function($r){
                     if (is_object($r)) return ['id'=>(string)$r->id, 'name'=>(string)$r->name];
@@ -93,7 +93,7 @@
             @error('roles')<p class="ui-form-error">{{ $message }}</p>@enderror
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="Permissoes (refino opcional)" subtitle="Ajuste granular de permissoes quando necessario">
+        <x-dashboard.section-card title="Permissões (refino opcional)" subtitle="Ajuste granular de permissões quando necessário">
             @php
                 $groupLabel = function(string $g){
                     $map = [
@@ -105,10 +105,10 @@
                         'empresas' => 'Empresas',
                         'equipe' => 'Equipe',
                         'eventos' => 'Eventos',
-                        'pontos' => 'Pontos Turisticos',
-                        'relatorios' => 'Relatorios',
-                        'secretaria' => 'Pagina da Secretaria',
-                        'usuarios' => 'Usuarios',
+                        'pontos' => 'Pontos Turísticos',
+                        'relatorios' => 'Relatórios',
+                        'secretaria' => 'Página da Secretaria',
+                        'usuarios' => 'Usuários',
                     ];
                     return $map[$g] ?? \Illuminate\Support\Str::headline($g);
                 };
@@ -129,7 +129,7 @@
 
                 $resourceLabel = [
                     'atrativos' => 'Atrativos',
-                    'edicoes' => 'Edicoes',
+                    'edicoes' => 'Edições',
                     'midias' => 'Midias',
                     'cache' => 'Cache',
                 ];
@@ -150,7 +150,7 @@
             @endphp
 
             <div class="mb-4 flex items-center justify-between">
-                <span class="text-sm text-[var(--ui-text-soft)]">Selecao global e por grupo</span>
+                <span class="text-sm text-[var(--ui-text-soft)]">Seleção global e por grupo</span>
                 <label class="inline-flex items-center gap-2 text-xs text-[var(--ui-text-soft)]">
                     <input type="checkbox" id="perm_all_toggle" class="ui-form-check rounded">
                     Selecionar todas
@@ -189,7 +189,7 @@
 
             <div class="flex items-center gap-3">
                 @if(auth()->id() !== $usuario->id)
-                    <form method="POST" action="{{ route('admin.usuarios.destroy', $usuario) }}" onsubmit="return confirm('Excluir este usuario?');">
+                    <form method="POST" action="{{ route('admin.usuarios.destroy', $usuario) }}" onsubmit="return confirm('Excluir este usuário?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="ui-btn-danger">
@@ -202,7 +202,7 @@
                     </button>
                 @endif
 
-                <button class="ui-btn-primary">Salvar alteracoes</button>
+                <button class="ui-btn-primary">Salvar alterações</button>
             </div>
         </div>
     </form>

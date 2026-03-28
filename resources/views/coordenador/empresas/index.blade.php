@@ -2,7 +2,7 @@
 
 @section('title', 'Empresas')
 @section('page.title', 'Empresas')
-@section('topbar.description', 'Gerencie empresas com filtros, status editoriais e acoes rapidas no mesmo padrao visual do console.')
+@section('topbar.description', 'Gerencie empresas com filtros, status editoriais e ações rápidas no mesmo padrão visual do console.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Listagem</span>
@@ -26,7 +26,7 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Empresas"
-    subtitle="Acompanhe o catalogo empresarial com filtros estaveis, cards compactos e acoes administrativas."
+    subtitle="Acompanhe o catálogo empresarial com filtros estáveis, cards compactos e ações administrativas."
   >
     <x-slot:actions>
       @if($canCreate)

@@ -17,7 +17,7 @@
     @include('site.partials._page_hero', [
         'backHref' => $explorarUrl,
         'breadcrumbs' => [
-            ['label' => 'Inicio', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
             ['label' => 'Explorar', 'href' => $explorarUrl],
             ['label' => $pagina->titulo],
         ],
@@ -41,7 +41,7 @@
             <div class="site-editorial-main">
                 @if($pagina->texto_intro)
                     <section class="site-surface site-content-block">
-                        <x-section-head eyebrow="Introducao" title="Comer bem tambem e conhecer a cidade" />
+                        <x-section-head eyebrow="Introdução" title="Comer bem também é conhecer a cidade" />
                         <div class="site-prose">{!! nl2br(e($pagina->texto_intro)) !!}</div>
                     </section>
                 @endif
@@ -56,7 +56,7 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Resumo" title="Visao geral" />
+                    <x-section-head eyebrow="Resumo" title="Visão geral" />
                     <div class="site-stats-grid">
                         <div class="site-stat-card">
                             <span class="site-stat-label">Empresas</span>
@@ -76,13 +76,13 @@
         <x-section-head
             eyebrow="Curadoria"
             title="Onde comer em Altamira"
-            subtitle="Empresas publicadas e selecionadas para quem quer combinar boa experiencia, contexto local e praticidade."
+            subtitle="Empresas publicadas e selecionadas para quem quer combinar boa experiência, contexto local e praticidade."
         />
 
         @if($empresas->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-title">Curadoria em atualizacao</p>
-                <p class="site-empty-state-copy">A curadoria gastronomica de Altamira ainda esta sendo preparada.</p>
+                <p class="site-empty-state-title">Curadoria em atualização</p>
+                <p class="site-empty-state-copy">A curadoria gastronômica de Altamira ainda está sendo preparada.</p>
             </div>
         @else
             <div class="site-directory-grid">
@@ -111,7 +111,7 @@
                             <div>
                                 <h3 class="site-directory-card-title">{{ $empresa->nome }}</h3>
                                 <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' • ') ?: 'Altamira' }}</p>
-                                <p class="site-inline-meta">Selecao editorial para quem quer comer bem sem perder o contexto da viagem.</p>
+                                <p class="site-inline-meta">Seleção editorial para quem quer comer bem sem perder o contexto da viagem.</p>
                             </div>
 
                             <p class="site-directory-card-summary">
@@ -137,7 +137,7 @@
     @if($pagina->texto_dicas)
         <section class="site-section">
             <div class="site-surface site-content-block">
-                <x-section-head eyebrow="Dicas" title="Como aproveitar melhor a experiencia" />
+                <x-section-head eyebrow="Dicas" title="Como aproveitar melhor a experiência" />
                 <div class="site-prose">{!! nl2br(e($pagina->texto_dicas)) !!}</div>
             </div>
         </section>

@@ -5,17 +5,29 @@
     'image' => null,
     'href' => '#',
     'badge' => null,
-    'cta' => 'Ver mais',
+    'cta' => __('ui.common.view_more'),
     'meta' => null,
     'variant' => null,
 ])
 
+@php
+    $imageSources = $image ? site_image_sources($image, 'card') : null;
+@endphp
+
 <a href="{{ $href }}" {{ $attributes->class(['site-card-list', "site-card-list--{$variant}" => filled($variant)]) }}>
     <div class="site-card-list-media">
         @if($image)
-            <img src="{{ $image }}" alt="{{ $title }}" loading="lazy" decoding="async" class="site-card-list-image">
+            <x-picture
+                :jpg="$imageSources['jpg'] ?? $image"
+                :webp="$imageSources['webp'] ?? null"
+                :alt="$title"
+                class="site-card-list-image"
+                sizes="(max-width: 768px) 86vw, (max-width: 1280px) 42vw, 28vw"
+                :width="$imageSources['width'] ?? null"
+                :height="$imageSources['height'] ?? null"
+            />
         @else
-            <div class="site-card-list-placeholder">Sem imagem</div>
+            <div class="site-card-list-placeholder" aria-hidden="true">Sem imagem</div>
         @endif
     </div>
 

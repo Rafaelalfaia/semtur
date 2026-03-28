@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', ($pagina->titulo ?? 'Onde comer') . ' • Visit Altamira')
+@section('title', ($pagina->titulo ?? 'Onde comer') . ' â€¢ Visit Altamira')
 
 @section('site.content')
 <section class="py-10">

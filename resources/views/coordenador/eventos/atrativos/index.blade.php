@@ -1,11 +1,11 @@
 @extends('console.layout')
 @section('title', 'Atrativos - '.$edicao->evento->nome.' ('.$edicao->ano.')')
 @section('page.title', 'Atrativos')
-@section('topbar.description', 'Gerencie atrativos da edicao mantendo o shell global, a leitura premium e a futura base de temas.')
+@section('topbar.description', 'Gerencie atrativos da edição mantendo o shell global, a leitura premium e a futura base de temas.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
-  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edicoes</a>
+  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edições</a>
   <span class="ui-console-topbar-tab is-active">Atrativos</span>
 @endsection
 
@@ -15,11 +15,11 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Atrativos"
-    subtitle="Controle os itens em destaque da edicao, com ordem, status e acesso rapido a edicao."
+    subtitle="Controle os itens em destaque da edição, com ordem, status e acesso rápido à edição."
   >
     <div class="flex flex-wrap gap-2">
       <a href="{{ route('coordenador.edicoes.atrativos.create', $edicao) }}" class="ui-btn-primary">Novo atrativo</a>
-      <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-btn-secondary">Voltar as edicoes</a>
+      <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-btn-secondary">Voltar às edições</a>
     </div>
   </x-dashboard.page-header>
 
@@ -27,7 +27,7 @@
     <div class="ui-alert ui-alert-success mt-5">{{ session('ok') }}</div>
   @endif
 
-  <x-dashboard.section-card title="Lista de atrativos" subtitle="Acompanhe a ordem visual, status e acesso de edicao" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Lista de atrativos" subtitle="Acompanhe a ordem visual, status e acesso da edição" class="ui-coord-dashboard-panel mt-5">
     <div class="ui-table-shell">
       <table class="min-w-full text-sm">
         <thead class="ui-table-head">
@@ -35,7 +35,7 @@
             <th class="px-3 py-3 text-left">Ordem</th>
             <th class="px-3 py-3 text-left">Atrativo</th>
             <th class="px-3 py-3 text-left">Status</th>
-            <th class="px-3 py-3 text-right">Acoes</th>
+            <th class="px-3 py-3 text-right">Ações</th>
           </tr>
         </thead>
         <tbody>

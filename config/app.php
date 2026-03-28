@@ -78,9 +78,38 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'pt_BR'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'pt_BR'),
+
+    'locale_prefix_fallback' => env('APP_URL_LOCALE', 'pt'),
+
+    'supported_locales' => [
+        'pt' => [
+            'label' => 'PT',
+            'name' => 'Portugu�s',
+            'app_locale' => 'pt_BR',
+            'html_lang' => 'pt-BR',
+            'hreflang' => 'pt-BR',
+            'og_locale' => 'pt_BR',
+        ],
+        'en' => [
+            'label' => 'EN',
+            'name' => 'English',
+            'app_locale' => 'en',
+            'html_lang' => 'en-US',
+            'hreflang' => 'en',
+            'og_locale' => 'en_US',
+        ],
+        'es' => [
+            'label' => 'ES',
+            'name' => 'Espa�ol',
+            'app_locale' => 'es',
+            'html_lang' => 'es-ES',
+            'hreflang' => 'es',
+            'og_locale' => 'es_ES',
+        ],
+    ],
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 

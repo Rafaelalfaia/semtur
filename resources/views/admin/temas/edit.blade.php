@@ -12,7 +12,13 @@
 @section('content')
 @php
     $isActive = isset($activeTheme) && $activeTheme?->is($theme);
+    $isConsoleActive = isset($activeConsoleTheme) && $activeConsoleTheme?->is($theme);
+    $isSiteActive = isset($activeSiteTheme) && $activeSiteTheme?->is($theme);
+    $isAuthActive = isset($activeAuthTheme) && $activeAuthTheme?->is($theme);
     $isPreview = isset($previewTheme) && $previewTheme?->is($theme);
+    $supportsConsole = $theme->appliesTo(\App\Models\Theme::SCOPE_CONSOLE);
+    $supportsSite = $theme->appliesTo(\App\Models\Theme::SCOPE_SITE);
+    $supportsAuth = $theme->appliesTo(\App\Models\Theme::SCOPE_AUTH);
 @endphp
 
 <div class="ui-console-page">
@@ -22,12 +28,21 @@
     >
         <x-slot:actions>
             <a href="{{ route('admin.temas.index') }}" class="ui-btn-secondary">Voltar</a>
+            @can('themes.view')
+                <a href="{{ route('admin.temas.export', $theme) }}" class="ui-btn-secondary">Exportar</a>
+            @endcan
         </x-slot:actions>
     </x-dashboard.page-header>
 
     <div class="mt-5 flex flex-wrap items-center gap-2">
-        @if($isActive)
-            <span class="ui-badge ui-badge-success">Tema ativo</span>
+        @if($isConsoleActive)
+            <span class="ui-badge ui-badge-success">Ativo no console</span>
+        @endif
+        @if($isSiteActive)
+            <span class="ui-badge ui-badge-neutral">Ativo no site</span>
+        @endif
+        @if($isAuthActive)
+            <span class="ui-badge ui-badge-neutral">Ativo no auth</span>
         @endif
         @if($theme->is_default)
             <span class="ui-badge ui-badge-neutral">Tema default</span>
@@ -61,17 +76,45 @@
             @endcan
 
             @can('themes.activate')
-                @if($isActive && ! $theme->is_default)
+                @if($supportsConsole && $isConsoleActive && ! $theme->is_default)
                     <form method="POST" action="{{ route('admin.temas.restore-default') }}">
                         @csrf
                         @method('PATCH')
-                        <button class="ui-btn-secondary">Voltar ao padrao</button>
+                        <button class="ui-btn-secondary">Padrao no console</button>
                     </form>
-                @elseif(! $isActive)
+                @elseif($supportsConsole && ! $isConsoleActive)
                     <form method="POST" action="{{ route('admin.temas.activate', $theme) }}">
                         @csrf
                         @method('PATCH')
-                        <button class="ui-btn-secondary">Ativar tema</button>
+                        <button class="ui-btn-secondary">Ativar no console</button>
+                    </form>
+                @endif
+
+                @if($supportsSite && $isSiteActive && ! $theme->is_default)
+                    <form method="POST" action="{{ route('admin.temas.restore-default-site') }}">
+                        @csrf
+                        @method('PATCH')
+                        <button class="ui-btn-secondary">Padrao no site</button>
+                    </form>
+                @elseif($supportsSite && ! $isSiteActive)
+                    <form method="POST" action="{{ route('admin.temas.activate-site', $theme) }}">
+                        @csrf
+                        @method('PATCH')
+                        <button class="ui-btn-secondary">Ativar no site</button>
+                    </form>
+                @endif
+
+                @if($supportsAuth && $isAuthActive && ! $theme->is_default)
+                    <form method="POST" action="{{ route('admin.temas.restore-default-auth') }}">
+                        @csrf
+                        @method('PATCH')
+                        <button class="ui-btn-secondary">Padrao no auth</button>
+                    </form>
+                @elseif($supportsAuth && ! $isAuthActive)
+                    <form method="POST" action="{{ route('admin.temas.activate-auth', $theme) }}">
+                        @csrf
+                        @method('PATCH')
+                        <button class="ui-btn-secondary">Ativar no auth</button>
                     </form>
                 @endif
             @endcan
@@ -85,11 +128,21 @@
                     </form>
                 @endif
             @endcan
+
+            @can('themes.archive')
+                @if(! $theme->is_default)
+                    <form method="POST" action="{{ route('admin.temas.destroy', $theme) }}" onsubmit="return confirm('Apagar este tema definitivamente? Esta ação remove o tema e seus assets importados.');">
+                        @csrf
+                        @method('DELETE')
+                        <button class="ui-btn-danger">Apagar</button>
+                    </form>
+                @endif
+            @endcan
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
             <a href="{{ route('admin.temas.index') }}" class="ui-btn-secondary">Cancelar</a>
-            <button form="theme-update-form" class="ui-btn-primary">Salvar alteracoes</button>
+            <button form="theme-update-form" class="ui-btn-primary">Salvar alterações</button>
         </div>
     </div>
 

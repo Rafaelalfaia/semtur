@@ -17,13 +17,13 @@
     @include('site.partials._page_hero', [
         'backHref' => $explorarUrl,
         'breadcrumbs' => [
-            ['label' => 'Inicio', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
             ['label' => 'Explorar', 'href' => $explorarUrl],
             ['label' => $pagina->titulo ?: 'Onde ficar'],
         ],
         'badge' => $pagina->subtitulo ?: 'Hospedagem e conforto',
         'title' => $pagina->titulo ?: 'Onde ficar em Altamira',
-        'subtitle' => $pagina->resumo ?: 'Curadoria editorial para estadias com mais conforto, contexto e boa experiencia na viagem.',
+        'subtitle' => $pagina->resumo ?: 'Curadoria editorial para estadias com mais conforto, contexto e boa experiência na viagem.',
         'meta' => [
             $empresas->count().' hospedagens',
             'Curadoria oficial',
@@ -41,7 +41,7 @@
             <div class="site-editorial-main">
                 @if(filled($pagina->texto_intro))
                     <section class="site-surface site-content-block">
-                        <x-section-head eyebrow="Introducao" title="Estadia para diferentes perfis de viagem" />
+                        <x-section-head eyebrow="Introdução" title="Estadia para diferentes perfis de viagem" />
                         <div class="site-prose">{!! nl2br(e($pagina->texto_intro)) !!}</div>
                     </section>
                 @endif
@@ -56,7 +56,7 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Resumo" title="Visao geral" />
+                    <x-section-head eyebrow="Resumo" title="Visão geral" />
                     <div class="site-stats-grid">
                         <div class="site-stat-card">
                             <span class="site-stat-label">Hospedagens</span>
@@ -74,15 +74,15 @@
 
     <section id="hospedagens" class="site-section">
         <x-section-head
-            eyebrow="Selecao editorial"
+            eyebrow="Seleção editorial"
             title="Hospedagens recomendadas"
-            subtitle="Lugares publicados para quem busca localizacao, conforto e experiencia de estadia mais consistente."
+            subtitle="Lugares publicados para quem busca localização, conforto e experiência de estadia mais consistente."
         />
 
         @if($empresas->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-title">Selecao em preparacao</p>
-                <p class="site-empty-state-copy">A selecao de hospedagens ainda esta sendo preparada.</p>
+                <p class="site-empty-state-title">Seleção em preparação</p>
+                <p class="site-empty-state-copy">A seleção de hospedagens ainda está sendo preparada.</p>
             </div>
         @else
             <div class="site-directory-grid">
@@ -116,7 +116,7 @@
                             <div>
                                 <h3 class="site-directory-card-title">{{ $empresa->nome }}</h3>
                                 <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' • ') ?: 'Altamira' }}</p>
-                                <p class="site-inline-meta">Uma base segura para comparar localizacao, conforto e acesso durante a viagem.</p>
+                                <p class="site-inline-meta">Uma base segura para comparar localização, conforto e acesso durante a viagem.</p>
                             </div>
 
                             @if($descricao)

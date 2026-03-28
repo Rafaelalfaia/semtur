@@ -12,6 +12,7 @@
         "laravel/sanctum": "^4.2",
         "laravel/socialite": "^5.23",
         "laravel/tinker": "^2.9",
+        "league/flysystem-aws-s3-v3": "3.0",
         "spatie/laravel-permission": "^6.21",
         "spatie/laravel-sitemap": "^7.3"
     },

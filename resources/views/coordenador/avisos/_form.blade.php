@@ -5,16 +5,16 @@
 
 <div class="ui-aviso-form-grid">
   <div class="space-y-5">
-    <x-dashboard.section-card title="Conteudo do aviso" subtitle="Titulo, descricao e contato rapido" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Conteúdo do aviso" subtitle="Título, descrição e contato rápido" class="ui-coord-dashboard-panel">
       <div class="space-y-4">
         <div>
-          <label class="ui-form-label">Titulo *</label>
+          <label class="ui-form-label">Título *</label>
           <input type="text" name="titulo" value="{{ old('titulo', data_get($aviso,'titulo','')) }}" class="ui-form-control" required>
           @error('titulo')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
         <div>
-          <label class="ui-form-label">Descricao *</label>
+          <label class="ui-form-label">Descrição *</label>
           <textarea name="descricao" rows="6" class="ui-form-control ui-aviso-textarea" required>{{ old('descricao', data_get($aviso,'descricao','')) }}</textarea>
           @error('descricao')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
@@ -40,15 +40,15 @@
       </div>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Janela de exibicao" subtitle="Defina quando o aviso deve ficar visivel" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Janela de exibição" subtitle="Defina quando o aviso deve ficar visível" class="ui-coord-dashboard-panel">
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
-          <label class="ui-form-label">Inicio da exibicao</label>
+          <label class="ui-form-label">Inicio da exibição</label>
           <input type="datetime-local" name="inicio_em" value="{{ old('inicio_em', optional(data_get($aviso,'inicio_em'))->format('Y-m-d\TH:i')) }}" class="ui-form-control">
           @error('inicio_em')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
         <div>
-          <label class="ui-form-label">Fim da exibicao</label>
+          <label class="ui-form-label">Fim da exibição</label>
           <input type="datetime-local" name="fim_em" value="{{ old('fim_em', optional(data_get($aviso,'fim_em'))->format('Y-m-d\TH:i')) }}" class="ui-form-control">
           @error('fim_em')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
@@ -57,7 +57,7 @@
   </div>
 
   <div class="space-y-5">
-    <x-dashboard.section-card title="Imagem do aviso" subtitle="Upload opcional com preview e remocao" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Imagem do aviso" subtitle="Upload opcional com preview e remoção" class="ui-coord-dashboard-panel">
       <input type="file" name="imagem" accept="image/*" class="ui-banner-highlight-file">
       @error('imagem')<p class="ui-form-error mt-2">{{ $message }}</p>@enderror
       <p class="ui-profile-help mt-2">Envie uma imagem para enriquecer a leitura do aviso.</p>
@@ -81,6 +81,6 @@
 <div class="pt-2 flex items-center justify-end gap-3">
   <a href="{{ route('coordenador.avisos.index') }}" class="ui-btn-secondary">Cancelar</a>
   <button type="submit" class="ui-btn-primary">
-    {{ ($mode ?? 'create') === 'edit' ? 'Salvar alteracoes' : 'Criar aviso' }}
+    {{ ($mode ?? 'create') === 'edit' ? 'Salvar alterações' : 'Criar aviso' }}
   </button>
 </div>

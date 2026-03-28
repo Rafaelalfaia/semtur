@@ -1,12 +1,12 @@
 @extends('console.layout')
 
-@section('title', 'Editar video')
-@section('page.title', 'Editar video')
-@section('topbar.description', 'Atualize videos institucionais mantendo o shell, o modo global e a futura base de temas.')
+@section('title', 'Editar vídeo')
+@section('page.title', 'Editar vídeo')
+@section('topbar.description', 'Atualize vídeos institucionais mantendo o shell, o modo global e a futura base de temas.')
 
 @section('topbar.nav')
-  <a href="{{ route('coordenador.videos.index') }}" class="ui-console-topbar-tab">Videos</a>
-  <span class="ui-console-topbar-tab is-active">Editar video</span>
+  <a href="{{ route('coordenador.videos.index') }}" class="ui-console-topbar-tab">Vídeos</a>
+  <span class="ui-console-topbar-tab is-active">Editar vídeo</span>
 @endsection
 
 @section('content')
@@ -14,8 +14,8 @@
   @include('coordenador.partials.flash')
 
   <x-dashboard.page-header
-    title="Editar video"
-    subtitle="Atualize o conteudo, teste o link e controle exatamente o que aparece na area publica."
+    title="Editar vídeo"
+    subtitle="Atualize o conteúdo, teste o link e controle exatamente o que aparece na área pública."
   >
     <div class="flex flex-wrap gap-2">
       @if(($video->status ?? null) === 'publicado' && Route::has('site.videos.show'))
@@ -57,7 +57,7 @@
     @endcan
 
     @can('videos.delete')
-      <form method="POST" action="{{ route('coordenador.videos.destroy', $video) }}" onsubmit="return confirm('Excluir este video?');">
+      <form method="POST" action="{{ route('coordenador.videos.destroy', $video) }}" onsubmit="return confirm('Excluir este vídeo?');">
         @csrf
         @method('DELETE')
         <button class="ui-btn-danger">Excluir</button>
@@ -72,7 +72,7 @@
     @include('coordenador.videos._form', ['mode' => 'edit'])
 
     <div class="flex flex-wrap items-center gap-3 border-t border-[var(--ui-border)] pt-5">
-      <button type="submit" class="ui-btn-primary">Salvar alteracoes</button>
+      <button type="submit" class="ui-btn-primary">Salvar alterações</button>
       <a href="{{ route('coordenador.videos.index') }}" class="ui-btn-secondary">Cancelar</a>
     </div>
   </form>

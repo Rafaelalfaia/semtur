@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', $roteiro->titulo . ' • Roteiros em Altamira')
+@section('title', $roteiro->titulo . ' � Roteiros em Altamira')
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($roteiro->seo_description ?: $roteiro->resumo ?: $roteiro->descricao)), 160))
 @section('meta.image', $roteiro->capa_url ?: asset('imagens/altamira.jpg'))
 
@@ -69,7 +69,7 @@
 
     $empresasAgrupadas = collect($roteiro->empresasSugestao ?? [])
         ->filter(fn ($item) => $item && $item->empresa)
-        ->groupBy(fn ($item) => $item->tipo_sugestao_label ?: 'Sugestões');
+        ->groupBy(fn ($item) => $item->tipo_sugestao_label ?: 'Sugest�es');
 
     $temMapa = $pontosUnicos->contains(fn ($p) => filled($p->lat) && filled($p->lng));
 @endphp
@@ -91,7 +91,7 @@
             href="{{ route('site.roteiros') }}"
             class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
         >
-            ← Voltar para roteiros
+            ? {{ __('ui.common.back_to_itineraries') }}
         </a>
 
         <div class="mt-6 grid gap-8 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
@@ -149,13 +149,13 @@
                 <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
                     <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">Pontos</div>
                     <div class="mt-2 text-2xl font-semibold">{{ $pontosUnicos->count() }}</div>
-                    <p class="mt-1 text-sm text-slate-200/90">Locais que compõem o percurso sugerido.</p>
+                    <p class="mt-1 text-sm text-slate-200/90">Locais que comp�em o percurso sugerido.</p>
                 </div>
 
                 <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
                     <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">Empresas</div>
                     <div class="mt-2 text-2xl font-semibold">{{ collect($roteiro->empresasSugestao ?? [])->count() }}</div>
-                    <p class="mt-1 text-sm text-slate-200/90">Sugestões selecionadas para apoiar a experiência.</p>
+                    <p class="mt-1 text-sm text-slate-200/90">Sugest�es selecionadas para apoiar a experi�ncia.</p>
                 </div>
 
                 <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
@@ -178,7 +178,7 @@
                         Sobre este roteiro
                     </div>
                     <h2 class="mt-2 text-2xl font-semibold text-slate-100">
-                        O que esperar da experiência
+                        O que esperar da experi�ncia
                     </h2>
 
                     @if($roteiro->descricao)
@@ -188,7 +188,7 @@
                     @else
                         <p class="mt-4 text-sm leading-8 text-slate-300">
                             Este roteiro foi organizado para ajudar o visitante a viver Altamira com mais clareza,
-                            conectando paisagens, cultura, deslocamento e experiências que fazem sentido dentro do mesmo percurso.
+                            conectando paisagens, cultura, deslocamento e experi�ncias que fazem sentido dentro do mesmo percurso.
                         </p>
                     @endif
                 </section>
@@ -331,10 +331,10 @@
                             Empresas sugeridas
                         </div>
                         <h2 class="mt-2 text-2xl font-semibold text-slate-100">
-                            Apoios e experiências para este roteiro
+                            Apoios e experi�ncias para este roteiro
                         </h2>
                         <p class="mt-3 text-sm leading-7 text-slate-400">
-                            Aqui entram somente empresas selecionadas para combinar com esse percurso e ajudar o visitante a montar melhor a experiência.
+                            Aqui entram somente empresas selecionadas para combinar com esse percurso e ajudar o visitante a montar melhor a experi�ncia.
                         </p>
 
                         <div class="mt-7 space-y-8">
@@ -345,7 +345,7 @@
                                             {{ $grupo }}
                                         </h3>
                                         <div class="text-sm text-slate-500">
-                                            {{ $itens->count() }} {{ $itens->count() === 1 ? 'sugestão' : 'sugestões' }}
+                                            {{ $itens->count() }} {{ $itens->count() === 1 ? 'sugest�o' : 'sugest�es' }}
                                         </div>
                                     </div>
 
@@ -389,7 +389,7 @@
 
                                                     @if($empresa->cidade || $empresa->bairro)
                                                         <div class="mt-2 text-sm text-slate-400">
-                                                            {{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' • ') }}
+                                                            {{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' � ') }}
                                                         </div>
                                                     @endif
 
@@ -446,7 +446,7 @@
                                             {{ $ponto->nome }}
                                         </h3>
                                         <div class="mt-1 text-sm text-slate-400">
-                                            {{ collect([$ponto->bairro, $ponto->cidade])->filter()->implode(' • ') ?: 'Altamira' }}
+                                            {{ collect([$ponto->bairro, $ponto->cidade])->filter()->implode(' � ') ?: 'Altamira' }}
                                         </div>
                                     </div>
 
@@ -562,7 +562,7 @@
             <aside class="space-y-6 lg:sticky lg:top-6 lg:self-start">
                 <section class="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
                     <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                        Informações úteis
+                        Informa��es �teis
                     </div>
                     <h2 class="mt-2 text-lg font-semibold text-slate-100">
                         Antes de sair
@@ -570,16 +570,16 @@
 
                     <div class="mt-5 space-y-3">
                         <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Melhor época</div>
+                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Melhor �poca</div>
                             <div class="mt-1 text-sm font-medium text-slate-100">
-                                {{ $roteiro->melhor_epoca ?: 'Consulte as condições locais antes da visita.' }}
+                                {{ $roteiro->melhor_epoca ?: 'Consulte as condi��es locais antes da visita.' }}
                             </div>
                         </div>
 
                         <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
                             <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Deslocamento</div>
                             <div class="mt-1 text-sm font-medium text-slate-100">
-                                {{ $roteiro->deslocamento ?: 'Pode variar conforme o roteiro e a época.' }}
+                                {{ $roteiro->deslocamento ?: 'Pode variar conforme o roteiro e a �poca.' }}
                             </div>
                         </div>
 
@@ -593,7 +593,7 @@
                         <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
                             <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Intensidade</div>
                             <div class="mt-1 text-sm font-medium text-slate-100">
-                                {{ $roteiro->intensidade_label ?: 'Não informada' }}
+                                {{ $roteiro->intensidade_label ?: 'N�o informada' }}
                             </div>
                         </div>
                     </div>
@@ -601,10 +601,10 @@
 
                 <section class="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
                     <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                        Resumo rápido
+                        Resumo r�pido
                     </div>
                     <h2 class="mt-2 text-lg font-semibold text-slate-100">
-                        Visão geral do percurso
+                        Vis�o geral do percurso
                     </h2>
 
                     <div class="mt-5 space-y-3">

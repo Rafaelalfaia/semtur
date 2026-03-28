@@ -1,4 +1,4 @@
-﻿@extends('site.layouts.app')
+@extends('site.layouts.app')
 
 @section('title', $edicao->titulo . ' • Rota do Cacau')
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($edicao->descricao ?: $rota->descricao)), 160))
@@ -29,7 +29,7 @@
             href="{{ route('site.rota_do_cacau.index') }}"
             class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/15"
         >
-            ← Voltar para Rota do Cacau
+            ← {{ __('ui.common.back_to_route') }}
         </a>
 
         <div class="mt-5 text-sm text-white/70">

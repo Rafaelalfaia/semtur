@@ -1,7 +1,7 @@
 @extends('console.layout')
-@section('title','Tecnicos')
-@section('page.title','Tecnicos')
-@section('topbar.description', 'Gestao de tecnicos vinculados ao coordenador, com filtros, tabela estavel e o mesmo padrao visual do console.')
+@section('title','Técnicos')
+@section('page.title','Técnicos')
+@section('topbar.description', 'Gestão de técnicos vinculados ao coordenador, com filtros, tabela estável e o mesmo padrão visual do console.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Listagem</span>
@@ -12,11 +12,11 @@
 @section('content')
 <div class="ui-console-page">
   <x-dashboard.page-header
-    title="Tecnicos"
+    title="Técnicos"
     subtitle="Gerencie contas tecnicas com busca rapida e acoes administrativas compatíveis com o shell atual."
   >
     <x-slot:actions>
-      <a href="{{ route('coordenador.tecnicos.create') }}" class="ui-btn-primary">Novo tecnico</a>
+      <a href="{{ route('coordenador.tecnicos.create') }}" class="ui-btn-primary">Novo técnico</a>
     </x-slot:actions>
   </x-dashboard.page-header>
 
@@ -35,7 +35,7 @@
       </form>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card id="tecnicos-tabela" title="Lista de tecnicos" subtitle="Contas vinculadas ao coordenador">
+    <x-dashboard.section-card id="tecnicos-tabela" title="Lista de técnicos" subtitle="Contas vinculadas ao coordenador">
       <div class="ui-table-shell">
         <table class="min-w-full text-sm">
           <thead class="ui-table-head">
@@ -44,7 +44,7 @@
               <th class="text-left font-medium px-4 py-3">CPF</th>
               <th class="text-left font-medium px-4 py-3">E-mail</th>
               <th class="text-left font-medium px-4 py-3">Criado em</th>
-              <th class="text-right font-medium px-4 py-3">Acoes</th>
+              <th class="text-right font-medium px-4 py-3">Ações</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[var(--ui-border)]">
@@ -57,7 +57,7 @@
                 <td class="px-4 py-3">
                   <div class="flex items-center justify-end gap-2">
                     <a href="{{ route('coordenador.tecnicos.edit',$u) }}" class="ui-btn-secondary">Editar</a>
-                    <form method="POST" action="{{ route('coordenador.tecnicos.destroy',$u) }}" onsubmit="return confirm('Excluir este tecnico?');">
+                    <form method="POST" action="{{ route('coordenador.tecnicos.destroy',$u) }}" onsubmit="return confirm('Excluir este técnico?');">
                       @csrf
                       @method('DELETE')
                       <button class="ui-btn-danger">Excluir</button>
@@ -69,8 +69,8 @@
               <tr>
                 <td colspan="5" class="px-4 py-6 text-center text-[var(--ui-text-soft)]">
                   {{ mb_strlen(trim((string) ($q ?? ''))) < 3
-                      ? 'Digite pelo menos 3 letras para pesquisar tecnicos.'
-                      : 'Nenhum tecnico encontrado.' }}
+                      ? 'Digite pelo menos 3 letras para pesquisar técnicos.'
+                      : 'Nenhum técnico encontrado.' }}
                 </td>
               </tr>
             @endforelse

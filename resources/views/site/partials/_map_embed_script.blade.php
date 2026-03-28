@@ -251,8 +251,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const href = showHref(item);
             const directionsHref = routeHref(item);
             const title = String(item.nome || '').replace(/</g, '&lt;');
-            const subtitle = String(item.cidade || 'Altamira').replace(/</g, '&lt;');
-            const tipo = item.type === 'empresa' ? 'Empresa' : 'Ponto turistico';
+            const subtitle = String(item.cidade || i18n.altamira).replace(/</g, '&lt;');
+            const tipo = item.type === 'empresa' ? i18n.company : i18n.point;
 
             return `
                 <div class="site-map-popup">
@@ -262,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="site-map-popup-title">${title}</div>
                         <div class="site-map-popup-subtitle">${subtitle}</div>
                         <div class="site-map-popup-actions">
-                            <a href="${href}" class="site-button-primary site-map-popup-button">Ver detalhe</a>
-                            ${directionsHref ? `<a href="${directionsHref}" target="_blank" rel="noopener noreferrer" class="site-button-secondary site-map-popup-button">Rota</a>` : ''}
+                            <a href="${href}" class="site-button-primary site-map-popup-button">${i18n.detail}</a>
+                            ${directionsHref ? `<a href="${directionsHref}" target="_blank" rel="noopener noreferrer" class="site-button-secondary site-map-popup-button">${i18n.route}</a>` : ''}
                         </div>
                     </div>
                 </div>
@@ -330,11 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const total = items.length;
             const categoryLabel = filterButtons.find((button) => button.dataset.category === currentCategory)?.dataset.label
                 || config.currentCategoryLabel
-                || 'Tudo';
+                || i18n.all;
             const queryLabel = currentQuery ? ` para "${currentQuery}"` : '';
             statusElement.textContent = total
                 ? `${total} locais publicados${categoryLabel && categoryLabel !== 'Tudo' ? ` em ${categoryLabel}` : ''}${queryLabel}`
-                : 'Nenhum local publicado nesta leitura.';
+                : i18n.emptyStatus;
         }
 
         function renderCards(items) {
@@ -347,8 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!items.length) {
                 cardsElement.innerHTML = `
                     <div class="site-map-empty-state">
-                        <p class="site-map-empty-title">${config.emptyTitle || 'Nada apareceu nesta area'}</p>
-                        <p class="site-map-empty-copy">${config.emptyCopy || 'Mova o mapa, limpe a busca ou troque de categoria para continuar explorando.'}</p>
+                        <p class="site-map-empty-title">${config.emptyTitle || i18n.emptyTitle}</p>
+                        <p class="site-map-empty-copy">${config.emptyCopy || i18n.emptyCopy}</p>
                     </div>
                 `;
                 updateStatus(items);
@@ -364,13 +364,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.innerHTML = `
                     ${item.foto ? `<button type="button" class="site-map-card-media"><img src="${ensureAbs(item.foto)}" alt="${String(item.nome || '').replace(/"/g, '&quot;')}" class="site-map-card-image"></button>` : '<button type="button" class="site-map-card-media site-map-card-media-placeholder"></button>'}
                     <div class="site-map-card-body">
-                        <h3 class="site-map-card-title">${item.nome || 'Item turistico'}</h3>
-                        <p class="site-map-card-subtitle">${item.cidade || 'Altamira'}</p>
-                        <p class="site-map-card-helper">${directionsHref ? 'Foque, abra ou siga a rota.' : 'Foque no mapa ou abra o detalhe.'}</p>
+                        <h3 class="site-map-card-title">${item.nome || i18n.itemName}</h3>
+                        <p class="site-map-card-subtitle">${item.cidade || i18n.altamira}</p>
+                        <p class="site-map-card-helper">${directionsHref ? i18n.helperWithRoute : i18n.helperWithoutRoute}</p>
                         <div class="site-map-card-actions">
-                            <button type="button" class="site-map-card-link is-primary">Focar</button>
-                            <a href="${href}" class="site-map-card-link">Detalhe</a>
-                            ${directionsHref ? `<a href="${directionsHref}" target="_blank" rel="noopener noreferrer" class="site-map-card-link">Rota</a>` : ''}
+                            <button type="button" class="site-map-card-link is-primary">${i18n.focus}</button>
+                            <a href="${href}" class="site-map-card-link">${i18n.detail}</a>
+                            ${directionsHref ? `<a href="${directionsHref}" target="_blank" rel="noopener noreferrer" class="site-map-card-link">${i18n.route}</a>` : ''}
                         </div>
                     </div>
                 `;

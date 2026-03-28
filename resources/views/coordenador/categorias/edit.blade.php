@@ -27,14 +27,14 @@
 
   <x-dashboard.page-header
     title="Editar categoria"
-    subtitle="Refine informacoes, status e icone mantendo o modulo alinhado ao novo console."
+    subtitle="Refine informações, status e ícone mantendo o módulo alinhado ao novo console."
   />
 
   <form method="POST" action="{{ route('coordenador.categorias.update', $categoria) }}" enctype="multipart/form-data" class="mt-5 space-y-5">
     @csrf
     @method('PUT')
 
-    <x-dashboard.section-card title="Dados da categoria" subtitle="Edite nome, slug, status, descricao e icone" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados da categoria" subtitle="Edite nome, slug, status, descrição e ícone" class="ui-coord-dashboard-panel">
       @include('coordenador.categorias._form', [
         'categoria' => $categoria,
         'empresas'  => $empresas ?? collect(),
@@ -43,7 +43,7 @@
     </x-dashboard.section-card>
 
     <div>
-      <button type="submit" class="ui-btn-primary">Salvar alteracoes</button>
+      <button type="submit" class="ui-btn-primary">Salvar alterações</button>
     </div>
   </form>
 </div>

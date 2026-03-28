@@ -29,7 +29,7 @@
     <x-slot:actions>
       @if(Route::has('site.empresa'))
         <a href="{{ route('site.empresa', $empresa->slug ?? $empresa->id) }}" target="_blank" rel="noopener" class="ui-btn-secondary">
-          Ver pagina
+          Ver página
         </a>
       @endif
       <a href="{{ route('coordenador.empresas.index') }}" class="ui-btn-secondary">Voltar</a>
@@ -93,7 +93,7 @@
     @csrf
     @method('PUT')
 
-    <x-dashboard.section-card title="Dados da empresa" subtitle="Conteudo principal e informacoes de contato" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados da empresa" subtitle="Conteúdo principal e informações de contato" class="ui-coord-dashboard-panel">
       @includeIf('coordenador.empresas._form', [
         'empresa'      => $empresa,
         'categorias'   => $categorias ?? collect(),
@@ -102,7 +102,7 @@
     </x-dashboard.section-card>
 
     @unless (View::exists('coordenador.empresas._form'))
-      <x-dashboard.section-card title="Dados basicos" subtitle="Fallback visual para campos essenciais" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Dados básicos" subtitle="Fallback visual para campos essenciais" class="ui-coord-dashboard-panel">
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <label class="ui-form-label">Nome *</label>
@@ -113,7 +113,7 @@
             <input type="text" name="slug" value="{{ old('slug', $empresa->slug) }}" class="ui-form-control">
           </div>
           <div class="sm:col-span-2">
-            <label class="ui-form-label">Descricao</label>
+            <label class="ui-form-label">Descrição</label>
             <textarea name="descricao" rows="5" class="ui-form-control">{{ old('descricao', $empresa->descricao) }}</textarea>
           </div>
           <div>
@@ -130,7 +130,7 @@
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div class="flex flex-wrap gap-2">
-        <button class="ui-btn-primary">Salvar alteracoes</button>
+        <button class="ui-btn-primary">Salvar alterações</button>
         <a href="{{ route('coordenador.empresas.index') }}" class="ui-btn-secondary">Cancelar</a>
       </div>
 

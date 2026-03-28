@@ -1,28 +1,52 @@
 @extends('site.layouts.app')
 
-@section('title', 'Login - SEMTUR')
+@section('title', __('ui.auth.login_title'))
+@section('meta.noindex', 'true')
 
 @section('site.content')
+@php
+    $loginImage = asset('imagens/altamira.jpg');
+    $loginImageSources = site_image_sources($loginImage, 'hero');
+    $logoSources = site_image_sources(theme_asset('logo'), 'logo');
+@endphp
 <div class="ui-auth-shell">
     <div class="ui-auth-card">
         <div class="ui-auth-media">
-            <img src="{{ asset('imagens/altamira.jpg') }}" alt="Paisagem de Altamira" class="ui-auth-media-image">
+            <x-picture
+                :jpg="$loginImageSources['jpg'] ?? $loginImage"
+                :webp="$loginImageSources['webp'] ?? null"
+                alt="Paisagem de Altamira"
+                class="ui-auth-media-image"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                :width="$loginImageSources['width'] ?? null"
+                :height="$loginImageSources['height'] ?? null"
+                priority
+            />
             <div class="ui-auth-media-overlay"></div>
             <div class="ui-auth-media-copy">
-                <img src="{{ theme_asset('logo') }}" alt="Logo da SEMTUR" class="ui-auth-media-logo">
+                <x-picture
+                    :jpg="$logoSources['jpg'] ?? theme_asset('logo')"
+                    :webp="$logoSources['webp'] ?? null"
+                    alt="{{ __('ui.auth.logo_alt') }}"
+                    class="ui-auth-media-logo"
+                    sizes="180px"
+                    :width="$logoSources['width'] ?? null"
+                    :height="$logoSources['height'] ?? null"
+                    priority
+                />
                 <div>
-                    <div class="ui-auth-eyebrow">Visit Altamira</div>
-                    <h1 class="ui-auth-heading">Entre para continuar</h1>
-                    <p class="ui-auth-subtitle">Acesse sua conta com uma entrada mais direta, leve e alinhada ao restante do produto.</p>
+                    <div class="ui-auth-eyebrow">{{ __('ui.auth.eyebrow') }}</div>
+                    <h1 class="ui-auth-heading">{{ __('ui.auth.login_heading') }}</h1>
+                    <p class="ui-auth-subtitle">{{ __('ui.auth.login_subtitle') }}</p>
                 </div>
             </div>
         </div>
 
         <div class="ui-auth-form-panel">
             <div>
-                <div class="ui-auth-eyebrow">Entrar</div>
+                <div class="ui-auth-eyebrow">{{ __('ui.auth.login_panel') }}</div>
                 <h2 class="ui-auth-title">Login</h2>
-                <p class="ui-auth-copy">Use e-mail ou CPF, ou entre com sua conta Google.</p>
+                <p class="ui-auth-copy">{{ __('ui.auth.login_copy') }}</p>
             </div>
 
             <form method="POST" action="{{ route('login') }}" class="ui-auth-form" novalidate>
@@ -34,20 +58,20 @@
                     </div>
                 @endif
 
-                <a href="{{ route('google.redirect') }}" class="ui-auth-google" aria-label="Entrar com Google">
+                <a href="{{ route('google.redirect') }}" class="ui-auth-google" aria-label="{{ __('ui.auth.google_login') }}">
                     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                         <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.827 31.659 29.333 35 24 35c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.156 7.961 3.039l5.657-5.657C34.758 5.119 29.651 3 24 3 12.955 3 4 11.955 4 23s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z"/>
                         <path fill="#FF3D00" d="M6.306 14.691l6.571 4.815C14.531 16.047 18.951 13 24 13c3.059 0 5.842 1.156 7.961 3.039l5.657-5.657C34.758 5.119 29.651 3 24 3 16.318 3 9.656 7.337 6.306 14.691z"/>
                         <path fill="#4CAF50" d="M24 43c5.267 0 10.049-2.019 13.682-5.318l-6.316-5.341C29.333 35 24.827 37 20 37c-5.285 0-9.747-3.39-11.367-8.108l-6.564 5.061C5.356 39.777 14.044 43 24 43z"/>
                         <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.364 3.659-5.858 7-11.303 7-5.285 0-9.747-3.39-11.367-8.108l-6.564 5.061C5.356 39.777 14.044 43 24 43c11.045 0 20-8.955 20-20 0-1.341-.138-2.651-.389-3.917z"/>
                     </svg>
-                    Entrar com Google
+                    {{ __('ui.auth.google_login') }}
                 </a>
 
-                <div class="ui-auth-divider"><span>ou</span></div>
+                <div class="ui-auth-divider"><span>{{ __('ui.auth.or') }}</span></div>
 
                 <div>
-                    <label for="login" class="ui-form-label">E-mail ou CPF</label>
+                    <label for="login" class="ui-form-label">{{ __('ui.auth.email_or_cpf') }}</label>
                     <input
                         id="login"
                         name="login"
@@ -63,10 +87,10 @@
                 </div>
 
                 <div>
-                    <label for="password" class="ui-form-label">Senha</label>
+                    <label for="password" class="ui-form-label">{{ __('ui.auth.password') }}</label>
                     <div class="relative">
                         <input id="password" name="password" type="password" autocomplete="current-password" required class="ui-input pr-12">
-                        <button type="button" id="toggle-pass" class="ui-auth-password-toggle" aria-label="Mostrar ou ocultar senha">
+                        <button type="button" id="toggle-pass" class="ui-auth-password-toggle" aria-label="{{ __('ui.auth.show_password') }}">
                             <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke-width="1.6"/>
                                 <circle cx="12" cy="12" r="3" stroke-width="1.6"/>
@@ -82,16 +106,16 @@
                 <div class="flex items-center justify-between gap-4">
                     <label class="inline-flex items-center gap-2 text-sm text-[var(--ui-text-soft)]">
                         <input type="checkbox" name="remember" class="ui-form-check rounded">
-                        Lembrar de mim
+                        {{ __('ui.auth.remember') }}
                     </label>
 
                     @if(Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="text-sm font-medium text-[var(--ui-primary)] hover:underline">Esqueci minha senha</a>
+                        <a href="{{ route('password.request') }}" class="text-sm font-medium text-[var(--ui-primary)] hover:underline">{{ __('ui.auth.forgot_password') }}</a>
                     @endif
                 </div>
 
                 <button type="submit" class="ui-btn-primary w-full justify-center">
-                    Entrar
+                    {{ __('ui.auth.login_panel') }}
                 </button>
 
                 @if(Route::has('register'))

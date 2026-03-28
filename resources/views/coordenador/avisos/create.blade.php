@@ -1,7 +1,7 @@
 @extends('console.layout')
 @section('title','Novo Aviso')
 @section('page.title','Novo Aviso')
-@section('topbar.description', 'Cadastre um aviso com o mesmo padrao visual, estrutural e de modos do console.')
+@section('topbar.description', 'Cadastre um aviso com o mesmo padrão visual, estrutural e de modos do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.avisos.index') }}" class="ui-console-topbar-tab">Avisos</a>
@@ -14,7 +14,7 @@
 
   <x-dashboard.page-header
     title="Novo aviso"
-    subtitle="Monte um aviso com descricao, janela de exibicao e imagem opcional sem sair do padrao compartilhado do console."
+    subtitle="Monte um aviso com descrição, janela de exibição e imagem opcional sem sair do padrão compartilhado do console."
   />
 
   <form action="{{ route('coordenador.avisos.store') }}" method="post" enctype="multipart/form-data" class="mt-5 space-y-5">

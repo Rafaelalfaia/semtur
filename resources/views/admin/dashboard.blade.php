@@ -26,6 +26,12 @@
                 </a>
             @endif
 
+            @if(Route::has('admin.backups.index'))
+                <a href="{{ route('admin.backups.index') }}" class="ui-btn-secondary">
+                    Sistema
+                </a>
+            @endif
+
             @if(Route::has('admin.temas.index'))
                 <a href="{{ route('admin.temas.index') }}" class="ui-btn-primary">
                     {{ $resumo['tema'] }}

@@ -1,13 +1,13 @@
 @extends('console.layout')
 
-@section('title', 'Videos')
-@section('page.title', 'Videos')
-@section('topbar.description', 'Gerencie videos institucionais com o mesmo padrao visual, modo global e base semantica do console.')
+@section('title', 'Vídeos')
+@section('page.title', 'Vídeos')
+@section('topbar.description', 'Gerencie vídeos institucionais com o mesmo padrão visual, modo global e base semântica do console.')
 
 @section('topbar.nav')
-  <span class="ui-console-topbar-tab is-active">Videos</span>
+  <span class="ui-console-topbar-tab is-active">Vídeos</span>
   @if(auth()->user()->can('videos.create'))
-    <a href="{{ route('coordenador.videos.create') }}" class="ui-console-topbar-tab">Novo video</a>
+    <a href="{{ route('coordenador.videos.create') }}" class="ui-console-topbar-tab">Novo vídeo</a>
   @endif
 @endsection
 
@@ -30,15 +30,15 @@
   @include('coordenador.partials.flash')
 
   <x-dashboard.page-header
-    title="Videos"
+    title="Vídeos"
     subtitle="Cadastre e mantenha materiais audiovisuais com leitura mais limpa, visual premium e total compatibilidade com o shell do console."
   >
     @if($canCreate)
-      <a href="{{ route('coordenador.videos.create') }}" class="ui-btn-primary">Novo video</a>
+      <a href="{{ route('coordenador.videos.create') }}" class="ui-btn-primary">Novo vídeo</a>
     @endif
   </x-dashboard.page-header>
 
-  <x-dashboard.section-card title="Filtros" subtitle="Busque por titulo e status do video" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Filtros" subtitle="Busque por título e status do vídeo" class="ui-coord-dashboard-panel mt-5">
     <form method="GET" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <div class="sm:col-span-2">
         <label class="ui-form-label">Busca</label>
@@ -46,7 +46,7 @@
           type="text"
           name="busca"
           value="{{ $busca ?? '' }}"
-          placeholder="Titulo ou descricao..."
+          placeholder="Título ou descrição..."
           class="ui-form-control"
         >
       </div>
@@ -70,10 +70,10 @@
   </x-dashboard.section-card>
 
   @if(($videos ?? collect())->count() === 0)
-    <x-dashboard.section-card title="Nenhum video encontrado" subtitle="Cadastre videos oficiais para publicar materiais audiovisuais no site." class="ui-coord-dashboard-panel mt-5">
+    <x-dashboard.section-card title="Nenhum vídeo encontrado" subtitle="Cadastre vídeos oficiais para publicar materiais audiovisuais no site." class="ui-coord-dashboard-panel mt-5">
       @if($canCreate)
         <div class="mt-2">
-          <a href="{{ route('coordenador.videos.create') }}" class="ui-btn-primary">Criar primeiro video</a>
+          <a href="{{ route('coordenador.videos.create') }}" class="ui-btn-primary">Criar primeiro vídeo</a>
         </div>
       @endif
     </x-dashboard.section-card>
@@ -95,7 +95,7 @@
             @endif
 
             <div class="ui-video-card-chips">
-              <span class="ui-video-card-chip">Video</span>
+              <span class="ui-video-card-chip">Vídeo</span>
               <span class="ui-video-card-chip">Ordem {{ (int) ($video->ordem ?? 0) }}</span>
             </div>
           </div>
@@ -133,7 +133,7 @@
               </div>
 
               <div class="ui-video-card-stat">
-                <div class="ui-video-card-stat-label">Publicacao</div>
+                <div class="ui-video-card-stat-label">Publicação</div>
                 <div class="mt-1 text-sm font-semibold text-[var(--ui-text-title)]">{{ optional($video->published_at)->format('d/m/Y') ?: '—' }}</div>
               </div>
             </div>
@@ -176,7 +176,7 @@
               @endif
 
               @if($canDelete)
-                <form method="POST" action="{{ route('coordenador.videos.destroy', $video) }}" onsubmit="return confirm('Excluir este video?');">
+                <form method="POST" action="{{ route('coordenador.videos.destroy', $video) }}" onsubmit="return confirm('Excluir este vídeo?');">
                   @csrf
                   @method('DELETE')
                   <button class="ui-btn-danger">Excluir</button>

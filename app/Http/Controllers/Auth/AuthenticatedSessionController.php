@@ -16,12 +16,16 @@ class AuthenticatedSessionController extends Controller
 
     public function store(Request $r): RedirectResponse
     {
-        $login    = trim((string) $r->input('login'));
+        $login = trim((string) ($r->input('login') ?? $r->input('email') ?? ''));
         $password = (string) $r->input('password');
+
+        $r->merge(['login' => $login]);
 
         $r->validate([
             'login'    => ['required','string','max:255'],
             'password' => ['required','string'],
+        ], [], [
+            'login' => 'login',
         ]);
 
         // Decide se é e-mail ou CPF

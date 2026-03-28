@@ -7,11 +7,11 @@
     };
 
     $perfilHref = R::has('login') ? route('login') : url('/login');
-    $perfilLabel = 'Entrar';
+    $perfilLabel = __('ui.nav.login');
 
     $u = Auth::user();
     if ($u) {
-        $perfilLabel = 'Perfil';
+        $perfilLabel = __('ui.nav.profile');
 
         if (method_exists($u, 'hasRole')) {
             if ($u->hasRole('Admin') && R::has('admin.dashboard')) {
@@ -40,25 +40,25 @@
     $tabs = collect([
         [
             'key' => 'home',
-            'label' => json_decode('"In\u00edcio"'),
+            'label' => __('ui.nav.home'),
             'href' => $routeUrl('site.home', url('/')),
             'match' => ['site.home'],
         ],
         [
             'key' => 'explorar',
-            'label' => 'Explorar',
+            'label' => __('ui.nav.explore'),
             'href' => $routeUrl('site.explorar'),
             'match' => ['site.explorar*'],
         ],
         [
             'key' => 'agenda',
-            'label' => 'Agenda',
+            'label' => __('ui.nav.agenda'),
             'href' => $routeUrl('site.agenda'),
             'match' => ['site.agenda', 'eventos.*'],
         ],
         [
             'key' => 'mapa',
-            'label' => 'Mapa',
+            'label' => __('ui.nav.map'),
             'href' => $routeUrl('site.mapa'),
             'match' => ['site.mapa*'],
         ],
@@ -70,7 +70,7 @@
         ],
     ])->filter(fn ($item) => filled($item['href']) && $item['href'] !== '#')->values();
 
-    $navLabel = json_decode('"Menu p\u00fablico inferior"');
+    $navLabel = __('ui.nav.bottom');
 @endphp
 
 <div class="site-bottom-nav-shell lg:hidden">

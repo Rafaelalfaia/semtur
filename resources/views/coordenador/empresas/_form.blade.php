@@ -21,7 +21,7 @@
   </div>
 
   <div class="md:col-span-2">
-    <label for="maps_url" class="ui-form-label">Localizacao (URL do Google Maps)</label>
+    <label for="maps_url" class="ui-form-label">Localização (URL do Google Maps)</label>
     <input
       type="url"
       name="maps_url"
@@ -54,7 +54,7 @@
   </div>
 
   <div class="md:col-span-2">
-    <label class="ui-form-label">Descricao</label>
+    <label class="ui-form-label">Descrição</label>
     <textarea name="descricao" rows="4" class="ui-form-control">{{ old('descricao', $empresa->descricao ?? '') }}</textarea>
     @error('descricao')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
@@ -81,25 +81,25 @@
 
         <div>
           <label for="contatos_instagram" class="ui-form-label">Instagram</label>
-          <input type="text" id="contatos_instagram" name="contatos[instagram]" value="{{ $c['instagram'] ?? '' }}" placeholder="@usuario ou url" class="ui-form-control">
+          <input type="text" id="contatos_instagram" name="contatos[instagram]" value="{{ $c['instagram'] ?? '' }}" placeholder="@usuário ou URL" class="ui-form-control">
           @error('contatos.instagram')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
         <div>
           <label for="contatos_facebook" class="ui-form-label">Facebook</label>
-          <input type="text" id="contatos_facebook" name="contatos[facebook]" value="{{ $c['facebook'] ?? '' }}" placeholder="pagina ou url" class="ui-form-control">
+          <input type="text" id="contatos_facebook" name="contatos[facebook]" value="{{ $c['facebook'] ?? '' }}" placeholder="página ou URL" class="ui-form-control">
           @error('contatos.facebook')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
         <div>
           <label for="contatos_tiktok" class="ui-form-label">TikTok</label>
-          <input type="text" id="contatos_tiktok" name="contatos[tiktok]" value="{{ $c['tiktok'] ?? '' }}" placeholder="@usuario ou url" class="ui-form-control">
+          <input type="text" id="contatos_tiktok" name="contatos[tiktok]" value="{{ $c['tiktok'] ?? '' }}" placeholder="@usuário ou URL" class="ui-form-control">
           @error('contatos.tiktok')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 
         <div>
           <label for="contatos_youtube" class="ui-form-label">YouTube</label>
-          <input type="text" id="contatos_youtube" name="contatos[youtube]" value="{{ $c['youtube'] ?? '' }}" placeholder="url do canal ou @handle" class="ui-form-control">
+          <input type="text" id="contatos_youtube" name="contatos[youtube]" value="{{ $c['youtube'] ?? '' }}" placeholder="URL do canal ou @handle" class="ui-form-control">
           @error('contatos.youtube')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
 

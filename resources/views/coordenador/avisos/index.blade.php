@@ -1,7 +1,7 @@
 @extends('console.layout')
 @section('title','Avisos')
 @section('page.title','Avisos')
-@section('topbar.description', 'Gerencie os avisos do console com filtros, status e a mesma base visual usada nos demais modulos.')
+@section('topbar.description', 'Gerencie os avisos do console com filtros, status e a mesma base visual usada nos demais módulos.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Avisos</span>
@@ -26,7 +26,7 @@
 
   <x-dashboard.page-header
     title="Avisos"
-    subtitle="Acompanhe publicacao, janelas de exibicao e acoes editoriais em uma visao mais limpa e consistente com o novo console."
+    subtitle="Acompanhe publicação, janelas de exibição e ações editoriais em uma visão mais limpa e consistente com o novo console."
   >
     @can('avisos.manage')
       @if (Route::has('coordenador.avisos.create'))
@@ -35,13 +35,13 @@
     @endcan
   </x-dashboard.page-header>
 
-  <x-dashboard.section-card title="Filtros" subtitle="Busque por titulo, descricao, WhatsApp e status" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Filtros" subtitle="Busque por título, descrição, WhatsApp e status" class="ui-coord-dashboard-panel mt-5">
     <form method="get" class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_240px_auto]">
       <input
         type="text"
         name="q"
         value="{{ $q ?? '' }}"
-        placeholder="Buscar por titulo, descricao ou WhatsApp..."
+        placeholder="Buscar por título, descrição ou WhatsApp..."
         class="ui-form-control"
       >
       <select name="status" class="ui-form-select">
@@ -54,16 +54,16 @@
     </form>
   </x-dashboard.section-card>
 
-  <x-dashboard.section-card title="Lista de avisos" subtitle="Controle status, janela de exibicao e acoes do modulo" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Lista de avisos" subtitle="Controle status, janela de exibição e ações do módulo" class="ui-coord-dashboard-panel mt-5">
     <div class="ui-table-shell">
       <table class="min-w-full">
         <thead class="ui-table-head">
           <tr class="text-left text-sm">
-            <th class="px-4 py-3 font-medium">Titulo</th>
+            <th class="px-4 py-3 font-medium">Título</th>
             <th class="px-4 py-3 font-medium">Status</th>
             <th class="px-4 py-3 font-medium">Janela</th>
             @if($showActions)
-              <th class="px-4 py-3 font-medium text-right">Acoes</th>
+              <th class="px-4 py-3 font-medium text-right">Ações</th>
             @endif
           </tr>
         </thead>

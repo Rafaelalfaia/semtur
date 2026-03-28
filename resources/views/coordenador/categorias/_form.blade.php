@@ -28,22 +28,22 @@
   </div>
 
   <div class="md:col-span-2">
-    <label class="ui-form-label">Descricao</label>
+    <label class="ui-form-label">Descrição</label>
     <textarea name="descricao" rows="3" class="ui-form-control ui-category-textarea">{{ old('descricao', $categoria->descricao ?? '') }}</textarea>
     @error('descricao')<p class="ui-form-error">{{ $message }}</p>@enderror
   </div>
 
   <div>
-    <label class="ui-form-label">Icone (imagem)</label>
+    <label class="ui-form-label">Ícone (imagem)</label>
     <input type="file" name="icone" accept="image/*" class="ui-banner-highlight-file">
     @error('icone')<p class="ui-form-error">{{ $message }}</p>@enderror
 
     @if($isEdit && ($categoria->icone_url ?? null))
       <div class="ui-category-icon-edit mt-3">
-        <img src="{{ $categoria->icone_url }}" alt="Icone atual" class="ui-category-icon-preview">
+        <img src="{{ $categoria->icone_url }}" alt="Ícone atual" class="ui-category-icon-preview">
         <label class="inline-flex items-center gap-2 text-sm text-[var(--ui-danger)]">
           <input type="checkbox" name="remover_icone" value="1" class="ui-form-check rounded">
-          Remover icone
+          Remover ícone
         </label>
       </div>
     @endif
@@ -75,7 +75,7 @@
           <span>{{ $empresa->nome }}</span>
         </label>
       @empty
-        <div class="ui-category-company-empty">Nenhuma empresa disponivel no momento.</div>
+        <div class="ui-category-company-empty">Nenhuma empresa disponível no momento.</div>
       @endforelse
     </div>
     @error('empresas')<p class="ui-form-error">{{ $message }}</p>@enderror

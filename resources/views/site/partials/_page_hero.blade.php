@@ -16,6 +16,7 @@
 
 @php
     $heroImage = $image ?: theme_asset('hero_image');
+    $heroSources = site_image_sources($heroImage, 'hero');
     $resolvedBackHref = $backHref ?: url()->previous();
     $meta = collect($meta)->filter(fn ($item) => filled($item))->values();
     $heroClasses = trim('site-detail-hero site-page-hero'.($compact ? ' site-page-hero-compact' : ''));
@@ -23,13 +24,16 @@
 
 <section class="site-section">
     <div class="{{ $heroClasses }}">
-        <img
-            src="{{ $heroImage }}"
-            alt="{{ $imageAlt ?: $title }}"
+        <x-picture
+            :jpg="$heroSources['jpg'] ?? $heroImage"
+            :webp="$heroSources['webp'] ?? null"
+            :alt="$imageAlt ?: $title"
             class="site-detail-hero-image"
-            loading="eager"
-            decoding="async"
-        >
+            sizes="100vw"
+            :width="$heroSources['width'] ?? null"
+            :height="$heroSources['height'] ?? null"
+            priority
+        />
 
         <div class="site-detail-hero-overlay site-page-hero-overlay">
             <div class="site-page-hero-top">
@@ -37,7 +41,7 @@
                     <svg class="site-page-back-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    <span>Voltar</span>
+                    <span>{{ __('ui.common.back') }}</span>
                 </a>
 
                 @if(!empty($breadcrumbs))

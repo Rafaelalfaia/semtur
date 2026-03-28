@@ -238,7 +238,7 @@ class HomeController extends Controller
             [
                 'key' => 'rota_do_cacau',
                 'title' => 'Rota do Cacau',
-                'subtitle' => 'Experiencia emblemática',
+                'subtitle' => 'Experiência emblemática',
                 'summary' => 'Um acesso editorial para descobrir a rota com mais identidade, memória e território.',
                 'href' => route('site.rota_do_cacau.index'),
             ],
@@ -306,7 +306,7 @@ class HomeController extends Controller
                 'summary' => 'Restaurantes, sabores e paradas gastronômicas para organizar o roteiro com mais intenção.',
                 'href' => route('site.onde_comer'),
                 'image' => asset('imagens/comer.png'),
-                'eyebrow' => 'Acesso utilitario',
+                'eyebrow' => 'Acesso utilitário',
                 'cta' => 'Explorar sabores',
             ],
             [
@@ -324,7 +324,7 @@ class HomeController extends Controller
                 'summary' => 'Materiais oficiais publicados pelo coordenador para aprofundar a descoberta antes e durante a visita.',
                 'href' => route('site.guias'),
                 'image' => asset('imagens/guias.png'),
-                'eyebrow' => 'Conteudo oficial',
+                'eyebrow' => 'Conteúdo oficial',
                 'cta' => 'Abrir materiais',
             ],
         ];
@@ -468,7 +468,7 @@ class HomeController extends Controller
 
     /** =========================== HELPERS ============================== */
 
-    /** Categoria “publicada” básica (tolerante a falta de escopo). */
+    /** Categoria "publicada" básica (tolerante a falta de escopo). */
     private function categoriaBasicaQuery()
     {
         $query = Categoria::query();
@@ -537,3 +537,4 @@ class HomeController extends Controller
         return $query->first();
     }
 }
+

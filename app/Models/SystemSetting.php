@@ -27,7 +27,23 @@ class SystemSetting extends Model
 
     public static function current(): self
     {
-        return static::query()->firstOrCreate(['id' => 1], []);
+        $settings = static::query()
+            ->orderBy('id')
+            ->get();
+
+        if ($settings->isNotEmpty()) {
+            return $settings->first(function (self $item) {
+                return filled($item->active_theme_id)
+                    || filled($item->active_console_theme_id)
+                    || filled($item->active_site_theme_id)
+                    || filled($item->active_auth_theme_id);
+            }) ?? $settings->first();
+        }
+
+        $instance = new static();
+        $instance->save();
+
+        return $instance;
     }
 
     public function activeConsoleTheme()

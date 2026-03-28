@@ -1,4 +1,4 @@
-@extends('site.layouts.app')
+﻿@extends('site.layouts.app')
 
 @php
   use Illuminate\Support\Facades\Route as R;
@@ -7,12 +7,12 @@
   $currentQuery = trim((string) ($queryAtual ?? request('q', '')));
   $currentCategory = $categoriaAtual ?? null;
   $mapCanonical = R::has('site.mapa') ? route('site.mapa') : url()->current();
-  $mapTitle = $currentCategory?->nome ? 'Mapa de '.$currentCategory->nome.' em Altamira' : 'Mapa turistico de Altamira';
+  $mapTitle = $currentCategory?->nome ? __('ui.map_page.title_category', ['category' => $currentCategory->nome]) : __('ui.map_page.title_default');
   $mapDescription = $currentQuery !== ''
-      ? 'Mapa turistico de Altamira com resultados publicados para "'.$currentQuery.'", conectando busca, proximidade e paginas de detalhe.'
+      ? __('ui.map_page.description_search', ['search' => $currentQuery])
       : ($currentCategory?->nome
-          ? 'Mapa turistico de Altamira para explorar '.$currentCategory->nome.' com leitura geografica, rota e contexto.'
-          : 'Mapa turistico oficial de Altamira com pontos e empresas publicados para planejar a visita com mais clareza.');
+          ? __('ui.map_page.description_category', ['category' => $currentCategory->nome])
+          : __('ui.map_page.description_default'));
   $mapSchemaItems = $initItems
       ->take(8)
       ->map(function ($item, $index) {
@@ -27,7 +27,7 @@
           return [
               '@type' => 'ListItem',
               'position' => $index + 1,
-              'name' => $item['nome'] ?? 'Item turistico',
+              'name' => $item['nome'] ?? __('ui.map_page.item_name'),
               'url' => $href !== '#' ? $href : null,
           ];
       })
@@ -42,13 +42,13 @@
               [
                   '@type' => 'ListItem',
                   'position' => 1,
-                  'name' => 'Inicio',
+                  'name' => __('ui.common.home'),
                   'item' => R::has('site.home') ? route('site.home') : url('/'),
               ],
               [
                   '@type' => 'ListItem',
                   'position' => 2,
-                  'name' => 'Mapa turistico',
+                  'name' => __('ui.map_page.title_default'),
                   'item' => $mapCanonical,
               ],
           ],
@@ -61,7 +61,7 @@
           'description' => $mapDescription,
           'about' => [
               '@type' => 'TouristDestination',
-              'name' => 'Altamira',
+              'name' => __('ui.common.altamira'),
           ],
           'mainEntity' => $mapSchemaItems ? [
               '@type' => 'ItemList',
@@ -86,12 +86,6 @@
 @section('site.content')
   @php
     $apiFeed = R::has('api.mapa.feed') ? route('api.mapa.feed') : url('/api/mapa/feed');
-    $explorarHref = R::has('site.explorar')
-        ? route('site.explorar', array_filter([
-            'busca' => $currentQuery !== '' ? $currentQuery : null,
-            'categoria' => $currentCategory?->slug,
-        ]))
-        : '#';
 
     $TOK = '__TOKEN__';
     $safeUrl = function (string $name, array $params = [], $fallback = null) {
@@ -111,24 +105,8 @@
   @endphp
 
   <div id="mapa-root" class="site-map-page">
-    <div id="map" class="site-map-canvas" role="img" aria-label="Mapa de pontos turisticos e empresas"></div>
+    <div id="map" class="site-map-canvas" role="img" aria-label="{{ __('ui.map_page.map_aria') }}"></div>
     <div class="site-map-gradient" aria-hidden="true"></div>
-
-    <div class="site-map-searchwrap site-map-searchwrap-intro">
-      <div class="site-surface site-map-heading site-map-heading--floating">
-        <div class="site-map-heading-copy">
-          <x-section-head
-            eyebrow="Mapa turistico"
-            title="{{ $currentCategory?->nome ? 'Mapa de '.$currentCategory->nome : 'Altamira no mapa' }}"
-            subtitle="{{ $currentQuery !== '' ? 'Busca ativa com leitura geografica leve.' : 'Empresas e pontos publicados com leitura simples e direta.' }}"
-          />
-
-          <p class="site-map-heading-note">
-            {{ $currentQuery !== '' ? 'Arraste, aproxime e siga pelos cards sem perder o contexto.' : 'Comece no centro de Altamira e ajuste o mapa como preferir.' }}
-          </p>
-        </div>
-      </div>
-    </div>
 
     <div class="site-map-searchwrap">
       <div class="site-map-searchpanel">
@@ -137,12 +115,12 @@
             <path d="M21 21l-4.2-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/>
           </svg>
-          <input id="q" type="search" class="site-map-searchinput" placeholder="Buscar ponto ou empresa" autocomplete="off" value="{{ $currentQuery }}" />
-          <button type="button" class="site-map-searchclear" id="map-search-clear" @if($currentQuery === '') hidden @endif aria-label="Limpar busca">Limpar</button>
+          <input id="q" type="search" class="site-map-searchinput" placeholder="{{ __('ui.map_page.search_placeholder') }}" autocomplete="off" value="{{ $currentQuery }}" />
+          <button type="button" class="site-map-searchclear" id="map-search-clear" @if($currentQuery === '') hidden @endif aria-label="{{ __('ui.map_page.clear_search') }}">{{ __('ui.map_page.clear_search') }}</button>
         </div>
         @if(collect($categorias ?? [])->isNotEmpty())
           <div class="site-map-category-row site-map-category-row--top">
-            <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="map-categories-track" data-map-scroll-direction="-1" aria-label="Categorias anteriores">&larr;</button>
+            <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="map-categories-track" data-map-scroll-direction="-1" aria-label="{{ __('ui.map_page.categories_prev') }}">&larr;</button>
             @include('site.partials._categories_chips', [
                 'categorias' => $categorias,
                 'currentCat' => $currentCategory,
@@ -152,21 +130,21 @@
                     'q' => $currentQuery !== '' ? $currentQuery : null,
                 ])),
             ])
-            <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="map-categories-track" data-map-scroll-direction="1" aria-label="Proximas categorias">&rarr;</button>
+            <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="map-categories-track" data-map-scroll-direction="1" aria-label="{{ __('ui.map_page.categories_next') }}">&rarr;</button>
           </div>
         @endif
       </div>
     </div>
 
-    <section class="site-map-nearby" id="nearby" aria-label="Itens proximos">
+    <section class="site-map-nearby" id="nearby" aria-label="{{ __('ui.map_page.nearby_items') }}">
       <div class="site-map-handle" aria-hidden="true"></div>
       <div class="site-map-sheet-head">
         <div class="site-map-sheet-actions">
-          <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="cards" data-map-scroll-direction="-1" aria-label="Itens anteriores">&larr;</button>
-          <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="cards" data-map-scroll-direction="1" aria-label="Proximos itens">&rarr;</button>
+          <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="cards" data-map-scroll-direction="-1" aria-label="{{ __('ui.map_page.items_prev') }}">&larr;</button>
+          <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="cards" data-map-scroll-direction="1" aria-label="{{ __('ui.map_page.items_next') }}">&rarr;</button>
         </div>
       </div>
-      <div class="site-map-cards" id="cards" aria-label="Itens proximos"></div>
+      <div class="site-map-cards" id="cards" aria-label="{{ __('ui.map_page.nearby_items') }}"></div>
     </section>
   </div>
 @endsection
@@ -207,8 +185,8 @@
               'tablet' => 5,
               'desktop' => 6,
           ],
-          'emptyTitle' => 'Nada apareceu nesta area',
-          'emptyCopy' => 'Mova o mapa, limpe a busca ou troque de categoria para continuar explorando.',
+          'emptyTitle' => __('ui.map_page.empty_title'),
+          'emptyCopy' => __('ui.map_page.empty_copy'),
       ],
   ])
 @endpush

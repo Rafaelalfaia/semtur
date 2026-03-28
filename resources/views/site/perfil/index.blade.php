@@ -13,7 +13,7 @@
       @endphp
       <a href="{{ $safeBack }}"
          class="h-10 w-10 rounded-full bg-slate-100 grid place-items-center hover:bg-slate-200"
-         aria-label="Voltar">
+         aria-label="{{ __('ui.common.back') }}">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
@@ -32,7 +32,7 @@
   @endif
 
   <main class="mx-auto max-w-lg pb-28">
-    {{-- Avatar + identificação --}}
+    {{-- Avatar + identifica��o --}}
     <section class="px-6 pt-6 pb-2 flex flex-col items-center">
       <div class="relative h-24 w-24 rounded-full overflow-hidden bg-slate-200 ring-2 ring-slate-100">
         @php $foto = $u->avatar_url ?? null; @endphp
@@ -64,14 +64,14 @@
       </div>
     </section>
 
-    {{-- Menu de opções --}}
+    {{-- Menu de op��es --}}
     <nav class="mt-4 bg-white">
       <ul class="divide-y divide-slate-200">
         <li>
           <a href="{{ route('site.perfil.editar') }}"
              class="flex items-center gap-3 px-6 py-4 active:bg-slate-50">
             <span class="text-teal-600 shrink-0">
-              {{-- lápis --}}
+              {{-- l�pis --}}
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.862 3.487a2 2 0 0 1 2.828 2.828l-10.9 10.9-4.29 1.43 1.43-4.29 10.9-10.9z"/>
               </svg>
@@ -108,7 +108,7 @@
                 <path d="M17 8V7a5 5 0 0 0-10 0v1H5v13h14V8h-2Zm-8 0V7a3 3 0 0 1 6 0v1H9Z"/>
               </svg>
             </span>
-            <span class="flex-1 font-medium text-sm">Política e Privacidade</span>
+            <span class="flex-1 font-medium text-sm">Pol�tica e Privacidade</span>
             <svg class="h-4 w-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none">
               <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -132,6 +132,6 @@
 </div>
 
 
-{{-- Espaço p/ não cobrir conteúdo (mobile) + bottom nav --}}
+{{-- Espa�o p/ n�o cobrir conte�do (mobile) + bottom nav --}}
 <div class="h-[80px] pb-[env(safe-area-inset-bottom)] md:hidden"></div>
 @endsection

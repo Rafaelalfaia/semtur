@@ -1,293 +1,268 @@
 @extends('site.layouts.app')
 
-@section('title', ($rota?->titulo ?: 'Rota do Cacau') . ' • Visit Altamira')
-@section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($rota?->descricao ?: 'Conheça a Rota do Cacau em Altamira, com edições publicadas, galeria, vídeos e apoiadores de cada edição.')), 160))
-@section('meta.image', $rota?->foto_capa_url ?: ($rota?->foto_perfil_url ?: asset('imagens/altamira.jpg')))
+@php
+    $canonical = route('site.rota_do_cacau.index');
+    $title = $rota?->titulo ?: 'Rota do Cacau';
+    $description = \Illuminate\Support\Str::limit(strip_tags((string) ($rota?->descricao ?: 'Conheça a Rota do Cacau em Altamira, com edições publicadas, galeria, vídeos e apoiadores de cada edição.')), 160);
+    $image = $rota?->foto_capa_url ?: ($rota?->foto_perfil_url ?: asset('imagens/altamira.jpg'));
+@endphp
+
+@section('title', $title.' • Visit Altamira')
+@section('meta.description', $description)
+@section('meta.image', $image)
+@section('meta.canonical', $canonical)
+@section('meta.type', 'website')
 
 @section('site.content')
 @php
+    use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Str;
 
-    $cover = $rota?->foto_capa_url ?: asset('imagens/altamira.jpg');
-    $profile = $rota?->foto_perfil_url;
-    $totalEdicoes = $edicoes instanceof \Illuminate\Support\Collection ? $edicoes->count() : 0;
+    $heroMeta = $rota ? array_filter([
+        ($edicoes->count() ?? 0) ? (($edicoes->count() ?? 0).' edições') : null,
+        ($edicoes->sum('fotos_count') ?? 0) ? ($edicoes->sum('fotos_count').' fotos') : null,
+        ($edicoes->sum('videos_count') ?? 0) ? ($edicoes->sum('videos_count').' vídeos') : null,
+    ]) : [];
 @endphp
 
-@if(!$rota)
-    <section class="bg-gradient-to-b from-[#f7fbf7] to-white py-12 md:py-16">
-        <div class="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
-            <div class="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm">
-                <div class="bg-gradient-to-r from-[#31543c] via-[#4b6f48] to-[#7b5a2c] px-6 py-10 text-white sm:px-10">
-                    <div class="text-xs font-semibold uppercase tracking-[0.20em] text-white/80">Rota do Cacau</div>
-                    <h1 class="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Conteúdo em preparação</h1>
-                    <p class="mt-4 max-w-2xl text-sm leading-7 text-white/90 sm:text-base">
-                        A área pública da Rota do Cacau ainda não possui um cadastro institucional publicado.
-                        Volte em breve para acompanhar as edições e os conteúdos deste módulo.
-                    </p>
-                </div>
+<div class="site-page site-page-shell site-rota-page site-jogos-page">
+    @include('site.partials._page_hero', [
+        'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
+        'breadcrumbs' => [
+            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Rota do Cacau'],
+        ],
+        'badge' => 'Rota do Cacau',
+        'title' => $title,
+        'subtitle' => $rota?->descricao ? Str::limit(strip_tags($rota->descricao), 180) : 'Conteúdo oficial publicado a partir do coordenador, com edições, mídia e parceiros.',
+        'meta' => $heroMeta,
+        'primaryActionLabel' => $edicaoDestaque ? 'Ver edições' : (Route::has('site.home') ? __('ui.common.back_to_home') : null),
+        'primaryActionHref' => $edicaoDestaque ? '#edicoes-rota' : (Route::has('site.home') ? route('site.home') : null),
+        'secondaryActionLabel' => Route::has('site.explorar') ? 'Explorar cidade' : null,
+        'secondaryActionHref' => Route::has('site.explorar') ? route('site.explorar') : null,
+        'image' => $image,
+        'imageAlt' => $title,
+        'compact' => true,
+    ])
 
-                <div class="px-6 py-8 sm:px-10 sm:py-10">
-                    <div class="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
-                        <h2 class="text-lg font-semibold text-slate-900">Nenhum conteúdo público disponível no momento</h2>
-                        <p class="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                            Assim que o cadastro principal e as edições forem publicados no painel, esta página passará a exibir os dados reais do banco.
-                        </p>
-                        <div class="mt-6 flex flex-wrap justify-center gap-3">
-                            <a href="{{ route('site.home') }}" class="inline-flex items-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-500">
-                                Voltar para a home
-                            </a>
-                            <a href="{{ route('site.explorar') }}" class="inline-flex items-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-800 transition hover:border-emerald-300 hover:text-emerald-700">
-                                Explorar o portal
-                            </a>
-                        </div>
+    @if(!$rota)
+        <section class="site-section">
+            <div class="site-empty-state">
+                <h2 class="site-empty-state-title">Ainda não há conteúdo publicado</h2>
+                <p class="site-empty-state-copy">A Rota do Cacau vai aparecer aqui assim que o coordenador publicar o cadastro principal e as edições.</p>
+            </div>
+        </section>
+    @else
+        <section class="site-section">
+            <section class="site-surface site-content-block">
+                <div class="site-detail-profile">
+                    <img src="{{ site_image_url($rota->foto_perfil_url ?: theme_asset('logo'), 'avatar') }}" alt="{{ $title }}" class="site-detail-avatar" loading="lazy" decoding="async">
+                    <div>
+                        <x-section-head eyebrow="Sobre" title="Sobre a Rota do Cacau" subtitle="Tradição produtiva, território e contexto da cadeia do cacau em uma leitura pública mais clara e direta." />
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-@else
-    <section class="relative isolate overflow-hidden bg-[#1f3027] text-white">
-        <div class="absolute inset-0">
-            <img
-                src="{{ $cover }}"
-                alt="{{ $rota->titulo }}"
-                class="h-full w-full object-cover opacity-25"
-                loading="eager"
-                decoding="async"
-            >
-            <div class="absolute inset-0 bg-gradient-to-b from-[#1f3027]/35 via-[#1f3027]/80 to-[#1f3027]"></div>
-        </div>
 
-        <div class="relative mx-auto max-w-[1200px] px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pb-16 lg:pt-10">
-            <div class="text-sm text-white/70">
-                <a href="{{ route('site.home') }}" class="transition hover:text-white">Início</a>
-                <span class="mx-2">/</span>
-                <span>Rota do Cacau</span>
-            </div>
+                <div class="site-prose">
+                    {!! nl2br(e($rota->descricao)) !!}
+                </div>
+            </section>
+        </section>
 
-            <div class="mt-6 grid gap-8 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
-                <div class="max-w-3xl">
-                    <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.20em] text-amber-100">
-                        Vivências e memória do cacau
-                    </span>
+        <section class="site-section">
+            <section class="site-surface site-content-block">
+                <x-section-head eyebrow="Território" title="Altamira e a força do cacau na região" subtitle="Altamira é o coração desse circuito, com forte presença produtiva em áreas como Assurini, Brasil Novo e Medicilândia." />
+            </section>
+        </section>
 
-                    <h1 class="mt-5 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-                        {{ $rota->titulo }}
-                    </h1>
+        @if($edicoes->isNotEmpty())
+            <section class="site-section" id="edicoes-rota">
+                <x-section-head
+                    eyebrow="Rota do Cacau"
+                    title="Edições publicadas"
+                    subtitle="A Rota do Cacau conecta Altamira e outros polos da região em vivências, memória e experiências ligadas à produção cacaueira."
+                />
 
-                    <p class="mt-4 max-w-2xl text-sm leading-7 text-white/85 sm:text-base">
-                        {{ Str::limit(strip_tags((string) $rota->descricao), 320) }}
-                    </p>
+                <div class="site-jogos-editions">
+                    @foreach($edicoes as $edicao)
+                        @php
+                            $photos = $edicao->fotos->take(4);
+                            $videos = $edicao->videos->take(3);
+                            $sponsors = $edicao->patrocinadores->take(6);
+                            $cover = $edicao->capa_url ?: $rota->foto_capa_url ?: asset('imagens/altamira.jpg');
+                            $media = collect();
 
-                    <div class="mt-7 flex flex-wrap gap-3">
-                        @if($edicaoDestaque)
-                            <a
-                                href="{{ route('site.rota_do_cacau.show', $edicaoDestaque->slug) }}"
-                                class="inline-flex items-center justify-center rounded-2xl bg-amber-500 px-5 py-3 text-sm font-medium text-slate-950 transition hover:bg-amber-400"
-                            >
-                                Ver edição em destaque
-                            </a>
-                        @endif
+                            foreach ($photos as $foto) {
+                                $media->push([
+                                    'type' => 'photo',
+                                    'src' => $foto->imagem_url,
+                                    'alt' => $foto->legenda ?: $edicao->titulo,
+                                    'title' => $foto->legenda ?: $edicao->titulo,
+                                ]);
+                            }
 
-                        <a
-                            href="#edicoes"
-                            class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15"
+                            foreach ($videos as $video) {
+                                if ($video->embed_url_resolvida) {
+                                    $media->push([
+                                        'type' => 'video',
+                                        'src' => $video->embed_url_resolvida,
+                                        'alt' => $video->titulo ?: 'Vídeo da edição',
+                                        'title' => $video->titulo ?: 'Vídeo da edição',
+                                    ]);
+                                }
+                            }
+                        @endphp
+
+                        <article
+                            class="site-surface site-jogos-edition-card"
+                            x-data="{
+                                open: false,
+                                index: 0,
+                                items: @js($media->values()),
+                                show(i) {
+                                    if (!this.items.length) return;
+                                    this.index = i;
+                                    this.open = true;
+                                    document.body.style.overflow = 'hidden';
+                                },
+                                close() {
+                                    this.open = false;
+                                    document.body.style.overflow = '';
+                                },
+                                next() {
+                                    if (!this.items.length) return;
+                                    this.index = (this.index + 1) % this.items.length;
+                                },
+                                prev() {
+                                    if (!this.items.length) return;
+                                    this.index = (this.index - 1 + this.items.length) % this.items.length;
+                                },
+                                current() {
+                                    return this.items[this.index] || null;
+                                }
+                            }"
                         >
-                            Explorar edições
-                        </a>
-                    </div>
-                </div>
-
-                <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                    @if($profile)
-                        <div class="rounded-[28px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                            <div class="text-[11px] uppercase tracking-[0.18em] text-white/75">Imagem do módulo</div>
-                            <img src="{{ $profile }}" alt="{{ $rota->titulo }}" class="mt-3 h-28 w-28 rounded-[24px] object-cover border border-white/15">
-                        </div>
-                    @endif
-
-                    <div class="rounded-[28px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                        <div class="text-[11px] uppercase tracking-[0.18em] text-white/75">Edições publicadas</div>
-                        <div class="mt-2 text-2xl font-semibold">{{ $totalEdicoes }}</div>
-                        <p class="mt-2 text-sm leading-6 text-white/80">
-                            Conteúdo editorial organizado por ano e com materiais próprios em cada edição.
-                        </p>
-                    </div>
-
-                    <div class="rounded-[28px] border border-white/10 bg-white/10 p-4 backdrop-blur">
-                        <div class="text-[11px] uppercase tracking-[0.18em] text-white/75">Publicação</div>
-                        <div class="mt-2 text-base font-semibold">
-                            {{ optional($rota->published_at)->format('d/m/Y') ?: 'Disponível' }}
-                        </div>
-                        <p class="mt-2 text-sm leading-6 text-white/80">
-                            A página pública exibe somente conteúdo institucional e edições publicadas.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="bg-[#fbfaf7] py-14">
-        <div class="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-                <div class="rounded-[30px] border border-[#e8e2d9] bg-white p-6 shadow-sm sm:p-8">
-                    <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Apresentação</div>
-                    <h2 class="mt-3 text-2xl font-semibold text-slate-900">Uma vitrine pública para a Rota do Cacau</h2>
-                    <div class="mt-4 text-[15px] leading-8 text-slate-600">
-                        {!! nl2br(e($rota->descricao)) !!}
-                    </div>
-                </div>
-
-                <aside class="rounded-[30px] border border-[#e8e2d9] bg-white p-6 shadow-sm">
-                    <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Resumo rápido</div>
-                    <h2 class="mt-3 text-lg font-semibold text-slate-900">Visão geral</h2>
-
-                    <div class="mt-5 space-y-3">
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Slug</div>
-                            <div class="mt-1 text-sm font-semibold text-slate-900">/{{ $rota->slug }}</div>
-                        </div>
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Última atualização</div>
-                            <div class="mt-1 text-sm font-semibold text-slate-900">
-                                {{ optional($rota->updated_at)->format('d/m/Y') ?: '—' }}
-                            </div>
-                        </div>
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Edição mais recente</div>
-                            <div class="mt-1 text-sm font-semibold text-slate-900">
-                                {{ $edicaoDestaque?->titulo ?: 'Ainda indisponível' }}
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-        </div>
-    </section>
-
-    <section id="edicoes" class="bg-[#fbfaf7] pb-16">
-        <div class="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-8">
-            <div class="mb-6">
-                <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Edições publicadas</div>
-                <h2 class="mt-2 text-3xl font-semibold text-slate-900">Edições da Rota do Cacau</h2>
-                <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                    Cada edição concentra sua própria galeria, os vídeos publicados e a grade de patrocinadores vinculada àquele ano.
-                </p>
-            </div>
-
-            @if(!$edicoes->count())
-                <div class="rounded-[30px] border border-dashed border-[#d8cfbf] bg-white px-6 py-14 text-center shadow-sm">
-                    <h3 class="text-xl font-semibold text-slate-900">Nenhuma edição pública disponível</h3>
-                    <p class="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                        O cadastro principal já está publicado, mas ainda não há edições visíveis no portal.
-                    </p>
-                </div>
-            @else
-                @if($edicaoDestaque)
-                    <article class="overflow-hidden rounded-[32px] border border-[#e8e2d9] bg-white shadow-sm">
-                        <div class="grid gap-0 lg:grid-cols-[1.15fr_.85fr]">
-                            <div class="relative min-h-[320px] bg-slate-200">
+                            <div class="site-jogos-edition-media">
                                 <img
-                                    src="{{ $edicaoDestaque->capa_url ?: $cover }}"
-                                    alt="{{ $edicaoDestaque->titulo }}"
-                                    class="h-full w-full object-cover"
+                                    src="{{ site_image_url($cover, 'card') }}"
+                                    alt="{{ $edicao->titulo }}"
+                                    class="site-jogos-edition-image"
                                     loading="lazy"
                                     decoding="async"
                                 >
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#1f3027] via-transparent to-transparent"></div>
-                                <div class="absolute inset-x-0 bottom-0 p-6 text-white">
-                                    <div class="inline-flex rounded-full border border-white/20 bg-black/25 px-3 py-1 text-xs">
-                                        Edição {{ $edicaoDestaque->ano }}
-                                    </div>
-                                    <h3 class="mt-3 text-2xl font-semibold">{{ $edicaoDestaque->titulo }}</h3>
-                                </div>
                             </div>
 
-                            <div class="p-6 sm:p-8">
-                                <div class="grid gap-3 sm:grid-cols-3">
-                                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                                        <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Fotos</div>
-                                        <div class="mt-1 text-lg font-semibold text-slate-900">{{ $edicaoDestaque->fotos_count }}</div>
-                                    </div>
-                                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                                        <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Vídeos</div>
-                                        <div class="mt-1 text-lg font-semibold text-slate-900">{{ $edicaoDestaque->videos_count }}</div>
-                                    </div>
-                                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                                        <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">Patrocinadores</div>
-                                        <div class="mt-1 text-lg font-semibold text-slate-900">{{ $edicaoDestaque->patrocinadores_count }}</div>
-                                    </div>
+                            <div class="site-jogos-edition-body">
+                                <div class="site-jogos-edition-head">
+                                    <span class="site-badge">{{ $edicao->ano }}</span>
+                                    <h3 class="site-jogos-edition-title">{{ $edicao->titulo }}</h3>
+                                    <p class="site-jogos-edition-summary">{{ Str::limit(strip_tags($edicao->descricao), 220) }}</p>
                                 </div>
 
-                                <p class="mt-5 text-sm leading-7 text-slate-600">
-                                    {{ Str::limit(strip_tags((string) $edicaoDestaque->descricao), 240) }}
-                                </p>
+                                <div class="site-jogos-edition-stats">
+                                    <span class="site-page-hero-meta-item">{{ $edicao->fotos_count }} fotos</span>
+                                    <span class="site-page-hero-meta-item">{{ $edicao->videos_count }} vídeos</span>
+                                    <span class="site-page-hero-meta-item">{{ $edicao->patrocinadores_count }} parceiros</span>
+                                </div>
 
-                                <div class="mt-6 flex flex-wrap gap-3">
-                                    <a href="{{ route('site.rota_do_cacau.show', $edicaoDestaque->slug) }}" class="inline-flex items-center rounded-2xl bg-[#31543c] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#264230]">
-                                        Ver edição completa
-                                    </a>
-                                    <span class="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700">
-                                        Publicada em {{ optional($edicaoDestaque->published_at)->format('d/m/Y') ?: '—' }}
-                                    </span>
+                                @if($photos->isNotEmpty())
+                                    <div class="site-jogos-inline-block">
+                                        <div class="site-jogos-inline-label">Galeria</div>
+                                        <div class="site-jogos-photo-strip">
+                                            @foreach($photos as $mediaIndex => $foto)
+                                                <button type="button" class="site-jogos-photo-button" @click="show({{ $mediaIndex }})">
+                                                    <img
+                                                        src="{{ site_image_url($foto->imagem_url, 'mini') }}"
+                                                        alt="{{ $foto->legenda ?: $edicao->titulo }}"
+                                                        class="site-jogos-photo-thumb"
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                    >
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($videos->isNotEmpty())
+                                    <div class="site-jogos-inline-block">
+                                        <div class="site-jogos-inline-label">Vídeos</div>
+                                        <div class="site-jogos-video-links">
+                                            @foreach($videos as $videoIndex => $video)
+                                                @php
+                                                    $videoMediaIndex = $photos->count() + $videoIndex;
+                                                @endphp
+                                                @if($video->embed_url_resolvida)
+                                                    <button type="button" class="site-jogos-video-card" @click="show({{ $videoMediaIndex }})">
+                                                        <span class="site-jogos-video-icon" aria-hidden="true">Play</span>
+                                                        <span class="site-jogos-video-card-title">{{ Str::limit($video->titulo ?: 'Assistir vídeo', 42) }}</span>
+                                                    </button>
+                                                @else
+                                                    <span class="site-jogos-video-text">{{ Str::limit($video->titulo ?: 'Vídeo', 42) }}</span>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if($sponsors->isNotEmpty())
+                                    <div class="site-jogos-inline-block">
+                                        <div class="site-jogos-inline-label">Patrocinadores</div>
+                                        <div class="site-jogos-sponsor-strip">
+                                            @foreach($sponsors as $patrocinador)
+                                                @if(filled($patrocinador->url))
+                                                    <a href="{{ $patrocinador->url }}" target="_blank" rel="noopener noreferrer" class="site-jogos-sponsor-item" aria-label="{{ $patrocinador->nome }}">
+                                                        @if($patrocinador->logo_url)
+                                                            <img src="{{ site_image_url($patrocinador->logo_url, 'mini') }}" alt="{{ $patrocinador->nome }}" class="site-jogos-sponsor-logo" loading="lazy" decoding="async">
+                                                        @else
+                                                            <span class="site-jogos-sponsor-name">{{ Str::limit($patrocinador->nome, 20) }}</span>
+                                                        @endif
+                                                    </a>
+                                                @else
+                                                    <span class="site-jogos-sponsor-item" aria-label="{{ $patrocinador->nome }}">
+                                                        @if($patrocinador->logo_url)
+                                                            <img src="{{ site_image_url($patrocinador->logo_url, 'mini') }}" alt="{{ $patrocinador->nome }}" class="site-jogos-sponsor-logo" loading="lazy" decoding="async">
+                                                        @else
+                                                            <span class="site-jogos-sponsor-name">{{ Str::limit($patrocinador->nome, 20) }}</span>
+                                                        @endif
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div x-show="open" x-cloak class="site-lightbox" @click.self="close()" x-transition.opacity>
+                                <div class="site-lightbox-frame site-jogos-lightbox-frame">
+                                    <button type="button" class="site-lightbox-close" @click="close()" aria-label="Fechar mídia">&times;</button>
+                                    <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="Mídia anterior">&#8249;</button>
+
+                                    <template x-if="current()?.type === 'photo'">
+                                        <img :src="current()?.src" :alt="current()?.alt || ''" class="site-lightbox-image">
+                                    </template>
+
+                                    <template x-if="current()?.type === 'video'">
+                                        <iframe
+                                            class="site-jogos-lightbox-embed"
+                                            :src="current()?.src"
+                                            :title="current()?.title || 'Vídeo da edição'"
+                                            loading="lazy"
+                                            allow="autoplay; encrypted-media; picture-in-picture"
+                                            allowfullscreen
+                                        ></iframe>
+                                    </template>
+
+                                    <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="Próxima mídia">&#8250;</button>
                                 </div>
                             </div>
-                        </div>
-                    </article>
-                @endif
-
-                @if($outrasEdicoes->count())
-                    <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                        @foreach($outrasEdicoes as $edicao)
-                            <article class="overflow-hidden rounded-[28px] border border-[#e8e2d9] bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                                <div class="relative h-56 overflow-hidden bg-slate-200">
-                                    <img
-                                        src="{{ $edicao->capa_url ?: $cover }}"
-                                        alt="{{ $edicao->titulo }}"
-                                        class="h-full w-full object-cover"
-                                        loading="lazy"
-                                        decoding="async"
-                                    >
-                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
-                                    <div class="absolute inset-x-0 bottom-0 p-4 text-white">
-                                        <div class="text-xs font-semibold uppercase tracking-[0.18em] text-white/75">{{ $edicao->ano }}</div>
-                                        <h3 class="mt-1 text-xl font-semibold">{{ $edicao->titulo }}</h3>
-                                    </div>
-                                </div>
-
-                                <div class="p-5">
-                                    <p class="text-sm leading-7 text-slate-600">
-                                        {{ Str::limit(strip_tags((string) $edicao->descricao), 150) }}
-                                    </p>
-
-                                    <div class="mt-5 grid grid-cols-3 gap-3">
-                                        <div class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center">
-                                            <div class="text-[11px] uppercase tracking-[0.14em] text-slate-500">Fotos</div>
-                                            <div class="mt-1 text-sm font-semibold text-slate-900">{{ $edicao->fotos_count }}</div>
-                                        </div>
-                                        <div class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center">
-                                            <div class="text-[11px] uppercase tracking-[0.14em] text-slate-500">Vídeos</div>
-                                            <div class="mt-1 text-sm font-semibold text-slate-900">{{ $edicao->videos_count }}</div>
-                                        </div>
-                                        <div class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-center">
-                                            <div class="text-[11px] uppercase tracking-[0.14em] text-slate-500">Apoios</div>
-                                            <div class="mt-1 text-sm font-semibold text-slate-900">{{ $edicao->patrocinadores_count }}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-5">
-                                        <a href="{{ route('site.rota_do_cacau.show', $edicao->slug) }}" class="inline-flex items-center rounded-2xl bg-[#31543c] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#264230]">
-                                            Ver mais
-                                        </a>
-                                    </div>
-                                </div>
-                            </article>
-                        @endforeach
-                    </div>
-                @endif
-            @endif
-        </div>
-    </section>
-@endif
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+    @endif
+</div>
 @endsection
+
+
+

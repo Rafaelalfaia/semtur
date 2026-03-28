@@ -1,8 +1,8 @@
-@props([
+﻿@props([
     'title',
     'subtitle' => null,
     'href' => null,
-    'label' => 'Ver todos',
+    'label' => __('ui.common.view_all'),
     'eyebrow' => null,
 ])
 
@@ -23,3 +23,4 @@
         </a>
     @endif
 </div>
+

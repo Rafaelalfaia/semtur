@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
-@section('title','Eventos em Altamira')
-@section('meta.description','Agenda publica de eventos de Altamira com edicoes publicadas para planejar a viagem com mais contexto.')
+@section('title', __('ui.events.title'))
+@section('meta.description', __('ui.events.meta_description'))
 @section('meta.image', theme_asset('hero_image'))
 @section('meta.canonical', url()->full())
 
@@ -9,8 +9,7 @@
   use Illuminate\Support\Facades\Route;
   use Illuminate\Support\Facades\Storage;
 
-  $isPaginator = $eventos instanceof \Illuminate\Contracts\Pagination\Paginator
-              || $eventos instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator;
+  $isPaginator = $eventos instanceof \Illuminate\Contracts\Pagination\Paginator || $eventos instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator;
   $items = $isPaginator ? collect($eventos->items()) : collect($eventos);
   $pub = fn($p) => $p ? Storage::disk('public')->url($p) : null;
   $anosDisponiveis = collect($anosDisponiveis ?? []);
@@ -19,24 +18,17 @@
   $eventCards = $items->map(function ($evento) use ($pub, $anoAtual) {
       $edicao = collect($evento->edicoes ?? [])->sortByDesc('ano')->first();
       $ano = $edicao->ano ?? null;
-      $periodo = $edicao->periodo
-          ?? (($edicao->data_inicio ? \Carbon\Carbon::parse($edicao->data_inicio)->format('d/m') : null)
-          . ($edicao->data_fim ? ' - '.\Carbon\Carbon::parse($edicao->data_fim)->format('d/m') : ''));
-
-      $image = $evento->capa_url
-          ?? $pub($evento->capa_path ?? null)
-          ?? $evento->perfil_url
-          ?? $pub($evento->perfil_path ?? null)
-          ?? theme_asset('hero_image');
+      $periodo = $edicao->periodo ?? (($edicao->data_inicio ? \Carbon\Carbon::parse($edicao->data_inicio)->format('d/m') : null) . ($edicao->data_fim ? ' - '.\Carbon\Carbon::parse($edicao->data_fim)->format('d/m') : ''));
+      $image = $evento->capa_url ?? $pub($evento->capa_path ?? null) ?? $evento->perfil_url ?? $pub($evento->perfil_path ?? null) ?? theme_asset('hero_image');
 
       return [
-          'title' => $evento->nome ?? 'Evento',
-          'subtitle' => $evento->cidade ?? 'Altamira',
+          'title' => $evento->nome ?? __('ui.events.event'),
+          'subtitle' => $evento->cidade ?? __('ui.common.altamira'),
           'summary' => \Illuminate\Support\Str::limit(strip_tags((string) ($evento->descricao ?? '')), 130),
           'image' => $image,
           'href' => route('eventos.show', [$evento->slug ?? $evento->id, $ano ?: ($anoAtual ?? now()->year)]),
-          'badge' => $periodo ?: ($ano ?: 'Evento'),
-          'cta' => 'Ver evento',
+          'badge' => $periodo ?: ($ano ?: __('ui.events.event')),
+          'cta' => __('ui.agenda.view_event'),
       ];
   });
 @endphp
@@ -45,37 +37,35 @@
     @include('site.partials._page_hero', [
         'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
         'breadcrumbs' => [
-            ['label' => 'Inicio', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
-            ['label' => 'Agenda'],
+            ['label' => __('ui.nav.home'), 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => __('ui.agenda.title')],
         ],
-        'badge' => 'Agenda 2.0',
-        'title' => 'Eventos de Altamira',
-        'subtitle' => 'Descubra os eventos publicados com leitura rapida, foco em datas e clima de app.',
+        'badge' => __('ui.events.badge'),
+        'title' => __('ui.events.hero_title'),
+        'subtitle' => __('ui.events.hero_subtitle'),
         'meta' => [
-            $eventCards->count().' eventos',
-            $anoAtual ? 'Ano '.$anoAtual : 'Multiplos anos',
+            __('ui.events.events_count', ['count' => $eventCards->count()]),
+            $anoAtual ? ('Ano '.$anoAtual) : __('ui.events.multiple_years'),
         ],
-        'primaryActionLabel' => Route::has('site.explorar') ? 'Explorar a cidade' : null,
+        'primaryActionLabel' => Route::has('site.explorar') ? __('ui.events.explore_city') : null,
         'primaryActionHref' => Route::has('site.explorar') ? route('site.explorar') : null,
-        'secondaryActionLabel' => Route::has('site.mapa') ? 'Ver mapa turistico' : null,
+        'secondaryActionLabel' => Route::has('site.mapa') ? __('ui.common.tourist_map') : null,
         'secondaryActionHref' => Route::has('site.mapa') ? route('site.mapa') : null,
         'image' => theme_asset('hero_image'),
-        'imageAlt' => 'Agenda de eventos de Altamira',
+        'imageAlt' => __('ui.events.title'),
         'compact' => true,
     ])
 
     @if($anosDisponiveis->isNotEmpty())
         <section class="site-section">
             <div class="site-surface-soft site-agenda-filter-shell">
-                <x-section-head eyebrow="Filtros" title="Escolha o ano" subtitle="Troque rapidamente o recorte da agenda." />
+                <x-section-head :eyebrow="__('ui.common.filters')" :title="__('ui.events.choose_year')" :subtitle="__('ui.events.choose_year_subtitle')" />
                 <div class="site-filter-row site-agenda-filter-row">
                     @foreach($anosDisponiveis as $ano)
-                        <a href="{{ route('eventos.index', array_filter(['ano' => $ano])) }}" class="{{ (string) $ano === (string) $anoAtual ? 'site-year-chip is-active' : 'site-year-chip' }}">
-                            {{ $ano }}
-                        </a>
+                        <a href="{{ route('eventos.index', array_filter(['ano' => $ano])) }}" class="{{ (string) $ano === (string) $anoAtual ? 'site-year-chip is-active' : 'site-year-chip' }}">{{ $ano }}</a>
                     @endforeach
                     @if($anoAtual)
-                        <a href="{{ route('eventos.index') }}" class="site-link">Limpar filtro</a>
+                        <a href="{{ route('eventos.index') }}" class="site-link">{{ __('ui.events.clear_filter') }}</a>
                     @endif
                 </div>
             </div>
@@ -84,26 +74,22 @@
 
     <section class="site-section">
         @if($eventCards->isEmpty())
-            <div class="site-empty-state">
-                <p class="site-empty-state-copy">Nenhum evento apareceu neste recorte. Tente outro ano ou volte em breve.</p>
-            </div>
+            <div class="site-empty-state"><p class="site-empty-state-copy">{{ __('ui.events.empty_copy') }}</p></div>
         @else
             <div class="site-agenda-events-section">
                 @include('site.partials._category_section', [
-                    'eyebrow' => 'Programacao',
-                    'title' => 'Eventos publicados',
-                    'subtitle' => 'Passe pelos cards e abra os detalhes do evento que fizer sentido para a viagem.',
+                    'eyebrow' => __('ui.events.programming'),
+                    'title' => __('ui.events.published_events'),
+                    'subtitle' => __('ui.events.published_events_subtitle'),
                     'items' => $eventCards,
                     'layout' => 'carousel',
                     'cardVariant' => 'compact',
-                    'empty' => 'Nenhum evento apareceu neste recorte. Tente outro ano ou volte em breve.',
+                    'empty' => __('ui.events.empty_copy'),
                 ])
             </div>
 
             @if($isPaginator)
-                <div class="site-surface-soft site-agenda-pagination-shell">
-                    {{ $eventos->withQueryString()->links() }}
-                </div>
+                <div class="site-surface-soft site-agenda-pagination-shell">{{ $eventos->withQueryString()->links() }}</div>
             @endif
         @endif
     </section>

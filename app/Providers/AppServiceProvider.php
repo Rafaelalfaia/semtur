@@ -20,6 +20,7 @@ use App\Services\ThemeManager;
 use App\Services\ThemeResolver;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -35,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        URL::defaults([
+            'locale' => config('app.locale_prefix_fallback', 'pt'),
+        ]);
+
         Categoria::observe(SiteSyncObserver::class);
         Empresa::observe(SiteSyncObserver::class);
         PontoTuristico::observe(SiteSyncObserver::class);

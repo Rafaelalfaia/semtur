@@ -118,7 +118,7 @@ class ThemeManager
             ]);
         });
 
-        if ((int) session(ThemeResolver::PREVIEW_SESSION_KEY) === (int) $theme->id) {
+        if ($this->currentPreviewThemeId() === (int) $theme->id) {
             $this->clearPreview();
         }
 
@@ -127,7 +127,16 @@ class ThemeManager
 
     public function setPreview(Theme $theme): void
     {
-        session([ThemeResolver::PREVIEW_SESSION_KEY => $theme->id]);
+        $previewState = session(ThemeResolver::PREVIEW_SESSION_KEY);
+        $userId = auth()->id();
+
+        if ($userId) {
+            $previewState = is_array($previewState) ? $previewState : [];
+            $previewState[$userId] = $theme->id;
+            session([ThemeResolver::PREVIEW_SESSION_KEY => $previewState]);
+        } else {
+            session([ThemeResolver::PREVIEW_SESSION_KEY => $theme->id]);
+        }
 
         $this->logActivity($theme, Theme::LOG_ACTION_PREVIEW_STARTED, [
             'session_only' => true,
@@ -136,8 +145,21 @@ class ThemeManager
 
     public function clearPreview(): void
     {
-        $previewId = (int) session(ThemeResolver::PREVIEW_SESSION_KEY);
-        session()->forget(ThemeResolver::PREVIEW_SESSION_KEY);
+        $previewId = $this->currentPreviewThemeId();
+        $previewState = session(ThemeResolver::PREVIEW_SESSION_KEY);
+        $userId = auth()->id();
+
+        if (is_array($previewState) && $userId) {
+            unset($previewState[$userId]);
+
+            if ($previewState === []) {
+                session()->forget(ThemeResolver::PREVIEW_SESSION_KEY);
+            } else {
+                session([ThemeResolver::PREVIEW_SESSION_KEY => $previewState]);
+            }
+        } else {
+            session()->forget(ThemeResolver::PREVIEW_SESSION_KEY);
+        }
 
         if ($previewId > 0) {
             $theme = Theme::query()->find($previewId);
@@ -206,5 +228,17 @@ class ThemeManager
             ->orderByDesc('updated_at')
             ->get()
             ->first(fn (Theme $theme) => $theme->isAvailableFor($scope));
+    }
+
+    private function currentPreviewThemeId(): int
+    {
+        $previewState = session(ThemeResolver::PREVIEW_SESSION_KEY);
+        $userId = auth()->id();
+
+        if (is_array($previewState) && $userId) {
+            return (int) ($previewState[$userId] ?? 0);
+        }
+
+        return (int) $previewState;
     }
 }

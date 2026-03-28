@@ -72,4 +72,17 @@ class ThemeExecutionController extends Controller
 
         return back()->with('ok', 'Tema aplicado no site público.');
     }
+    public function restoreConsoleDefault(ThemeManager $manager)
+    {
+        $manager->restoreDefaultForScope(Theme::SCOPE_CONSOLE);
+
+        return back()->with('ok', 'Tema padrao restaurado no console.');
+    }
+
+    public function restoreSiteDefault(ThemeManager $manager)
+    {
+        $manager->restoreDefaultForScope(Theme::SCOPE_SITE);
+
+        return back()->with('ok', 'Tema padrao restaurado no site publico.');
+    }
 }

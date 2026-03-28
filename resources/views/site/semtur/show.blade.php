@@ -3,7 +3,7 @@
 @php
     $semturCanonical = route('site.semtur');
     $semturTitle = ($sec->nome ?? 'SEMTUR').' de Altamira';
-    $semturDescription = \Illuminate\Support\Str::limit(strip_tags($sec->descricao ?? 'Informacoes institucionais da SEMTUR de Altamira.'), 160);
+    $semturDescription = \Illuminate\Support\Str::limit(strip_tags($sec->descricao ?? 'Informações institucionais da SEMTUR de Altamira.'), 160);
     $semturImage = $sec->foto_capa_url ?: $sec->foto_url ?: theme_asset('hero_image');
     $semturRedes = is_array($sec->redes ?? null) ? array_filter($sec->redes) : [];
     $semturSchema = [
@@ -14,7 +14,7 @@
                 [
                     '@type' => 'ListItem',
                     'position' => 1,
-                    'name' => 'Inicio',
+                    'name' => 'Início',
                     'item' => \Illuminate\Support\Facades\Route::has('site.home') ? route('site.home') : url('/'),
                 ],
                 [
@@ -86,7 +86,7 @@
     @include('site.partials._page_hero', [
         'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
         'breadcrumbs' => [
-            ['label' => 'Inicio', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
             ['label' => 'Secretaria'],
         ],
         'badge' => 'Secretaria',
@@ -107,14 +107,14 @@
             <div class="site-editorial-main">
                 <section class="site-surface site-content-block">
                     <div class="site-detail-profile">
-                        <img src="{{ $logoUrl }}" alt="{{ $sec->nome ?? 'SEMTUR' }}" class="site-detail-avatar" loading="lazy" decoding="async">
+                        <img src="{{ site_image_url($logoUrl, "avatar") }}" alt="{{ $sec->nome ?? 'SEMTUR' }}" class="site-detail-avatar" loading="lazy" decoding="async">
                         <div>
                             <x-section-head eyebrow="Sobre" title="Secretaria Municipal de Turismo" subtitle="Apresentação pública da secretaria e do papel institucional no ecossistema turístico da cidade." />
                         </div>
                     </div>
 
                     <div class="site-prose">
-                        {!! nl2br(e($sec->descricao ?: 'Informacoes institucionais da Secretaria Municipal de Turismo de Altamira.')) !!}
+                        {!! nl2br(e($sec->descricao ?: 'Informações institucionais da Secretaria Municipal de Turismo de Altamira.')) !!}
                     </div>
                 </section>
             </div>
@@ -155,7 +155,7 @@
                 @foreach($membroCards as $item)
                     <div class="site-card-list">
                         <div class="site-card-list-media">
-                            <img src="{{ $item['image'] }}" alt="{{ $item['title'] }}" class="site-card-list-image" loading="lazy" decoding="async">
+                            <img src="{{ site_image_url($item['image'], "card") }}" alt="{{ $item['title'] }}" class="site-card-list-image" loading="lazy" decoding="async">
                         </div>
                         <div class="site-card-list-body">
                             <span class="site-badge">{{ $item['badge'] }}</span>

@@ -1,22 +1,22 @@
 @extends('console.layout')
-@section('title','Editar Tecnico')
-@section('page.title','Editar Tecnico')
-@section('topbar.description', 'Atualize dados de acesso e permissoes do tecnico sem sair do shell compartilhado do console.')
+@section('title','Editar Técnico')
+@section('page.title','Editar Técnico')
+@section('topbar.description', 'Atualize dados de acesso e permissões do técnico sem sair do shell compartilhado do console.')
 
 @section('topbar.nav')
-  <a href="{{ route('coordenador.tecnicos.index') }}" class="ui-console-topbar-tab">Tecnicos</a>
-  <span class="ui-console-topbar-tab is-active">Editar tecnico</span>
+  <a href="{{ route('coordenador.tecnicos.index') }}" class="ui-console-topbar-tab">Técnicos</a>
+  <span class="ui-console-topbar-tab is-active">Editar técnico</span>
 @endsection
 
 @section('content')
 @php
   $labelGroup = fn($g)=> [
-    'categorias'=>'Categorias','empresas'=>'Empresas','pontos'=>'Pontos Turisticos',
+    'categorias'=>'Categorias','empresas'=>'Empresas','pontos'=>'Pontos Turísticos',
     'banners'=>'Banners','banners_destaque'=>'Banners de Destaque',
     'avisos'=>'Avisos','eventos'=>'Eventos','secretaria'=>'Secretaria','equipe'=>'Equipe',
-    'relatorios'=>'Relatorios','espacos_culturais'=>'Museus e Teatros',
+    'relatorios'=>'Relatórios','espacos_culturais'=>'Museus e Teatros',
     'roteiros'=>'Roteiros','onde_comer'=>'Onde comer','onde_ficar'=>'Onde ficar',
-    'guias'=>'Guias e Revistas','videos'=>'Videos','jogos_indigenas'=>'Jogos Indigenas',
+    'guias'=>'Guias e Revistas','videos'=>'Vídeos','jogos_indigenas'=>'Jogos Indígenas',
     'rota_do_cacau'=>'Rota do Cacau'
   ][$g] ?? ucfirst($g);
 
@@ -24,17 +24,17 @@
     'view'=>'Visualizar','create'=>'Criar','update'=>'Editar','delete'=>'Excluir',
     'publicar'=>'Publicar','arquivar'=>'Arquivar','rascunho'=>'Marcar como rascunho',
     'manage'=>'Gerenciar','reordenar'=>'Reordenar','toggle'=>'Ativar/Desativar',
-    'edicoes.manage'=>'Gerenciar Edicoes','atrativos.manage'=>'Gerenciar Atrativos',
-    'atrativos.reordenar'=>'Reordenar Atrativos','midias.manage'=>'Gerenciar Midias',
-    'midias.reordenar'=>'Reordenar Midias',
-    'edicoes.view'=>'Visualizar Edicoes','edicoes.create'=>'Criar Edicoes',
-    'edicoes.update'=>'Editar Edicoes','edicoes.delete'=>'Excluir Edicoes',
-    'edicoes.publicar'=>'Publicar Edicoes','edicoes.arquivar'=>'Arquivar Edicoes',
-    'edicoes.rascunho'=>'Edicoes em Rascunho',
+    'edicoes.manage'=>'Gerenciar Edições','atrativos.manage'=>'Gerenciar Atrativos',
+    'atrativos.reordenar'=>'Reordenar Atrativos','midias.manage'=>'Gerenciar Mídias',
+    'midias.reordenar'=>'Reordenar Mídias',
+    'edicoes.view'=>'Visualizar Edições','edicoes.create'=>'Criar Edições',
+    'edicoes.update'=>'Editar Edições','edicoes.delete'=>'Excluir Edições',
+    'edicoes.publicar'=>'Publicar Edições','edicoes.arquivar'=>'Arquivar Edições',
+    'edicoes.rascunho'=>'Edições em Rascunho',
     'edicoes.fotos.view'=>'Visualizar Fotos','edicoes.fotos.create'=>'Adicionar Fotos',
     'edicoes.fotos.update'=>'Editar Fotos','edicoes.fotos.delete'=>'Excluir Fotos',
-    'edicoes.videos.view'=>'Visualizar Videos','edicoes.videos.create'=>'Adicionar Videos',
-    'edicoes.videos.update'=>'Editar Videos','edicoes.videos.delete'=>'Excluir Videos',
+    'edicoes.videos.view'=>'Visualizar Vídeos','edicoes.videos.create'=>'Adicionar Vídeos',
+    'edicoes.videos.update'=>'Editar Vídeos','edicoes.videos.delete'=>'Excluir Vídeos',
     'edicoes.patrocinadores.view'=>'Visualizar Patrocinadores',
     'edicoes.patrocinadores.create'=>'Adicionar Patrocinadores',
     'edicoes.patrocinadores.update'=>'Editar Patrocinadores',
@@ -57,15 +57,15 @@
   @endif
 
   <x-dashboard.page-header
-    title="Editar tecnico"
-    subtitle="Revise dados principais e refinamento de permissoes mantendo coerencia com o console do Admin e Coordenador."
+    title="Editar técnico"
+    subtitle="Revise dados principais e refinamento de permissões mantendo coerência com o console do Admin e Coordenador."
   />
 
   <form method="POST" action="{{ route('coordenador.tecnicos.update', $usuario) }}" class="mt-5 space-y-5">
     @csrf
     @method('PUT')
 
-    <x-dashboard.section-card title="Dados do tecnico" subtitle="Identificacao, contato e senha opcional" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados do técnico" subtitle="Informações, contato e senha opcional" class="ui-coord-dashboard-panel">
       <div class="grid md:grid-cols-2 gap-4">
         <div>
           <label class="ui-form-label">Nome*</label>
@@ -93,12 +93,12 @@
       </div>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Permissoes do tecnico" subtitle="Somente permissoes que voce ainda possui podem continuar delegadas" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Permissões do técnico" subtitle="Somente permissões que você ainda possui podem continuar delegadas" class="ui-coord-dashboard-panel">
       <div class="mb-4 rounded-2xl border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] px-4 py-3 text-sm text-[var(--ui-text-soft)]">
-        Se alguma permissao sair do seu conjunto de Coordenador, ela deixa de ser delegavel e sera removida do Tecnico na proxima sincronizacao.
+        Se alguma permissão sair do seu conjunto de Coordenador, ela deixa de ser delegável e será removida do Técnico na próxima sincronização.
       </div>
       <div class="flex items-center justify-between mb-3">
-        <h2 class="text-sm font-semibold text-[var(--ui-text-title)]">Permissoes</h2>
+        <h2 class="text-sm font-semibold text-[var(--ui-text-title)]">Permissões</h2>
         <label class="inline-flex items-center gap-2 text-sm cursor-pointer text-[var(--ui-text-soft)]">
           <input id="sel-all" type="checkbox" class="ui-form-check h-4 w-4"> Selecionar todas
         </label>
@@ -128,7 +128,7 @@
           </div>
         @empty
           <div class="rounded-2xl border border-dashed border-[var(--ui-border)] px-4 py-6 text-sm text-[var(--ui-text-soft)]">
-            Nenhuma permissao delegavel encontrada no momento. Revise suas permissoes de Coordenador com o Admin antes de atualizar este Tecnico.
+            Nenhuma permissão delegável encontrada no momento. Revise suas permissões de Coordenador com o Admin antes de atualizar este Técnico.
           </div>
         @endforelse
       </div>

@@ -1,4 +1,4 @@
-@php $items = collect($instagram ?? [])->values(); @endphp
+﻿@php $items = collect($instagram ?? [])->values(); @endphp
 
 @if($items->isNotEmpty())
     <section class="site-section site-home-instagram-section" x-data="{
@@ -19,7 +19,7 @@
         }
     }" x-init="$nextTick(() => update())">
         <x-section-head
-            eyebrow="Siga no Instagram"
+            :eyebrow="__('ui.instagram.eyebrow')"
             title="@visitaltamira"
             href="https://www.instagram.com/visitaltamira/"
         />
@@ -28,7 +28,7 @@
             <div class="site-instagram-headerline">
                 <div class="site-instagram-profile">
                     <span class="site-badge">VisitAltamira</span>
-                    <span class="site-instagram-profile-copy">Imagens recentes e inspirações do destino</span>
+                    <span class="site-instagram-profile-copy">{{ __('ui.instagram.profile_copy') }}</span>
                 </div>
 
                 <div class="site-instagram-controls" aria-hidden="true">
@@ -59,7 +59,7 @@
                             @if(!empty($resolvedImage))
                                 <img
                                     src="{{ $resolvedImage }}"
-                                    alt="Post do Instagram de VisitAltamira"
+                                    alt="{{ __('ui.instagram.post_alt') }}"
                                     class="site-instagram-card-image"
                                     loading="lazy"
                                     decoding="async"
@@ -71,18 +71,18 @@
                         </div>
 
                         <div class="site-instagram-card-body">
-                            <span class="site-badge">Instagram</span>
+                            <span class="site-badge">{{ __('ui.instagram.badge') }}</span>
                             @if(!empty($post['caption']))
                                 <p class="site-instagram-card-caption">
-                                    {{ \Illuminate\Support\Str::limit(trim($post['caption']), 120) }}
+                                    {{ \Illuminate\Support\Str::limit(trim($post['caption']), 108) }}
                                 </p>
                             @else
                                 <p class="site-instagram-card-caption">
-                                    Veja mais registros visuais e inspirações recentes do destino.
+                                    {{ __('ui.instagram.fallback_caption') }}
                                 </p>
                             @endif
 
-                            <span class="site-instagram-card-cta">Abrir no Instagram</span>
+                            <span class="site-instagram-card-cta">{{ __('ui.instagram.open') }}</span>
                         </div>
                     </a>
                 @endforeach
@@ -90,3 +90,9 @@
         </div>
     </section>
 @endif
+
+
+
+
+
+

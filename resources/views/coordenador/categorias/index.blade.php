@@ -1,7 +1,7 @@
 @extends('console.layout')
 @section('title','Categorias - Coordenador')
 @section('page.title','Categorias')
-@section('topbar.description', 'Gerencie categorias com filtros, status editoriais e o mesmo padrao visual do console compartilhado.')
+@section('topbar.description', 'Gerencie categorias com filtros, status editoriais e o mesmo padrão visual do console compartilhado.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Categorias</span>
@@ -18,7 +18,7 @@
 
   <x-dashboard.page-header
     title="Categorias"
-    subtitle="Organize a catalogacao do portal com filtros, status e uma leitura mais limpa, leve e consistente com o novo console."
+    subtitle="Organize a catalogação do portal com filtros, status e uma leitura mais limpa, leve e consistente com o novo console."
   >
     @can('categorias.create')
       <a href="{{ route('coordenador.categorias.create') }}" class="ui-btn-primary">Nova categoria</a>
@@ -56,9 +56,9 @@
         <div class="flex items-start gap-3">
           <div class="ui-category-icon-shell">
             @if($c->icone_url)
-              <img src="{{ $c->icone_url }}" alt="Icone {{ $c->nome }}" class="ui-category-icon-image">
+              <img src="{{ $c->icone_url }}" alt="Ícone {{ $c->nome }}" class="ui-category-icon-image">
             @else
-              <span class="text-xs text-[var(--ui-text-soft)]">sem icone</span>
+              <span class="text-xs text-[var(--ui-text-soft)]">sem ícone</span>
             @endif
           </div>
 
@@ -120,7 +120,7 @@
     @empty
       <x-dashboard.section-card title="Nenhuma categoria" subtitle="{{ mb_strlen(trim((string) $busca)) < 3 ? 'Digite pelo menos 3 letras para pesquisar categorias.' : 'Nenhuma categoria encontrada para a busca informada.' }}" class="ui-coord-dashboard-panel">
         <p class="text-sm text-[var(--ui-text-soft)]">
-          {{ mb_strlen(trim((string) $busca)) < 3 ? 'A listagem fica vazia ate que a pesquisa tenha no minimo 3 letras.' : 'Ajuste os filtros ou tente outro termo de busca.' }}
+          {{ mb_strlen(trim((string) $busca)) < 3 ? 'A listagem fica vazia até que a pesquisa tenha no mínimo 3 letras.' : 'Ajuste os filtros ou tente outro termo de busca.' }}
         </p>
       </x-dashboard.section-card>
     @endforelse

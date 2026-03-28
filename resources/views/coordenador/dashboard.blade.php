@@ -2,7 +2,7 @@
 
 @section('title', 'Dashboard - Coordenador')
 @section('page.title', 'Dashboard')
-@section('topbar.description', 'Visao executiva do conteudo coordenado, com saude editorial, atividade recente e acoes institucionais.')
+@section('topbar.description', 'Visão executiva do conteúdo coordenado, com saúde editorial, atividade recente e ações institucionais.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Visao geral</span>
@@ -24,7 +24,7 @@
 <div class="ui-console-page ui-coord-dashboard">
   <x-dashboard.page-header
     title="Visao geral do coordenador"
-    subtitle="Acompanhe volume, publicacao e saude do catalogo sem sair do shell principal do console."
+    subtitle="Acompanhe volume, publicação e saúde do catálogo sem sair do shell principal do console."
   >
     <x-slot:actions>
       <a href="{{ request()->fullUrlWithQuery(['refresh'=>1]) }}" class="ui-btn-secondary">
@@ -101,7 +101,7 @@
           </div>
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="KPIs rapidos" subtitle="Sinais de destaque" class="ui-coord-dashboard-panel">
+        <x-dashboard.section-card title="KPIs rápidos" subtitle="Sinais de destaque" class="ui-coord-dashboard-panel">
           <div class="space-y-3">
             <div class="flex items-center justify-between text-sm">
               <span class="text-[var(--ui-text-soft)]">Empresas recomendadas</span>
@@ -117,7 +117,7 @@
     </div>
 
     <div class="ui-coord-dashboard-side">
-      <x-dashboard.section-card title="Saude do catalogo" subtitle="Cobertura e consistencia" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Saúde do catálogo" subtitle="Cobertura e consistência" class="ui-coord-dashboard-panel">
         <div class="space-y-4">
           <div>
             <div class="mb-1 flex justify-between text-xs text-[var(--ui-text-soft)]"><span>Empresas com lat/lng</span><span>{{ $mapEmp }}%</span></div>
@@ -171,13 +171,13 @@
     <x-dashboard.section-card title="Top categorias" subtitle="Itens publicados" class="ui-coord-dashboard-panel">
       <div class="ui-coord-chart-wrap"><canvas id="chartTopCategorias" height="220"></canvas></div>
     </x-dashboard.section-card>
-    <x-dashboard.section-card title="Timeline de publicacoes" subtitle="Ultimos 30 dias" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Timeline de publicações" subtitle="Últimos 30 dias" class="ui-coord-dashboard-panel">
       <div class="ui-coord-chart-wrap"><canvas id="chartTimeline" height="220"></canvas></div>
     </x-dashboard.section-card>
   </div>
 
   <div id="coord-recentes" class="ui-coord-dashboard-lists mt-6">
-    <x-dashboard.section-card title="Categorias recentes" subtitle="Ultimos registros" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Categorias recentes" subtitle="Últimos registros" class="ui-coord-dashboard-panel">
       <ul class="divide-y divide-[var(--ui-border)]">
         @forelse(($tables['recentes']['categorias'] ?? []) as $c)
           <li class="py-3 first:pt-0 last:pb-0">
@@ -195,7 +195,7 @@
       </ul>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Empresas recentes" subtitle="Ultimos registros" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Empresas recentes" subtitle="Últimos registros" class="ui-coord-dashboard-panel">
       <ul class="divide-y divide-[var(--ui-border)]">
         @forelse(($tables['recentes']['empresas'] ?? []) as $e)
           <li class="py-3 first:pt-0 last:pb-0">
@@ -213,7 +213,7 @@
       </ul>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Pontos recentes" subtitle="Ultimos registros" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Pontos recentes" subtitle="Últimos registros" class="ui-coord-dashboard-panel">
       <ul class="divide-y divide-[var(--ui-border)]">
         @forelse(($tables['recentes']['pontos'] ?? []) as $p)
           <li class="py-3 first:pt-0 last:pb-0">

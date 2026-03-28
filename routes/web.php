@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Console\ProfileController as ConsoleProfile;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 // =========================
 // SITE (web) – PÚBLICO
@@ -37,6 +40,31 @@ use App\Http\Controllers\Site\OndeFicarController as SiteOndeFicarController;
 use App\Http\Controllers\Site\GuiaController as SiteGuiaController;
 use App\Http\Controllers\Site\VideoController as SiteVideoController;
 use App\Http\Controllers\Site\RotaDoCacauController as SiteRotaDoCacauController;
+use App\Http\Controllers\Site\JogosIndigenasPublicController;
+use App\Models\Catalogo\Categoria;
+use App\Models\Catalogo\Empresa;
+use App\Models\Catalogo\EspacoCultural;
+use App\Models\Catalogo\PontoTuristico;
+use App\Models\Catalogo\Roteiro;
+use App\Models\Conteudo\GuiaRevista;
+use App\Models\Conteudo\Video;
+use App\Models\RotaDoCacau;
+
+$redirectToLocalized = function (string $routeName, array $routeKeys = []) {
+    return function (\Illuminate\Http\Request $request, ...$segments) use ($routeName, $routeKeys) {
+        $locale = session('locale', config('app.locale_prefix_fallback', 'pt'));
+        $params = ['locale' => $locale];
+
+        foreach ($routeKeys as $index => $key) {
+            $params[$key] = $segments[$index] ?? null;
+        }
+
+        return redirect()->route($routeName, array_merge(
+            array_filter($params, fn ($value) => $value !== null),
+            $request->query()
+        ));
+    };
+};
 
 
 // =========================
@@ -44,6 +72,7 @@ use App\Http\Controllers\Site\RotaDoCacauController as SiteRotaDoCacauController
 // =========================
 use App\Http\Controllers\Admin\DashboardController as AdminDash;
 use App\Http\Controllers\Admin\ThemeController as AdminThemeController;
+use App\Http\Controllers\Admin\BackupController as AdminBackupController;
 use App\Http\Controllers\Admin\UsuarioController as AdminUsuario;
 
 
@@ -86,6 +115,176 @@ use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoPatrocinadorController as 
 // =========================
 /* SITE – PÚBLICO (WEB) */
 // =========================
+Route::get('/sitemap.xml', function () {
+    $locales = array_keys(config('app.supported_locales', ['pt' => []]));
+    $staticDefinitions = [
+        ['name' => 'site.home', 'changefreq' => 'daily', 'priority' => '1.0'],
+        ['name' => 'site.explorar', 'changefreq' => 'daily', 'priority' => '0.95'],
+        ['name' => 'site.mapa', 'changefreq' => 'daily', 'priority' => '0.9'],
+        ['name' => 'site.agenda', 'changefreq' => 'daily', 'priority' => '0.85'],
+        ['name' => 'site.informacoes', 'changefreq' => 'monthly', 'priority' => '0.7'],
+        ['name' => 'site.contato', 'changefreq' => 'monthly', 'priority' => '0.6'],
+        ['name' => 'site.politicas', 'changefreq' => 'yearly', 'priority' => '0.3'],
+        ['name' => 'site.secretaria', 'changefreq' => 'monthly', 'priority' => '0.65'],
+        ['name' => 'site.roteiros', 'changefreq' => 'weekly', 'priority' => '0.8'],
+        ['name' => 'site.onde_comer', 'changefreq' => 'weekly', 'priority' => '0.8'],
+        ['name' => 'site.onde_ficar', 'changefreq' => 'weekly', 'priority' => '0.8'],
+        ['name' => 'site.videos', 'changefreq' => 'weekly', 'priority' => '0.75'],
+        ['name' => 'site.guias', 'changefreq' => 'weekly', 'priority' => '0.75'],
+        ['name' => 'site.museus', 'changefreq' => 'weekly', 'priority' => '0.75'],
+        ['name' => 'site.jogos_indigenas.index', 'changefreq' => 'weekly', 'priority' => '0.7'],
+        ['name' => 'site.rota_do_cacau.index', 'changefreq' => 'weekly', 'priority' => '0.7'],
+    ];
+
+    $staticUrls = collect($locales)->flatMap(function ($locale) use ($staticDefinitions) {
+        return collect($staticDefinitions)->map(function ($definition) use ($locale) {
+            return [
+                'loc' => route($definition['name'], ['locale' => $locale]),
+                'changefreq' => $definition['changefreq'],
+                'priority' => $definition['priority'],
+                'lastmod' => now(),
+            ];
+        });
+    });
+
+    $dynamicUrls = collect();
+
+    $appendUrls = function ($items, string $routeName, string $routeParam = 'slug', string $sourceKey = 'slug', string $changefreq = 'weekly', string $priority = '0.7') use ($dynamicUrls, $locales) {
+        $items->each(function ($item) use ($dynamicUrls, $routeName, $routeParam, $sourceKey, $changefreq, $priority, $locales) {
+            $slug = data_get($item, $sourceKey);
+
+            if (! filled($slug)) {
+                return;
+            }
+
+            foreach ($locales as $locale) {
+                $dynamicUrls->push([
+                    'loc' => route($routeName, ['locale' => $locale, $routeParam => $slug]),
+                    'changefreq' => $changefreq,
+                    'priority' => $priority,
+                    'lastmod' => data_get($item, 'updated_at') ?: data_get($item, 'published_at') ?: now(),
+                ]);
+            }
+        });
+    };
+
+    $appendUrls(Categoria::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.categoria', 'slug', 'slug', 'weekly', '0.7');
+    $appendUrls(PontoTuristico::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.ponto', 'ponto', 'slug', 'weekly', '0.8');
+    $appendUrls(Empresa::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.empresa', 'empresa', 'slug', 'weekly', '0.8');
+    $appendUrls(Roteiro::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.roteiros.show', 'slug', 'slug', 'weekly', '0.75');
+    $appendUrls(EspacoCultural::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.museus.show', 'slug', 'slug', 'weekly', '0.75');
+    $appendUrls(GuiaRevista::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.guias.show', 'slug', 'slug', 'weekly', '0.7');
+    $appendUrls(Video::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.videos.show', 'slug', 'slug', 'weekly', '0.7');
+    $appendUrls(RotaDoCacau::query()->where('status', 'publicado')->select('slug', 'updated_at', 'published_at')->get(), 'site.rota_do_cacau.show', 'slug', 'slug', 'weekly', '0.7');
+
+    $urls = $staticUrls
+        ->merge($dynamicUrls)
+        ->unique('loc')
+        ->values();
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>';
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+    foreach ($urls as $url) {
+        $xml .= '<url>';
+        $xml .= '<loc>'.e($url['loc']).'</loc>';
+        $xml .= '<lastmod>'.optional($url['lastmod'])->toAtomString().'</lastmod>';
+        $xml .= '<changefreq>'.$url['changefreq'].'</changefreq>';
+        $xml .= '<priority>'.$url['priority'].'</priority>';
+        $xml .= '</url>';
+    }
+
+    $xml .= '</urlset>';
+
+    return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+})->name('sitemap');
+
+Route::get('/auth/google/redirect', fn() => Socialite::driver('google')->redirect())
+    ->name('google.redirect');
+
+Route::get('/auth/google/callback', function () {
+    $g = Socialite::driver('google')->stateless()->user();
+
+    $googleId = (string) $g->getId();
+    $email    = $g->getEmail() ? strtolower($g->getEmail()) : null;
+    $name     = $g->getName() ?: $g->getNickname() ?: ($email ? strtok($email, '@') : 'Usuário');
+
+    $user = User::where('google_id', $googleId)->first();
+    if (!$user && $email) {
+        $user = User::where('email', $email)->first();
+    }
+
+    if (!$user) {
+        $user = User::create([
+            'name'       => $name,
+            'email'      => $email,
+            'google_id'  => $googleId,
+            'avatar_url' => $g->getAvatar(),
+            'password'   => Hash::make(Str::random(40)),
+        ]);
+    } else {
+        $user->update([
+            'name'       => $name,
+            'google_id'  => $googleId,
+            'avatar_url' => $g->getAvatar(),
+        ]);
+    }
+
+    if (method_exists($user, 'roles') && method_exists($user, 'assignRole')) {
+        if (!$user->roles()->exists()) {
+            $user->assignRole('Cidadao');
+        }
+    }
+
+    Auth::login($user, remember: true);
+    $locale = session('locale', config('app.locale_prefix_fallback', 'pt'));
+    return redirect()->intended(route('site.home', ['locale' => $locale]));
+})->name('google.callback');
+
+Route::get('/', [HomeController::class, 'index']);
+Route::get('/explorar', $redirectToLocalized('site.explorar'));
+Route::get('/mapa', $redirectToLocalized('site.mapa'));
+Route::get('/roteiros', $redirectToLocalized('site.roteiros'));
+Route::get('/roteiros/{slug}', $redirectToLocalized('site.roteiros.show', ['slug']));
+Route::get('/agenda', $redirectToLocalized('site.agenda'));
+Route::get('/onde-comer', $redirectToLocalized('site.onde_comer'));
+Route::get('/onde-ficar', $redirectToLocalized('site.onde_ficar'));
+Route::get('/videos', $redirectToLocalized('site.videos'));
+Route::get('/videos/{slug}', $redirectToLocalized('site.videos.show', ['slug']));
+Route::get('/guias', $redirectToLocalized('site.guias'));
+Route::get('/guias/{slug}', $redirectToLocalized('site.guias.show', ['slug']));
+Route::get('/informacoes-uteis', $redirectToLocalized('site.informacoes'));
+Route::get('/contato', $redirectToLocalized('site.contato'));
+Route::get('/jogos-indigenas', $redirectToLocalized('site.jogos_indigenas.index'));
+Route::get('/rota-do-cacau', $redirectToLocalized('site.rota_do_cacau.index'));
+Route::get('/rota-do-cacau/{slug}', $redirectToLocalized('site.rota_do_cacau.show', ['slug']));
+Route::get('/museus-e-teatros', $redirectToLocalized('site.museus'));
+Route::get('/museus-e-teatros/solicitacoes/{protocolo}', $redirectToLocalized('site.museus.agendamentos.show', ['protocolo']));
+Route::get('/museus-e-teatros/solicitacoes/{protocolo}/whatsapp', $redirectToLocalized('site.museus.agendamentos.whatsapp', ['protocolo']));
+Route::get('/museus-e-teatros/{espaco}/agendar', $redirectToLocalized('site.museus.agendar', ['espaco']));
+Route::get('/museus-e-teatros/{slug}', $redirectToLocalized('site.museus.show', ['slug']));
+Route::get('/banner-destaque-feed', $redirectToLocalized('site.banner_destaque.feed'));
+Route::get('/ponto/{ponto}', $redirectToLocalized('site.ponto', ['ponto']));
+Route::get('/empresa/{empresa}', $redirectToLocalized('site.empresa', ['empresa']));
+Route::get('/categoria/{slug}', $redirectToLocalized('site.categoria', ['slug']));
+Route::get('/offline', $redirectToLocalized('offline'));
+Route::get('/politica-privacidade', $redirectToLocalized('site.politicas'));
+Route::get('/semtur', $redirectToLocalized('site.semtur'));
+Route::get('/secretaria', $redirectToLocalized('site.secretaria'));
+Route::get('/aviso/ativo', $redirectToLocalized('site.aviso.ativo'));
+Route::get('/eventos', $redirectToLocalized('eventos.index'));
+Route::get('/eventos/{slug}/{ano?}', $redirectToLocalized('eventos.show', ['slug', 'ano']));
+Route::get('/conta', $redirectToLocalized('site.perfil.index'));
+Route::get('/conta/editar', $redirectToLocalized('site.perfil.editar'));
+Route::get('/conta/redes', $redirectToLocalized('site.perfil.redes'));
+Route::get('/login', [AuthenticatedSessionController::class, 'create']);
+Route::get('/register', [RegisteredUserController::class, 'create']);
+Route::get('/forgot-password', [PasswordResetLinkController::class, 'create']);
+
+Route::middleware('setLocale')
+    ->prefix('{locale}')
+    ->where(['locale' => 'pt|en|es'])
+    ->group(function () {
 Route::get('/',         [HomeController::class, 'index'])->name('site.home');
 Route::get('/explorar', [HomeController::class, 'explorar'])->name('site.explorar');
 Route::get('/mapa',     [MapaController::class, 'index'])->name('site.mapa');
@@ -110,7 +309,7 @@ Route::get('/guias/{slug}', [SiteGuiaController::class, 'show'])->name('site.gui
 
 Route::get('/informacoes-uteis', [PortalController::class, 'informacoes'])->name('site.informacoes');
 Route::get('/contato', [PortalController::class, 'contato'])->name('site.contato');
-Route::view('/jogos-indigenas', 'site.jogos_indigenas.index')->name('site.jogos_indigenas.index');
+Route::get('/jogos-indigenas', [JogosIndigenasPublicController::class, 'index'])->name('site.jogos_indigenas.index');
 Route::get('/rota-do-cacau', [SiteRotaDoCacauController::class, 'index'])->name('site.rota_do_cacau.index');
 Route::get('/rota-do-cacau/{slug}', [SiteRotaDoCacauController::class, 'show'])->name('site.rota_do_cacau.show');
 
@@ -167,7 +366,7 @@ Route::get('/secretaria', [SiteSecretariaController::class, 'show'])
 Route::get('/aviso/ativo', [AvisoFeedController::class, 'ativo'])->name('site.aviso.ativo');
 
 Route::get('/auth/google/redirect', fn() => Socialite::driver('google')->redirect())
-    ->name('google.redirect');
+    ->name('google.redirect.localized');
 
 Route::get('/auth/google/callback', function () {
     $g = Socialite::driver('google')->stateless()->user();
@@ -209,8 +408,9 @@ Route::get('/auth/google/callback', function () {
     }
 
     Auth::login($user, remember: true);
-    return redirect()->intended('/');
-})->name('google.callback');
+    $locale = session('locale', config('app.locale_prefix_fallback', 'pt'));
+    return redirect()->intended(route('site.home', ['locale' => $locale]));
+})->name('google.callback.localized');
 
 Route::get('/ig-img', function (\Illuminate\Http\Request $r) {
     $u = $r->query('u');
@@ -256,6 +456,7 @@ Route::middleware(['auth','role:Cidadao'])
 
         Route::get('/redes',   [PerfilController::class,'redes'])->name('redes');
         Route::put('/redes',   [PerfilController::class,'redesAtualizar'])->name('redes.atualizar');
+    });
     });
 
 
@@ -332,6 +533,9 @@ Route::middleware(['auth','role:Admin'])
         Route::post('/', [AdminThemeController::class, 'store'])
             ->middleware('permission:themes.create')
             ->name('store');
+        Route::post('/import', [AdminThemeController::class, 'import'])
+            ->middleware('permission:themes.create')
+            ->name('import');
         Route::post('/preview/clear', [AdminThemeController::class, 'clearPreview'])
             ->middleware('permission:themes.preview')
             ->name('preview.clear');
@@ -341,18 +545,52 @@ Route::middleware(['auth','role:Admin'])
         Route::get('/{tema}/edit', [AdminThemeController::class, 'edit'])
             ->middleware('permission:themes.edit')
             ->name('edit');
+        Route::get('/{tema}/export', [AdminThemeController::class, 'export'])
+            ->middleware('permission:themes.view')
+            ->name('export');
         Route::put('/{tema}', [AdminThemeController::class, 'update'])
             ->middleware('permission:themes.edit')
             ->name('update');
         Route::patch('/{tema}/activate', [AdminThemeController::class, 'activate'])
             ->middleware('permission:themes.activate')
             ->name('activate');
+        Route::patch('/{tema}/activate-site', [AdminThemeController::class, 'activateSite'])
+            ->middleware('permission:themes.activate')
+            ->name('activate-site');
+        Route::patch('/{tema}/activate-auth', [AdminThemeController::class, 'activateAuth'])
+            ->middleware('permission:themes.activate')
+            ->name('activate-auth');
         Route::patch('/restore-default', [AdminThemeController::class, 'restoreDefault'])
             ->middleware('permission:themes.activate')
             ->name('restore-default');
+        Route::patch('/restore-default-site', [AdminThemeController::class, 'restoreDefaultSite'])
+            ->middleware('permission:themes.activate')
+            ->name('restore-default-site');
+        Route::patch('/restore-default-auth', [AdminThemeController::class, 'restoreDefaultAuth'])
+            ->middleware('permission:themes.activate')
+            ->name('restore-default-auth');
         Route::patch('/{tema}/archive', [AdminThemeController::class, 'archive'])
             ->middleware('permission:themes.activate')
             ->name('archive');
+        Route::delete('/{tema}', [AdminThemeController::class, 'destroy'])
+            ->middleware('permission:themes.archive')
+            ->name('destroy');
+    });
+
+
+    Route::prefix('backups')->name('backups.')->group(function () {
+        Route::get('/', [AdminBackupController::class, 'index'])->name('index');
+        Route::post('/generate', [AdminBackupController::class, 'generate'])->name('generate');
+        Route::post('/import-package', [AdminBackupController::class, 'importPackage'])->name('import-package');
+        Route::post('/download', [AdminBackupController::class, 'download'])->name('download');
+        Route::post('/push-remote', [AdminBackupController::class, 'pushRemote'])->name('push-remote');
+        Route::post('/pull-remote', [AdminBackupController::class, 'pullRemote'])->name('pull-remote');
+        Route::delete('/local', [AdminBackupController::class, 'destroyLocal'])->name('destroy-local');
+        Route::delete('/remote', [AdminBackupController::class, 'destroyRemote'])->name('destroy-remote');
+        Route::post('/test-remote', [AdminBackupController::class, 'testRemote'])->name('test-remote');
+        Route::post('/audit-media', [AdminBackupController::class, 'auditMedia'])->name('audit-media');
+        Route::post('/prune-safe', [AdminBackupController::class, 'pruneSafe'])->name('prune-safe');
+        Route::put('/remote-config', [AdminBackupController::class, 'updateRemoteConfig'])->name('remote-config.update');
     });
   });
 
@@ -386,9 +624,15 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
                 Route::patch('/{tema}/activate-console', [ThemeExecutionController::class, 'activateConsole'])
                     ->middleware('permission:themes.execute.console')
                     ->name('activate-console');
+                Route::patch('/restore-default-console', [ThemeExecutionController::class, 'restoreConsoleDefault'])
+                    ->middleware('permission:themes.execute.console')
+                    ->name('restore-default-console');
                 Route::patch('/{tema}/activate-site', [ThemeExecutionController::class, 'activateSite'])
                     ->middleware('permission:themes.execute.site')
                     ->name('activate-site');
+                Route::patch('/restore-default-site', [ThemeExecutionController::class, 'restoreSiteDefault'])
+                    ->middleware('permission:themes.execute.site')
+                    ->name('restore-default-site');
             });
 
         // Categorias

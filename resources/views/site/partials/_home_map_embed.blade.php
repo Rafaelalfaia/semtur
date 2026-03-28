@@ -1,4 +1,4 @@
-@php
+﻿@php
     use Illuminate\Support\Facades\Route as R;
 
     $mapCategories = collect($mapCategories ?? []);
@@ -31,20 +31,19 @@
     <div id="home-map-root" class="site-home-map-shell site-home-map-shell--compact">
         <div class="site-home-map-heading site-home-map-heading--compact">
             <div class="site-home-map-heading-copy">
-                <p class="site-badge">Mapa da cidade</p>
-                <h2 class="site-section-head-title">Explore Altamira no mapa</h2>
-
+                <p class="site-badge">{{ __('ui.home.map_badge') }}</p>
+                <h2 class="site-section-head-title">{{ __('ui.home.map_title') }}</h2>
             </div>
 
-            <a href="{{ $mapHref }}" class="site-button-secondary">Abrir mapa completo</a>
+            <a href="{{ $mapHref }}" class="site-button-secondary">{{ __('ui.home.map_open_full') }}</a>
         </div>
 
         @if($homeMapCategories->isNotEmpty())
             <div class="site-home-map-filters site-home-map-filters--compact">
                 <div class="site-chips-shell">
-                    <div class="site-chips-scroll" role="group" aria-label="Categorias do mapa na home">
-                        <button type="button" class="site-chip site-chip-active" data-home-map-filter data-category="" data-label="Tudo" aria-pressed="true">
-                            Tudo
+                    <div class="site-chips-scroll" role="group" aria-label="{{ __('ui.home.map_categories_aria') }}">
+                        <button type="button" class="site-chip site-chip-active" data-home-map-filter data-category="" data-label="{{ __('ui.home.map_all') }}" aria-pressed="true">
+                            {{ __('ui.home.map_all') }}
                         </button>
 
                         @foreach($homeMapCategories as $category)
@@ -79,16 +78,16 @@
                     class="site-home-map-canvas site-home-map-canvas--compact"
                     id="home-map"
                     role="img"
-                    aria-label="Mapa interativo de Altamira com pontos turísticos e empresas publicadas"
+                    aria-label="{{ __('ui.home.map_canvas_aria') }}"
                 ></div>
             </div>
 
             <div class="site-home-map-summary site-home-map-summary--compact">
-                <p id="home-map-status" class="site-home-map-status">Carregando locais publicados...</p>
-                <a href="{{ $mapHref }}" class="site-link">Ver mapa completo</a>
+                <p id="home-map-status" class="site-home-map-status">{{ __('ui.home.map_loading') }}</p>
+                <a href="{{ $mapHref }}" class="site-link">{{ __('ui.home.map_open_full') }}</a>
             </div>
 
-            <div id="home-map-cards" class="site-home-map-results site-home-map-results--compact" aria-label="Resultados do mapa na home"></div>
+            <div id="home-map-cards" class="site-home-map-results site-home-map-results--compact" aria-label="{{ __('ui.home.map_results_aria') }}"></div>
         </div>
     </div>
 </section>
@@ -128,8 +127,8 @@
                 'desktop' => 7,
             ],
             'filterButtonSelector' => '[data-home-map-filter]',
-            'emptyTitle' => 'Nada apareceu nesta area',
-            'emptyCopy' => 'Troque a categoria ou abra o mapa completo para explorar mais.',
+            'emptyTitle' => __('ui.home.map_empty_title'),
+            'emptyCopy' => __('ui.home.map_empty_copy'),
         ],
     ])
 @endpush

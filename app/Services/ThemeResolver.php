@@ -83,7 +83,7 @@ class ThemeResolver
             return null;
         }
 
-        $previewId = (int) session(self::PREVIEW_SESSION_KEY);
+        $previewId = $this->previewThemeIdForUser($user);
 
         if ($previewId <= 0) {
             return null;
@@ -221,5 +221,20 @@ class ThemeResolver
                 || $theme->persistedAssets() !== []
                 || $theme->base_theme !== 'default'
             );
+    }
+
+    private function previewThemeIdForUser(User $user): int
+    {
+        $previewSession = session(self::PREVIEW_SESSION_KEY);
+
+        if (is_array($previewSession)) {
+            return (int) ($previewSession[$user->getKey()] ?? 0);
+        }
+
+        if ((int) auth()->id() !== (int) $user->getKey()) {
+            return 0;
+        }
+
+        return (int) $previewSession;
     }
 }

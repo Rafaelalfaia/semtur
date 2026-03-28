@@ -1,11 +1,11 @@
 @extends('console.layout')
 @section('title', 'Novo atrativo')
 @section('page.title', 'Novo atrativo')
-@section('topbar.description', 'Cadastre um atrativo da edicao dentro do mesmo padrao visual e estrutural do console.')
+@section('topbar.description', 'Cadastre um atrativo da edição dentro do mesmo padrão visual e estrutural do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
-  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edicoes</a>
+  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edições</a>
   <a href="{{ route('coordenador.edicoes.atrativos.index', $edicao) }}" class="ui-console-topbar-tab">Atrativos</a>
   <span class="ui-console-topbar-tab is-active">Novo atrativo</span>
 @endsection
@@ -14,7 +14,7 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Novo atrativo"
-    subtitle="Cadastre nome, ordem, descricao, thumb e status do atrativo."
+    subtitle="Cadastre nome, ordem, descrição, thumb e status do atrativo."
   >
     <a href="{{ route('coordenador.edicoes.atrativos.index', $edicao) }}" class="ui-btn-secondary">Voltar</a>
   </x-dashboard.page-header>
@@ -28,7 +28,7 @@
   <form method="POST" action="{{ route('coordenador.edicoes.atrativos.store', $edicao) }}" enctype="multipart/form-data" class="mt-5 space-y-6">
     @csrf
 
-    <x-dashboard.section-card title="Dados do atrativo" subtitle="Preencha a estrutura basica do atrativo da edicao" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados do atrativo" subtitle="Preencha a estrutura básica do atrativo da edição" class="ui-coord-dashboard-panel">
       <div class="space-y-4">
         <div>
           <label class="ui-form-label">Nome *</label>
@@ -47,14 +47,14 @@
         </div>
 
         <div>
-          <label class="ui-form-label">Descricao</label>
+          <label class="ui-form-label">Descrição</label>
           <textarea name="descricao" rows="4" class="ui-form-control">{{ old('descricao') }}</textarea>
         </div>
 
         <div>
           <label class="ui-form-label">Thumb (imagem)</label>
           <input type="file" name="thumb" accept="image/*" class="ui-form-control">
-          <p class="mt-1 text-xs text-[var(--ui-text-soft)]">Recomendado: 800x600 ou proporcao semelhante.</p>
+          <p class="mt-1 text-xs text-[var(--ui-text-soft)]">Recomendado: 800x600 ou proporção semelhante.</p>
         </div>
 
         <div class="max-w-[240px]">

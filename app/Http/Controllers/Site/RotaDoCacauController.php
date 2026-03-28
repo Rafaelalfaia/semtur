@@ -13,7 +13,12 @@ class RotaDoCacauController extends Controller
     {
         $rota = $this->principalPublicada()?->load([
             'edicoes' => fn ($query) => $this->aplicarFiltroPublicacaoEdicoes($query)
-                ->withCount(['fotos', 'videos', 'patrocinadores']),
+                ->withCount(['fotos', 'videos', 'patrocinadores'])
+                ->with([
+                    'fotos' => fn ($rel) => $rel->orderBy('ordem')->orderBy('id'),
+                    'videos' => fn ($rel) => $rel->orderBy('ordem')->orderBy('id'),
+                    'patrocinadores' => fn ($rel) => $rel->orderBy('ordem')->orderBy('id'),
+                ]),
         ]);
 
         $edicoes = $rota?->edicoes ?? collect();

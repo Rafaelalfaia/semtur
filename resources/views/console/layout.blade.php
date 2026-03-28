@@ -153,6 +153,13 @@
                         'routes' => ['admin.temas.index'],
                         'patterns' => ['admin.temas.*'],
                     ],
+                    [
+                        'label' => 'Sistema',
+                        'permission' => null,
+                        'roles' => ['Admin'],
+                        'routes' => ['admin.backups.index'],
+                        'patterns' => ['admin.backups.*'],
+                    ],
                 ],
             ],
             [
@@ -523,6 +530,7 @@
             str_contains($patterns, 'dashboard') => 'dashboard',
             str_contains($patterns, 'usuarios') || str_contains($label, 'usu') => 'users',
             str_contains($patterns, 'temas') || str_contains($label, 'tema') => 'sparkles',
+            str_contains($patterns, 'backups') || str_contains($label, 'backup') => 'reports',
             str_contains($patterns, 'tecnicos') || str_contains($label, 'técnic') || str_contains($label, 'tecnic') => 'team',
             str_contains($patterns, 'relatorios') || str_contains($label, 'relat') => 'reports',
             str_contains($patterns, 'banners-destaque') || str_contains($patterns, 'banners_destaque') => 'sparkles',

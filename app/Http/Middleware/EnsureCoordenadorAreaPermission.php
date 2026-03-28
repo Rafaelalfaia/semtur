@@ -296,9 +296,15 @@ class EnsureCoordenadorAreaPermission
             'coordenador.temas.preview-console.clear'
         )) return 'themes.preview';
 
-        if ($request->routeIs('coordenador.temas.activate-console')) return 'themes.execute.console';
+        if ($request->routeIs(
+            'coordenador.temas.activate-console',
+            'coordenador.temas.restore-default-console'
+        )) return 'themes.execute.console';
 
-        if ($request->routeIs('coordenador.temas.activate-site')) return 'themes.execute.site';
+        if ($request->routeIs(
+            'coordenador.temas.activate-site',
+            'coordenador.temas.restore-default-site'
+        )) return 'themes.execute.site';
         return null;
     }
 

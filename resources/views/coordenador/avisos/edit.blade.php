@@ -14,7 +14,7 @@
 
   <x-dashboard.page-header
     title="Editar aviso"
-    subtitle="Revise conteudo, periodo de exibicao e imagem mantendo consistencia com os demais modulos do console."
+    subtitle="Revise conteúdo, período de exibição e imagem mantendo consistência com os demais módulos do console."
   />
 
   <form action="{{ route('coordenador.avisos.update',$aviso) }}" method="post" enctype="multipart/form-data" class="mt-5 space-y-5">

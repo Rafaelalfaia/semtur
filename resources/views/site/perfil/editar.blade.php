@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 @section('title','Editar perfil')
-@section('meta.description','Area da conta do VisitAltamira para atualizar foto, nome e informacoes do perfil com seguranca.')
+@section('meta.description','Área da conta do VisitAltamira para atualizar foto, nome e informações do perfil com segurança.')
 @section('meta.image', theme_asset('hero_image'))
 @section('meta.canonical', route('site.perfil.editar'))
 @section('meta.noindex', 'true')
@@ -29,7 +29,7 @@
     <form method="POST" action="{{ route('site.perfil.atualizar') }}" enctype="multipart/form-data" class="space-y-5" id="perfil-form">
       @csrf @method('PUT')
 
-      {{-- Avatar + botÃ£o de upload --}}
+      {{-- Avatar + botão de upload --}}
       @php
         $fallback = asset('imagens/avatar.png'); // public/imagens/avatar.png
         $foto = $u->avatar_url ? $u->avatar_url : $fallback;
@@ -64,7 +64,7 @@
         @error('email')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
       </div>
 
-      {{-- CPF: bloqueado se jÃ¡ tiver; senÃ£o, pode adicionar (com mÃ¡scara visual) --}}
+      {{-- CPF: bloqueado se já tiver; senão, pode adicionar (com máscara visual) --}}
       <div>
         <label class="block text-sm font-medium text-slate-700">CPF</label>
 
@@ -74,10 +74,10 @@
         @endphp
 
         @if($u->cpf)
-          {{-- jÃ¡ possui CPF: mostrar bloqueado --}}
+          {{-- já possui CPF: mostrar bloqueado --}}
           <input type="text" value="{{ $cpfMasked ?: $u->cpf }}" disabled
                  class="mt-1 w-full rounded-xl border-slate-300 bg-slate-50 text-slate-500">
-          <p class="text-[11px] text-slate-400 mt-1">CPF vinculado Ã  conta. Para alterar, contate o suporte.</p>
+          <p class="text-[11px] text-slate-400 mt-1">CPF vinculado à conta. Para alterar, contate o suporte.</p>
         @else
           {{-- pode cadastrar CPF --}}
           <input id="cpf_mask" type="text" inputmode="numeric" placeholder="000.000.000-00"
@@ -124,7 +124,7 @@
   <p class="mt-2 text-[11px] text-slate-500">Deixe em branco para manter sua senha atual.</p>
 </div>
 
-{{-- Toggle mostrar/ocultar (se ainda nÃ£o tiver no arquivo) --}}
+{{-- Toggle mostrar/ocultar (se ainda não tiver no arquivo) --}}
 <script>
   (function () {
     document.querySelectorAll('.pw-toggle').forEach(btn => {
@@ -148,7 +148,7 @@
   </main>
 </div>
 
-{{-- Scripts: preview do avatar e mÃ¡scara visual do CPF (envia sÃ³ dÃ­gitos) --}}
+{{-- Scripts: preview do avatar e máscara visual do CPF (envia só dígitos) --}}
 <script>
   // Preview do avatar selecionado
   (function () {
@@ -163,7 +163,7 @@
     });
   })();
 
-  // MÃ¡scara visual de CPF: mostra 000.000.000-00 e envia hidden sÃ³ com dÃ­gitos
+  // Máscara visual de CPF: mostra 000.000.000-00 e envia hidden só com dígitos
   (function () {
     const mask = document.getElementById('cpf_mask');
     const hidden = document.getElementById('cpf');
@@ -204,6 +204,6 @@
   })();
 </script>
 
-{{-- EspaÃ§o p/ nÃ£o cobrir conteÃºdo (mobile) + bottom nav --}}
+{{-- Espaço p/ não cobrir conteúdo (mobile) + bottom nav --}}
 <div class="h-[80px] pb-[env(safe-area-inset-bottom)] md:hidden"></div>
 @endsection

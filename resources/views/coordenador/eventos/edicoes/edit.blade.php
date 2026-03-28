@@ -1,12 +1,12 @@
 @extends('console.layout')
-@section('title', 'Editar edicao - '.$evento->nome)
-@section('page.title', 'Editar edicao')
-@section('topbar.description', 'Atualize a edicao do evento mantendo o padrao de formularios e heranca global do console.')
+@section('title', 'Editar edição - '.$evento->nome)
+@section('page.title', 'Editar edição')
+@section('topbar.description', 'Atualize a edição do evento mantendo o padrão de formulários e herança global do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
-  <a href="{{ route('coordenador.eventos.edicoes.index', $evento) }}" class="ui-console-topbar-tab">Edicoes</a>
-  <span class="ui-console-topbar-tab is-active">Editar edicao</span>
+  <a href="{{ route('coordenador.eventos.edicoes.index', $evento) }}" class="ui-console-topbar-tab">Edições</a>
+  <span class="ui-console-topbar-tab is-active">Editar edição</span>
 @endsection
 
 @section('content')
@@ -18,8 +18,8 @@
 
 <div class="ui-console-page">
   <x-dashboard.page-header
-    title="Editar edicao"
-    subtitle="Ajuste calendario, localizacao e dados editoriais da edicao."
+    title="Editar edição"
+    subtitle="Ajuste calendário, localização e dados editoriais da edição."
   >
     <a href="{{ route('coordenador.eventos.edicoes.index', $evento) }}" class="ui-btn-secondary">Voltar</a>
   </x-dashboard.page-header>
@@ -37,14 +37,14 @@
     @csrf
     @method('PUT')
 
-    <x-dashboard.section-card title="Dados da edicao" subtitle="Atualize datas, local, coordenadas e resumo" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados da edição" subtitle="Atualize datas, local, coordenadas e resumo" class="ui-coord-dashboard-panel">
       <div class="grid gap-4 md:grid-cols-3">
         <div>
           <label class="ui-form-label">Ano *</label>
           <input type="number" name="ano" value="{{ old('ano', $edicao->ano) }}" class="ui-form-control" required>
         </div>
         <div>
-          <label class="ui-form-label">Inicio</label>
+          <label class="ui-form-label">Início</label>
           <input type="date" name="data_inicio" value="{{ old('data_inicio', $edicao->data_inicio?->format('Y-m-d')) }}" class="ui-form-control">
         </div>
         <div>
@@ -66,7 +66,7 @@
           placeholder="Cole aqui o link do Google Maps"
           class="ui-form-control"
         >
-        <p class="mt-1 text-xs text-[var(--ui-text-soft)]">Ao salvar, as coordenadas podem ser extraidas automaticamente do link.</p>
+        <p class="mt-1 text-xs text-[var(--ui-text-soft)]">Ao salvar, as coordenadas podem ser extraídas automaticamente do link.</p>
       </div>
 
       <div class="mt-4 grid gap-4 md:grid-cols-2">

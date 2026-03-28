@@ -1,11 +1,13 @@
 @props([
-  'jpg',              // obrigatório: URL JPG/JPEG (ex.: Storage::url(...))
-  'webp' => null,     // opcional: URL WebP
-  'avif' => null,     // opcional: URL AVIF
-  'alt'  => '',
-  'class'=> '',       // classes aplicadas no <img>
-  'priority' => false,// true = eager + fetchpriority=high (acima da dobra)
-  'sizes' => '(max-width: 640px) 100vw, 33vw', // ajuste conforme seu grid
+  'jpg',
+  'webp' => null,
+  'avif' => null,
+  'alt' => '',
+  'class' => '',
+  'priority' => false,
+  'sizes' => '(max-width: 640px) 100vw, 33vw',
+  'width' => null,
+  'height' => null,
 ])
 
 <picture>
@@ -24,5 +26,7 @@
     decoding="async"
     @if($priority) fetchpriority="high" @endif
     sizes="{{ $sizes }}"
+    @if($width) width="{{ $width }}" @endif
+    @if($height) height="{{ $height }}" @endif
   >
 </picture>

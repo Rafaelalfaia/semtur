@@ -2,7 +2,7 @@
 
 @section('title', ($banner->exists ? 'Editar' : 'Novo').' banner - Console')
 @section('page.title', $banner->exists ? 'Editar banner' : 'Novo banner')
-@section('topbar.description', 'Cadastre ou atualize banners secundarios mantendo consistencia com o shell, o modo global e a futura camada de temas.')
+@section('topbar.description', 'Cadastre ou atualize banners secundários mantendo consistência com o shell, o modo global e a futura camada de temas.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.banners.index') }}" class="ui-console-topbar-tab">Banners</a>
@@ -26,7 +26,7 @@
 
   <x-dashboard.page-header
     title="{{ $banner->exists ? 'Editar banner' : 'Novo banner' }}"
-    subtitle="Configure conteudo, status e imagem do banner em um formulario alinhado ao novo padrao visual do console."
+    subtitle="Configure conteúdo, status e imagem do banner em um formulário alinhado ao novo padrão visual do console."
   />
 
   <form method="post" enctype="multipart/form-data" action="{{ $banner->exists ? route('coordenador.banners.update',$banner) : route('coordenador.banners.store') }}" class="mt-5 space-y-5">
@@ -37,12 +37,12 @@
 
     <div class="ui-banner-module-form-grid">
       <div class="space-y-5">
-        <x-dashboard.section-card title="Conteudo do banner" subtitle="Texto principal, CTA e ordem de exibicao" class="ui-coord-dashboard-panel">
+        <x-dashboard.section-card title="Conteúdo do banner" subtitle="Texto principal, CTA e ordem de exibição" class="ui-coord-dashboard-panel">
           <div class="grid gap-4">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div class="md:col-span-2">
-                <label class="ui-form-label">Titulo</label>
-                <input name="titulo" value="{{ old('titulo',$banner->titulo) }}" class="ui-form-control" placeholder="Jogos Indigenas">
+                <label class="ui-form-label">Título</label>
+                <input name="titulo" value="{{ old('titulo',$banner->titulo) }}" class="ui-form-control" placeholder="Jogos Indígenas">
               </div>
               <div>
                 <label class="ui-form-label">Ordem</label>
@@ -68,7 +68,7 @@
           </div>
         </x-dashboard.section-card>
 
-        <x-dashboard.section-card title="Publicacao" subtitle="Status atual e data de publicacao" class="ui-coord-dashboard-panel">
+        <x-dashboard.section-card title="Publicação" subtitle="Status atual e data de publicação" class="ui-coord-dashboard-panel">
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label class="ui-form-label">Status</label>
@@ -113,7 +113,7 @@
     <div class="flex items-center justify-between gap-3">
       <a href="{{ route('coordenador.banners.index') }}" class="ui-btn-secondary">Voltar</a>
       <button type="submit" class="ui-btn-primary">
-        {{ $banner->exists ? 'Salvar alteracoes' : 'Criar banner' }}
+        {{ $banner->exists ? 'Salvar alterações' : 'Criar banner' }}
       </button>
     </div>
   </form>

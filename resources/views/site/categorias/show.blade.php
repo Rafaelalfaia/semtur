@@ -1,45 +1,42 @@
 @extends('site.layouts.app')
-@section('title', $categoria->nome . ' em Altamira')
-@section('meta.description', 'Explore pontos e empresas publicados da categoria ' . $categoria->nome . ' no portal VisitAltamira.')
+@section('title', $categoria->nome . ' ' . __('ui.category.title_suffix', ['default' => 'em Altamira']))
+@section('meta.description', __('ui.category.meta_description', ['category' => $categoria->nome]))
 @section('meta.image', theme_asset('hero_image'))
 @section('meta.canonical', url()->full())
 
 @section('site.content')
 @php
     use Illuminate\Support\Facades\Route as R;
-    use Illuminate\Support\Facades\Storage;
 
     $breadcrumbs = [
-        ['label' => 'Inicio', 'href' => R::has('site.home') ? route('site.home') : url('/')],
-        ['label' => 'Explorar', 'href' => R::has('site.explorar') ? route('site.explorar') : '#'],
+        ['label' => __('ui.nav.home'), 'href' => R::has('site.home') ? route('site.home') : url('/')],
+        ['label' => __('ui.nav.explore'), 'href' => R::has('site.explorar') ? route('site.explorar') : '#'],
         ['label' => $categoria->nome],
     ];
 
     $cardsFromPontos = $pontos->map(function ($ponto) {
         $image = $ponto->capa_url ?? $ponto->foto_capa_url ?? optional($ponto->midias->first())->url ?? null;
-
         return [
             'title' => $ponto->nome,
-            'subtitle' => $ponto->cidade ?? 'Altamira',
+            'subtitle' => $ponto->cidade ?? __('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $ponto->descricao), 125),
             'image' => $image,
             'href' => route('site.ponto', $ponto->id),
-            'badge' => 'Ponto turistico',
-            'cta' => 'Ver lugar',
+            'badge' => __('ui.explore.point_badge'),
+            'cta' => __('ui.explore.view_place'),
         ];
     });
 
     $cardsFromEmpresas = $empresas->map(function ($empresa) {
         $image = $empresa->capa_url ?? $empresa->foto_capa_url ?? null;
-
         return [
             'title' => $empresa->nome,
-            'subtitle' => $empresa->cidade ?? 'Altamira',
+            'subtitle' => $empresa->cidade ?? __('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $empresa->descricao), 125),
             'image' => $image,
             'href' => route('site.empresa', $empresa->slug ?? $empresa->id),
-            'badge' => 'Empresa',
-            'cta' => 'Ver empresa',
+            'badge' => __('ui.explore.company_badge'),
+            'cta' => __('ui.explore.view_company'),
         ];
     });
 @endphp
@@ -48,17 +45,17 @@
     @include('site.partials._page_hero', [
         'backHref' => R::has('site.explorar') ? route('site.explorar') : url()->previous(),
         'breadcrumbs' => $breadcrumbs,
-        'badge' => 'Categoria',
+        'badge' => __('ui.category.badge'),
         'title' => $categoria->nome,
-        'subtitle' => 'Selecao editorial com pontos e empresas publicadas desta categoria.',
+        'subtitle' => __('ui.category.subtitle'),
         'meta' => [
-            $pontos->total().' pontos',
-            $empresas->total().' empresas',
-            filled($q) ? 'Busca: '.$q : null,
+            __('ui.category.points_count', ['count' => $pontos->total()]),
+            __('ui.category.companies_count', ['count' => $empresas->total()]),
+            filled($q) ? __('ui.category.search_meta', ['search' => $q]) : null,
         ],
-        'primaryActionLabel' => 'Explorar tudo',
+        'primaryActionLabel' => __('ui.explore.explore_all'),
         'primaryActionHref' => R::has('site.explorar') ? route('site.explorar', ['categoria' => $categoria->slug]) : '#',
-        'secondaryActionLabel' => 'Mapa turistico',
+        'secondaryActionLabel' => __('ui.common.tourist_map'),
         'secondaryActionHref' => R::has('site.mapa') ? route('site.mapa') : '#',
         'image' => theme_asset('hero_image'),
         'imageAlt' => $categoria->nome,
@@ -68,9 +65,9 @@
     <section class="site-section">
         <div class="site-surface">
             <x-section-head
-                eyebrow="Navegacao"
-                title="Refine o que voce quer descobrir"
-                subtitle="Use a busca para filtrar os conteudos publicados desta categoria sem sair do contexto da pagina."
+                :eyebrow="__('ui.category.navigation')"
+                :title="__('ui.explore.refine_title')"
+                :subtitle="__('ui.explore.refine_subtitle')"
             />
 
             <form method="get" class="site-search-form">
@@ -78,37 +75,29 @@
                     type="text"
                     name="q"
                     value="{{ $q }}"
-                    placeholder="Buscar nesta categoria"
+                    placeholder="{{ __('ui.explore.search_in_category') }}"
                     class="w-full rounded-[var(--ui-radius-control)] border border-[var(--ui-border)] bg-[var(--ui-surface-raised)] px-4 py-3 text-sm text-[var(--ui-text)] outline-none focus:border-[var(--ui-primary)] focus:ring-4 focus:ring-[var(--ui-border-focus)]"
                 >
-                <button type="submit" class="site-button-primary">Aplicar busca</button>
+                <button type="submit" class="site-button-primary">{{ __('ui.explore.apply_search') }}</button>
             </form>
         </div>
     </section>
 
     <section class="site-section">
         <x-section-head
-            eyebrow="Pontos"
-            title="Lugares desta categoria"
-            subtitle="Uma selecao de pontos publicados para montar seu roteiro com mais contexto."
+            :eyebrow="__('ui.explore.points_eyebrow')"
+            :title="__('ui.explore.places_in_category')"
+            :subtitle="__('ui.explore.places_in_category_subtitle')"
         />
 
         @if($cardsFromPontos->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-copy">Nenhum ponto publicado nesta categoria no momento.</p>
+                <p class="site-empty-state-copy">{{ __('ui.explore.places_empty_in_category') }}</p>
             </div>
         @else
             <div class="site-card-list-grid">
                 @foreach($cardsFromPontos as $item)
-                    <x-card-list
-                        :title="$item['title']"
-                        :subtitle="$item['subtitle']"
-                        :summary="$item['summary']"
-                        :image="$item['image']"
-                        :href="$item['href']"
-                        :badge="$item['badge']"
-                        :cta="$item['cta']"
-                    />
+                    <x-card-list :title="$item['title']" :subtitle="$item['subtitle']" :summary="$item['summary']" :image="$item['image']" :href="$item['href']" :badge="$item['badge']" :cta="$item['cta']" />
                 @endforeach
             </div>
         @endif
@@ -122,27 +111,19 @@
 
     <section class="site-section">
         <x-section-head
-            eyebrow="Empresas"
-            title="Empresas relacionadas"
-            subtitle="Servicos e operacoes publicadas que ajudam a transformar a categoria em experiencia."
+            :eyebrow="__('ui.explore.companies_eyebrow')"
+            :title="__('ui.explore.related_companies')"
+            :subtitle="__('ui.explore.related_companies_subtitle')"
         />
 
         @if($cardsFromEmpresas->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-copy">Nenhuma empresa publicada nesta categoria no momento.</p>
+                <p class="site-empty-state-copy">{{ __('ui.explore.companies_empty_in_category') }}</p>
             </div>
         @else
             <div class="site-card-list-grid">
                 @foreach($cardsFromEmpresas as $item)
-                    <x-card-list
-                        :title="$item['title']"
-                        :subtitle="$item['subtitle']"
-                        :summary="$item['summary']"
-                        :image="$item['image']"
-                        :href="$item['href']"
-                        :badge="$item['badge']"
-                        :cta="$item['cta']"
-                    />
+                    <x-card-list :title="$item['title']" :subtitle="$item['subtitle']" :summary="$item['summary']" :image="$item['image']" :href="$item['href']" :badge="$item['badge']" :cta="$item['cta']" />
                 @endforeach
             </div>
         @endif

@@ -2,7 +2,7 @@
 
 @section('title', 'Temas')
 
-@section('topbar.description', 'Execute temas aprovados no console e no site sem assumir a governanca da biblioteca visual.')
+@section('topbar.description', 'Execute temas aprovados no console e no site sem assumir a governança da biblioteca visual.')
 
 @section('topbar.nav')
     <span class="ui-console-topbar-tab is-active">Temas</span>
@@ -13,12 +13,12 @@
 <div class="ui-console-page">
     <x-dashboard.page-header
         title="Temas aprovados"
-        subtitle="O Coordenador pode pre-visualizar e aplicar temas disponiveis por escopo, sem criar, editar ou arquivar."
+        subtitle="O Coordenador pode pre-visualizar e aplicar temas disponíveis por escopo, sem criar, editar ou arquivar."
     />
 
     <div class="mt-5 grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
         <div class="space-y-4">
-            <x-dashboard.section-card title="Estado atual" subtitle="Leitura rapida dos temas em execucao.">
+            <x-dashboard.section-card title="Estado atual" subtitle="Leitura rápida dos temas em execução.">
                 <dl class="space-y-3 text-sm">
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-[var(--ui-text-soft)]">Ativo no console</dt>
@@ -52,11 +52,11 @@
             </x-dashboard.section-card>
         </div>
 
-        <x-dashboard.section-card id="temas-execucao" title="Biblioteca de execucao" subtitle="Temas disponiveis para preview e ativacao por escopo.">
+        <x-dashboard.section-card id="temas-execucao" title="Biblioteca de execução" subtitle="Temas disponíveis para preview e ativação por escopo.">
             @if($themes->count() === 0)
                 <div class="ui-empty-state">
                     <div class="ui-empty-state-title">Nenhum tema disponivel</div>
-                    <p class="ui-empty-state-copy">Nao ha temas aprovados compatíveis com a busca atual.</p>
+                    <p class="ui-empty-state-copy">Não há temas aprovados compatíveis com a busca atual.</p>
                 </div>
             @else
                 <div class="grid gap-4 xl:grid-cols-2">
@@ -99,7 +99,7 @@
                                     </div>
 
                                     <p class="text-sm text-[var(--ui-text-soft)]">
-                                        {{ $theme->description ?: 'Tema aprovado para execucao institucional.' }}
+                                        {{ $theme->description ?: 'Tema aprovado para execução institucional.' }}
                                     </p>
                                 </div>
 
@@ -132,7 +132,13 @@
                                     @endcan
 
                                     @can('themes.execute.console')
-                                        @if($supportsConsole && ! $isConsoleActive)
+                                        @if($supportsConsole && $isConsoleActive && ! $theme->is_default)
+                                            <form method="POST" action="{{ route('coordenador.temas.restore-default-console') }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="ui-btn-secondary">Desativar no console</button>
+                                            </form>
+                                        @elseif($supportsConsole && ! $isConsoleActive)
                                             <form method="POST" action="{{ route('coordenador.temas.activate-console', $theme) }}">
                                                 @csrf
                                                 @method('PATCH')
@@ -142,7 +148,13 @@
                                     @endcan
 
                                     @can('themes.execute.site')
-                                        @if($supportsSite && ! $isSiteActive)
+                                        @if($supportsSite && $isSiteActive && ! $theme->is_default)
+                                            <form method="POST" action="{{ route('coordenador.temas.restore-default-site') }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="ui-btn-secondary">Desativar no site</button>
+                                            </form>
+                                        @elseif($supportsSite && ! $isSiteActive)
                                             <form method="POST" action="{{ route('coordenador.temas.activate-site', $theme) }}">
                                                 @csrf
                                                 @method('PATCH')

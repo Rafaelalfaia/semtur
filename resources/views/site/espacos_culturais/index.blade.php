@@ -1,211 +1,147 @@
-@extends('site.layouts.app')
+﻿@extends('site.layouts.app')
 
-@section('title', 'Museus e Teatros')
-@section('meta.description', 'Descubra museus e teatros de Altamira, consulte informações, horários e solicite agendamento de visita.')
+@section('title', 'Museus e teatros em Altamira')
+@section('meta.description', 'Agende visitas a museus e ao teatro municipal, consulte horários e veja informações públicas dos espaços culturais de Altamira.')
 
 @section('site.content')
 @php
+    use Illuminate\Support\Facades\Route;
+
     $fallback = asset('imagens/altamira.jpg');
+
+    $cards = $espacos->getCollection()->map(function ($espaco) use ($fallback) {
+        $capa = $espaco->capa_url ?: optional($espaco->midias->first())->url ?: $fallback;
+
+        return [
+            'model' => $espaco,
+            'image' => $capa,
+            'summary' => $espaco->resumo
+                ? $espaco->resumo
+                : \Illuminate\Support\Str::limit(strip_tags((string) $espaco->descricao), 140),
+            'horarios' => $espaco->horarios->take(3),
+        ];
+    });
 @endphp
 
-<section class="bg-slate-950 text-white">
-    <div class="mx-auto w-full max-w-[1200px] px-4 py-16 sm:px-6 lg:px-8">
-        <div class="max-w-3xl">
-            <span class="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">
-                Cultura e memória
-            </span>
+<div class="site-page site-page-shell site-espacos-page">
+    @include('site.partials._page_hero', [
+        'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
+        'breadcrumbs' => [
+            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Museus e teatros'],
+        ],
+        'badge' => 'Agendamento cultural',
+        'title' => 'Museus e teatro municipal',
+        'subtitle' => 'Consulte espaços culturais publicados, veja horários e solicite visitas para grupos, escolas e roteiros guiados.',
+        'meta' => [
+            $espacos->total().' espaços publicados',
+            $tipo !== 'todos' ? ucfirst($tipo) : 'Museus e teatro',
+            filled($q) ? 'Busca ativa' : null,
+        ],
+        'primaryActionLabel' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? 'Solicitar visita' : null,
+        'primaryActionHref' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? route('site.museus.agendar', $cards->first()['model']->slug) : null,
+        'secondaryActionLabel' => 'Ver espaços',
+        'secondaryActionHref' => '#espacos-lista',
+        'image' => $cards->first()['image'] ?? $fallback,
+        'imageAlt' => 'Museus e teatros de Altamira',
+        'compact' => true,
+    ])
 
-            <h1 class="mt-5 text-3xl font-bold tracking-tight sm:text-5xl">
-                Museus e teatros de Altamira
-            </h1>
+    <section class="site-section">
+        <div class="site-surface site-espacos-filter-shell">
+            <x-section-head
+                eyebrow="Agendamento"
+                title="Encontre o espaco certo"
+                subtitle="Filtre por tipo ou nome para chegar mais rapido ao museu ou ao teatro que faz sentido para sua visita."
+            />
 
-            <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-                Conheça espaços culturais do município, veja detalhes, horários disponíveis e solicite o agendamento da sua visita.
-            </p>
-        </div>
-    </div>
-</section>
-
-<section class="bg-slate-50">
-    <div class="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
-        <form method="GET" class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_220px_auto]">
-                <div>
-                    <label class="mb-2 block text-sm font-medium text-slate-700">Buscar</label>
-                    <input
-                        type="text"
-                        name="q"
-                        value="{{ $q }}"
-                        placeholder="Museu, teatro, bairro, descrição..."
-                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500"
-                    >
-                </div>
-
-                <div>
-                    <label class="mb-2 block text-sm font-medium text-slate-700">Tipo</label>
-                    <select
-                        name="tipo"
-                        class="w-full rounded-2xl border-slate-300 focus:border-sky-500 focus:ring-sky-500"
-                    >
-                        <option value="todos" @selected($tipo === 'todos')>Todos</option>
-                        <option value="museu" @selected($tipo === 'museu')>Museus</option>
-                        <option value="teatro" @selected($tipo === 'teatro')>Teatros</option>
-                    </select>
-                </div>
-
-                <div class="flex items-end gap-2">
-                    <button
-                        type="submit"
-                        class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-medium text-white hover:bg-slate-800"
-                    >
-                        Filtrar
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</section>
-
-@if ($destaques->count())
-<section class="bg-white">
-    <div class="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
-        <div class="mb-6">
-            <h2 class="text-2xl font-bold tracking-tight text-slate-900">Destaques</h2>
-            <p class="mt-2 text-sm text-slate-500">Alguns espaços culturais em evidência no portal.</p>
-        </div>
-
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            @foreach ($destaques as $item)
-                @php
-                    $capa = $item->capa_url ?: optional($item->midias->first())->url ?: $fallback;
-                @endphp
-
-                <a
-                    href="{{ route('site.museus.show', $item->slug) }}"
-                    class="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+            <form method="GET" class="site-search-form site-espacos-search-form">
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ $q }}"
+                    placeholder="Buscar museu, teatro ou bairro"
+                    class="w-full rounded-[var(--ui-radius-control)] border border-[var(--ui-border)] bg-[var(--ui-surface-raised)] px-4 py-3 text-sm text-[var(--ui-text)] outline-none focus:border-[var(--ui-primary)] focus:ring-4 focus:ring-[var(--ui-border-focus)]"
                 >
-                    <div class="aspect-[16/10] overflow-hidden bg-slate-100">
-                        <img
-                            src="{{ $capa }}"
-                            alt="{{ $item->nome }}"
-                            class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                        >
-                    </div>
 
-                    <div class="p-5">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-                                {{ $item->tipo_label }}
-                            </span>
+                <select
+                    name="tipo"
+                    class="w-full rounded-[var(--ui-radius-control)] border border-[var(--ui-border)] bg-[var(--ui-surface-raised)] px-4 py-3 text-sm text-[var(--ui-text)] outline-none focus:border-[var(--ui-primary)] focus:ring-4 focus:ring-[var(--ui-border-focus)]"
+                >
+                    <option value="todos" @selected($tipo === 'todos')>Museus e teatro</option>
+                    <option value="museu" @selected($tipo === 'museu')>Museus</option>
+                    <option value="teatro" @selected($tipo === 'teatro')>Teatro</option>
+                </select>
 
-                            @if ($item->agendamento_disponivel)
-                                <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                    Agendamento disponível
-                                </span>
-                            @endif
-                        </div>
-
-                        <h3 class="mt-3 text-lg font-semibold text-slate-900">
-                            {{ $item->nome }}
-                        </h3>
-
-                        @if ($item->resumo)
-                            <p class="mt-2 text-sm leading-6 text-slate-600 line-clamp-3">
-                                {{ $item->resumo }}
-                            </p>
-                        @endif
-                    </div>
-                </a>
-            @endforeach
+                <button type="submit" class="site-button-primary">Aplicar</button>
+            </form>
         </div>
-    </div>
-</section>
-@endif
+    </section>
 
-<section class="bg-slate-50">
-    <div class="mx-auto w-full max-w-[1200px] px-4 py-10 sm:px-6 lg:px-8">
-        <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <div>
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900">Todos os espaços</h2>
-                <p class="mt-2 text-sm text-slate-500">
-                    Resultados encontrados: <span class="font-semibold text-slate-800">{{ $espacos->total() }}</span>
-                </p>
+    <section class="site-section" id="espacos-lista">
+        <x-section-head
+            eyebrow="Espaços"
+            title="Agende sua visita"
+            subtitle="Cada página traz informações públicas do espaço, grade semanal e o formulário de solicitação quando o agendamento estiver disponível."
+        />
+
+        @if($cards->isEmpty())
+            <div class="site-empty-state">
+                <p class="site-empty-state-title">Nenhum espaço encontrado</p>
+                <p class="site-empty-state-copy">Tente ajustar a busca ou trocar o tipo para ver outros espaços culturais publicados.</p>
             </div>
-        </div>
+        @else
+            <div class="site-espacos-grid">
+                @foreach($cards as $item)
+                    @php($espaco = $item['model'])
 
-        @if ($espacos->count())
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-                @foreach ($espacos as $espaco)
-                    @php
-                        $capa = $espaco->capa_url ?: optional($espaco->midias->first())->url ?: $fallback;
-                    @endphp
-
-                    <article class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                        <a href="{{ route('site.museus.show', $espaco->slug) }}" class="block aspect-[16/10] bg-slate-100">
-                            <img src="{{ $capa }}" alt="{{ $espaco->nome }}" class="h-full w-full object-cover">
+                    <article class="site-surface site-espacos-card">
+                        <a href="{{ route('site.museus.show', $espaco->slug) }}" class="site-espacos-card-media">
+                            <img src="{{ site_image_url($item['image'], 'card') }}" alt="{{ $espaco->nome }}" class="site-espacos-card-image" loading="lazy" decoding="async">
                         </a>
 
-                        <div class="p-5">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-                                    {{ $espaco->tipo_label }}
-                                </span>
-
-                                @if ($espaco->bairro)
-                                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                                        {{ $espaco->bairro }}
-                                    </span>
-                                @endif
-                            </div>
-
-                            <h3 class="mt-3 text-lg font-semibold text-slate-900">
-                                <a href="{{ route('site.museus.show', $espaco->slug) }}" class="hover:text-sky-700">
-                                    {{ $espaco->nome }}
-                                </a>
-                            </h3>
-
-                            @if ($espaco->resumo)
-                                <p class="mt-2 text-sm leading-6 text-slate-600 line-clamp-3">
-                                    {{ $espaco->resumo }}
-                                </p>
-                            @elseif ($espaco->descricao)
-                                <p class="mt-2 text-sm leading-6 text-slate-600 line-clamp-3">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags((string) $espaco->descricao), 140) }}
-                                </p>
-                            @endif
-
-                            @if ($espaco->horarios->count())
-                                <div class="mt-4 rounded-2xl bg-slate-50 p-3">
-                                    <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-                                        Horários
+                        <div class="site-espacos-card-body">
+                            <div class="site-espacos-card-head">
+                                <div class="site-espacos-card-copy">
+                                    <div class="site-espacos-card-badges">
+                                        <span class="site-badge">{{ $espaco->tipo_label }}</span>
+                                        @if($espaco->agendamento_disponivel)
+                                            <span class="site-filter-chip is-active">Agendamento disponível</span>
+                                        @endif
                                     </div>
 
-                                    <ul class="mt-2 space-y-1 text-sm text-slate-600">
-                                        @foreach ($espaco->horarios->take(3) as $horario)
-                                            <li>
-                                                <span class="font-medium text-slate-800">{{ $horario->dia_label }}:</span>
-                                                {{ $horario->faixa_label }}
-                                            </li>
-                                        @endforeach
-                                    </ul>
+                                    <h3 class="site-espacos-card-title">
+                                        <a href="{{ route('site.museus.show', $espaco->slug) }}">{{ $espaco->nome }}</a>
+                                    </h3>
+
+                                    <div class="site-card-list-meta">
+                                        @if($espaco->bairro)
+                                            <span>{{ $espaco->bairro }}</span>
+                                        @endif
+                                        <span>{{ $espaco->cidade ?: 'Altamira' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if($item['summary'])
+                                <p class="site-card-list-summary">{{ $item['summary'] }}</p>
+                            @endif
+
+                            @if($item['horarios']->isNotEmpty())
+                                <div class="site-espacos-schedule-list">
+                                    @foreach($item['horarios'] as $horario)
+                                        <div class="site-espacos-schedule-item">
+                                            <span class="site-espacos-schedule-day">{{ $horario->dia_label }}</span>
+                                            <span class="site-espacos-schedule-time">{{ $horario->faixa_label }}</span>
+                                        </div>
+                                    @endforeach
                                 </div>
                             @endif
 
-                            <div class="mt-5 flex flex-wrap gap-2">
-                                <a
-                                    href="{{ route('site.museus.show', $espaco->slug) }}"
-                                    class="inline-flex items-center rounded-2xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                                >
-                                    Ver detalhes
-                                </a>
-
-                                @if ($espaco->agendamento_disponivel)
-                                    <a
-                                        href="{{ route('site.museus.agendar', $espaco->slug) }}"
-                                        class="inline-flex items-center rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-                                    >
-                                        Solicitar visita
-                                    </a>
+                            <div class="site-inline-actions site-espacos-card-actions">
+                                <a href="{{ route('site.museus.show', $espaco->slug) }}" class="site-button-secondary">Ver espaço</a>
+                                @if($espaco->agendamento_disponivel)
+                                    <a href="{{ route('site.museus.agendar', $espaco->slug) }}" class="site-button-primary">Agendar visita</a>
                                 @endif
                             </div>
                         </div>
@@ -213,15 +149,15 @@
                 @endforeach
             </div>
 
-            <div class="mt-8">
-                {{ $espacos->links() }}
-            </div>
-        @else
-            <div class="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
-                <h2 class="text-lg font-semibold text-slate-900">Nenhum espaço encontrado</h2>
-                <p class="mt-2 text-sm text-slate-500">Tente ajustar os filtros para ver outros resultados.</p>
-            </div>
+            @if ($espacos->hasPages())
+                <div class="site-surface-soft site-espacos-pagination-shell">
+                    {{ $espacos->links() }}
+                </div>
+            @endif
         @endif
-    </div>
-</section>
+    </section>
+</div>
 @endsection
+
+
+
