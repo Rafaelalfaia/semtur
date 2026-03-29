@@ -13,7 +13,7 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Técnicos"
-    subtitle="Gerencie contas tecnicas com busca rapida e acoes administrativas compatíveis com o shell atual."
+    subtitle="Gerencie contas técnicas com busca rápida e ações administrativas compatíveis com o shell atual."
   >
     <x-slot:actions>
       <a href="{{ route('coordenador.tecnicos.create') }}" class="ui-btn-primary">Novo técnico</a>

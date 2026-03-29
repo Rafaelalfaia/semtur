@@ -1,11 +1,11 @@
 @extends('console.layout')
 
-@section('title', 'Agendamentos de Espacos Culturais')
-@section('page.title', 'Agendamentos de Espacos Culturais')
-@section('topbar.description', 'Acompanhe, distribua e atualize solicitacoes de visita dentro do shell compartilhado do console.')
+@section('title', 'Agendamentos de Espaços Culturais')
+@section('page.title', 'Agendamentos de Espaços Culturais')
+@section('topbar.description', 'Acompanhe, distribua e atualize solicitações de visita dentro do shell compartilhado do console.')
 
 @section('topbar.nav')
-  <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-console-topbar-tab">Espacos culturais</a>
+  <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-console-topbar-tab">Espaços culturais</a>
   <span class="ui-console-topbar-tab is-active">Agendamentos</span>
 @endsection
 
@@ -17,12 +17,12 @@
 
   <x-dashboard.page-header
     title="Agendamentos"
-    subtitle="Acompanhe, distribua e atualize solicitacoes de visita sem quebrar a estrutura do console."
+    subtitle="Acompanhe, distribua e atualize solicitações de visita sem quebrar a estrutura do console."
   >
-    <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-btn-secondary">Voltar aos espacos</a>
+    <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-btn-secondary">Voltar aos espaços</a>
   </x-dashboard.page-header>
 
-  <x-dashboard.section-card title="Filtros" subtitle="Refine por protocolo, visitante, espaco, tecnico, status e periodo" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Filtros" subtitle="Refine por protocolo, visitante, espaço, técnico, status e período" class="ui-coord-dashboard-panel mt-5">
     <form method="GET" class="grid grid-cols-1 gap-4 lg:grid-cols-6">
       <div class="lg:col-span-2">
         <label class="ui-form-label">Busca</label>
@@ -40,7 +40,7 @@
       </div>
 
       <div>
-        <label class="ui-form-label">Espaco</label>
+        <label class="ui-form-label">Espaço</label>
         <select name="espaco_id" class="ui-form-select">
           <option value="">Todos</option>
           @foreach ($espacos as $espaco)
@@ -50,7 +50,7 @@
       </div>
 
       <div>
-        <label class="ui-form-label">Tecnico</label>
+        <label class="ui-form-label">Técnico</label>
         <select name="tecnico_id" class="ui-form-select">
           <option value="">Todos</option>
           @foreach ($tecnicos as $tecnico)
@@ -76,17 +76,17 @@
     </form>
   </x-dashboard.section-card>
 
-  <x-dashboard.section-card title="Lista de agendamentos" subtitle="Acompanhe protocolos, visitante, espaco, data, status e tecnico" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Lista de agendamentos" subtitle="Acompanhe protocolos, visitante, espaço, data, status e técnico" class="ui-coord-dashboard-panel mt-5">
     <div class="ui-table-shell">
       <table class="min-w-full">
         <thead class="ui-table-head">
           <tr>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Protocolo</th>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Visitante</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Espaco</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Espaço</th>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Data</th>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Status</th>
-            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Tecnico</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Técnico</th>
             <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Acao</th>
           </tr>
         </thead>
@@ -119,7 +119,7 @@
                   <span class="ui-badge ui-badge-warning">{{ ucfirst(str_replace('_', ' ', $agendamento->status)) }}</span>
                 @endif
               </td>
-              <td class="px-4 py-4 text-sm text-[var(--ui-text-soft)]">{{ $agendamento->tecnico?->name ?: 'Nao atribuido' }}</td>
+              <td class="px-4 py-4 text-sm text-[var(--ui-text-soft)]">{{ $agendamento->tecnico?->name ?: 'Não atribuído' }}</td>
               <td class="px-4 py-4 text-right">
                 <a href="{{ route('coordenador.espacos-culturais.agendamentos.show', $agendamento) }}" class="ui-btn-secondary">Abrir</a>
               </td>

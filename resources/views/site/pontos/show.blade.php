@@ -10,15 +10,15 @@
     $categorias = collect($ponto->categorias ?? []);
     $categoriaPrincipal = $categorias->first();
     $capaUrl = $ponto->capa_url ?? $ponto->foto_capa_url ?? (optional(collect($ponto->midias ?? [])->firstWhere('tipo', 'image'))->path ? Storage::url(collect($ponto->midias ?? [])->firstWhere('tipo', 'image')->path) : null) ?? theme_asset('hero_image');
-    $pontoCanonical = Route::has('site.ponto') ? route('site.ponto', $ponto->slug ?? $ponto->id) : url()->current();
+    $pontoCanonical = Route::has('site.ponto') ? localized_route('site.ponto', ['ponto' => $ponto->slug ?? $ponto->id]) : url()->current();
     $pontoTitle = $nome.' '.__('ui.category.title_suffix');
     $pontoDescription = \Illuminate\Support\Str::limit(strip_tags($descricao ?: __('ui.point.meta_description')), 160);
     $lat = $ponto->lat ?? $ponto->latitude ?? null;
     $lng = $ponto->lng ?? $ponto->longitude ?? null;
     $pontoSchema = [[
         '@type' => 'BreadcrumbList','@id' => $pontoCanonical.'#breadcrumbs','itemListElement' => array_values(array_filter([
-            ['@type' => 'ListItem','position' => 1,'name' => __('ui.nav.home'),'item' => Route::has('site.home') ? route('site.home') : url('/')],
-            Route::has('site.explorar') ? ['@type' => 'ListItem','position' => 2,'name' => __('ui.nav.explore'),'item' => route('site.explorar')] : null,
+            ['@type' => 'ListItem','position' => 1,'name' => __('ui.nav.home'),'item' => localized_route('site.home')],
+            Route::has('site.explorar') ? ['@type' => 'ListItem','position' => 2,'name' => __('ui.nav.explore'),'item' => localized_route('site.explorar')] : null,
             ['@type' => 'ListItem','position' => 3,'name' => $nome,'item' => $pontoCanonical],
         ])),
     ], array_filter([
@@ -43,8 +43,8 @@
 @section('site.content')
 @php
     $mapsUrl = $ponto->maps_url ?: ((is_numeric($lat) && is_numeric($lng)) ? 'https://www.google.com/maps?q='.(float) $lat.','.(float) $lng : null);
-    $mapHref = Route::has('site.mapa') ? route('site.mapa', array_filter(['focus' => 'ponto:'.($ponto->slug ?: $ponto->id),'lat' => is_numeric($lat) ? (float) $lat : null,'lng' => is_numeric($lng) ? (float) $lng : null,'open' => 1,'categoria' => $categoriaPrincipal?->slug], fn($value) => !is_null($value) && $value !== '')) : '#';
-    $explorarHref = Route::has('site.explorar') ? route('site.explorar', array_filter(['categoria' => $categoriaPrincipal?->slug])) : '#';
+    $mapHref = Route::has('site.mapa') ? localized_route('site.mapa', array_filter(['focus' => 'ponto:'.($ponto->slug ?: $ponto->id),'lat' => is_numeric($lat) ? (float) $lat : null,'lng' => is_numeric($lng) ? (float) $lng : null,'open' => 1,'categoria' => $categoriaPrincipal?->slug], fn($value) => !is_null($value) && $value !== '')) : '#';
+    $explorarHref = Route::has('site.explorar') ? localized_route('site.explorar', array_filter(['categoria' => $categoriaPrincipal?->slug])) : '#';
 
     $galeria = collect($ponto->midias ?? [])->filter(fn($midia) => ($midia->tipo ?? null) === 'image')->sortBy('ordem')->map(function ($midia) use ($nome) {
         $src = $midia->url ?? (!empty($midia->path) ? Storage::url($midia->path) : null);
@@ -53,7 +53,7 @@
 
     $videos = collect($ponto->midias ?? [])->filter(fn($midia) => in_array($midia->tipo ?? null, ['video', 'video_file', 'video_link'], true))->values();
     $empresas = collect($empresasRelacionadas ?? []);
-    $relatedCompanies = $empresas->map(fn($item) => ['title' => $item->nome ?? __('ui.company.name'),'subtitle' => $item->cidade ?? __('ui.common.altamira'),'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 72),'image' => $item->perfil_url ?? $item->capa_url ?? null,'href' => Route::has('site.empresa') ? route('site.empresa', $item->slug ?? $item->id) : '#']);
+    $relatedCompanies = $empresas->map(fn($item) => ['title' => $item->nome ?? __('ui.company.name'),'subtitle' => $item->cidade ?? __('ui.common.altamira'),'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 72),'image' => $item->perfil_url ?? $item->capa_url ?? null,'href' => Route::has('site.empresa') ? localized_route('site.empresa', ['empresa' => $item->slug ?? $item->id]) : '#']);
 
     $localizacao = collect([
         ['label' => __('ui.common.city'), 'value' => $cidade],
@@ -65,9 +65,9 @@
 
 <div class="site-page site-page-shell site-ponto-page">
     @include('site.partials._page_hero', [
-        'backHref' => $explorarHref !== '#' ? $explorarHref : (Route::has('site.home') ? route('site.home') : url('/')),
+        'backHref' => $explorarHref !== '#' ? $explorarHref : (localized_route('site.home')),
         'breadcrumbs' => [
-            ['label' => __('ui.nav.home'), 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => __('ui.nav.home'), 'href' => localized_route('site.home')],
             ['label' => __('ui.nav.explore'), 'href' => $explorarHref !== '#' ? $explorarHref : null],
             ['label' => $nome],
         ],
@@ -91,7 +91,7 @@
                 @if($categorias->isNotEmpty())
                     <div class="site-detail-chip-row">
                         @foreach($categorias as $categoria)
-                            <a href="{{ Route::has('site.explorar') ? route('site.explorar', ['categoria' => $categoria->slug]) : '#' }}" class="site-filter-chip">{{ $categoria->nome }}</a>
+                            <a href="{{ Route::has('site.explorar') ? localized_route('site.explorar', ['categoria' => $categoria->slug]) : '#' }}" class="site-filter-chip">{{ $categoria->nome }}</a>
                         @endforeach
                     </div>
                 @endif
@@ -165,12 +165,9 @@
         </section>
     @endif
 
-    <section class="site-section" x-data="{ canPrev:false, canNext:true, update(){ const el=this.$refs.viewport; if(!el) return; this.canPrev=el.scrollLeft>12; this.canNext=(el.scrollWidth-el.clientWidth-el.scrollLeft)>12; }, move(direction){ const el=this.$refs.viewport; if(!el) return; const step=Math.max(el.clientWidth*0.82,260); el.scrollBy({ left: step * direction, behavior: 'smooth' }); window.setTimeout(() => this.update(), 220); } }" x-init="$nextTick(() => update())">
-        <x-section-head :eyebrow="__('ui.common.connections')" :title="__('ui.point.related_companies')" :subtitle="__('ui.point.related_companies_subtitle')" />
-
-        @if($relatedCompanies->isEmpty())
-            <div class="site-empty-state"><p class="site-empty-state-copy">{{ __('ui.point.related_companies_empty') }}</p></div>
-        @else
+    @if($relatedCompanies->isNotEmpty())
+        <section class="site-section" x-data="{ canPrev:false, canNext:true, update(){ const el=this.$refs.viewport; if(!el) return; this.canPrev=el.scrollLeft>12; this.canNext=(el.scrollWidth-el.clientWidth-el.scrollLeft)>12; }, move(direction){ const el=this.$refs.viewport; if(!el) return; const step=Math.max(el.clientWidth*0.82,260); el.scrollBy({ left: step * direction, behavior: 'smooth' }); window.setTimeout(() => this.update(), 220); } }" x-init="$nextTick(() => update())">
+            <x-section-head :eyebrow="__('ui.common.connections')" :title="__('ui.point.related_companies')" :subtitle="__('ui.point.related_companies_subtitle')" />
             <div class="site-home-carousel-shell site-detail-related-shell">
                 <div class="site-home-carousel-controls" aria-hidden="true">
                     <button type="button" class="site-home-carousel-control" @click="move(-1)" :disabled="!canPrev" :aria-disabled="!canPrev">&larr;</button>
@@ -199,7 +196,7 @@
                     @endforeach
                 </div>
             </div>
-        @endif
-    </section>
+        </section>
+    @endif
 </div>
 @endsection

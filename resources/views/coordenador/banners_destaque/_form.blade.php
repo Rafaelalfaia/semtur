@@ -340,9 +340,10 @@
 <div class="mt-6 flex flex-wrap items-center gap-3">
   <button type="submit" class="ui-btn-primary">Salvar</button>
   <a href="{{ route('coordenador.banners-destaque.index') }}" class="ui-btn-secondary">Cancelar</a>
-  <a href="{{ url('/') }}" target="_blank" class="ui-btn-secondary md:ml-auto">Ver na Home</a>
+  <a href="{{ localized_route('site.home') }}" target="_blank" class="ui-btn-secondary md:ml-auto">Ver na Home</a>
 </div>
 
 @push('scripts')
   @vite('resources/js/simple-previews.js')
 @endpush
+

@@ -1,4 +1,4 @@
-﻿@php
+@php
     $items = collect($experienciasEntrada ?? [])->values();
 @endphp
 

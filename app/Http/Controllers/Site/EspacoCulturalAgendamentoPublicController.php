@@ -35,7 +35,7 @@ class EspacoCulturalAgendamentoPublicController extends Controller
         EspacoCulturalAgendamento::STATUS_EXPIRADO => 'Expirado',
     ];
 
-    public function create(EspacoCultural $espaco)
+    public function create(string $locale, EspacoCultural $espaco)
     {
         $this->ensureBookable($espaco);
 
@@ -52,7 +52,7 @@ class EspacoCulturalAgendamentoPublicController extends Controller
         ]);
     }
 
-    public function store(StoreEspacoCulturalAgendamentoRequest $request, EspacoCultural $espaco)
+    public function store(StoreEspacoCulturalAgendamentoRequest $request, string $locale, EspacoCultural $espaco)
     {
         $this->ensureBookable($espaco);
 
@@ -93,11 +93,11 @@ class EspacoCulturalAgendamentoPublicController extends Controller
         $agendamento->save();
 
         return redirect()
-            ->route('site.museus.agendamentos.show', $agendamento->protocolo)
+            ->to(localized_route('site.museus.agendamentos.show', ['protocolo' => $agendamento->protocolo]))
             ->with('ok', 'Solicitação registrada com sucesso.');
     }
 
-    public function show(string $protocolo)
+    public function show(string $locale, string $protocolo)
     {
         $agendamento = EspacoCulturalAgendamento::query()
             ->with(['espaco', 'horario'])
@@ -111,7 +111,7 @@ class EspacoCulturalAgendamentoPublicController extends Controller
         ]);
     }
 
-    public function whatsapp(string $protocolo)
+    public function whatsapp(string $locale, string $protocolo)
     {
         $agendamento = EspacoCulturalAgendamento::query()
             ->where('protocolo', $protocolo)

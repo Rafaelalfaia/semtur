@@ -12,13 +12,8 @@ class SetLocale
     public function handle(Request $request, Closure $next): Response
     {
         $supported = config('app.supported_locales', []);
-        $fallback = config('app.locale_prefix_fallback', 'pt');
         $routeLocale = $request->route('locale');
-        $sessionLocale = $request->session()->get('locale');
-
-        $preferredLocale = is_string($routeLocale) && isset($supported[$routeLocale])
-            ? $routeLocale
-            : (is_string($sessionLocale) && isset($supported[$sessionLocale]) ? $sessionLocale : $fallback);
+        $preferredLocale = route_locale(null, $request);
 
         if ($request->route()?->parameterNames() && in_array('locale', $request->route()->parameterNames(), true)) {
             if (! filled($routeLocale) && $request->isMethodSafe() && ! $request->expectsJson()) {
@@ -40,7 +35,11 @@ class SetLocale
         $appLocale = data_get($supported, $preferredLocale.'.app_locale', config('app.locale', 'pt_BR'));
 
         app()->setLocale($appLocale);
-        $request->session()->put('locale', $preferredLocale);
+
+        if ($request->hasSession()) {
+            $request->session()->put('locale', $preferredLocale);
+        }
+
         URL::defaults(['locale' => $preferredLocale]);
 
         view()->share('currentLocale', $preferredLocale);

@@ -1,9 +1,9 @@
-﻿@extends('site.layouts.app')
+@extends('site.layouts.app')
 
 @php
     use Illuminate\Support\Facades\Route as R;
 
-    $homeCanonical = R::has('site.home') ? route('site.home') : url('/');
+    $homeCanonical = localized_route('site.home');
     $homeTitle = __('ui.home.title');
     $homeDescription = __('ui.home.description');
     $homeImage = theme_asset('hero_image');
@@ -60,7 +60,7 @@
             'subtitle' => $item->cidade ?? __('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 92),
             'image' => $item->card_image_url ?? $item->capa_url ?? $item->foto_capa_url ?? null,
-            'href' => R::has('site.ponto') ? route('site.ponto', ['ponto' => ($item->slug ?? $item->id)]) : '#',
+            'href' => R::has('site.ponto') ? localized_route('site.ponto', ['ponto' => ($item->slug ?? $item->id)]) : '#',
             'badge' => __('ui.home.point_badge'),
             'cta' => __('ui.common.discover'),
         ]);
@@ -79,13 +79,13 @@
             'title' => $video->titulo,
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $video->descricao), 132),
             'image' => $video->capa_url ?: theme_asset('hero_image'),
-            'href' => R::has('site.videos.show') ? route('site.videos.show', $video->slug) : '#',
+            'href' => R::has('site.videos.show') ? localized_route('site.videos.show', ['slug' => $video->slug]) : '#',
             'embed' => $video->embed_url,
             'meta' => optional($video->published_at)->format('d.m.Y'),
         ];
     });
 
-    $videosIndexHref = R::has('site.videos') ? route('site.videos') : '#';
+    $videosIndexHref = R::has('site.videos') ? localized_route('site.videos') : '#';
 @endphp
 
 <div
@@ -207,7 +207,7 @@
                 'banner' => $bannerIntermediario,
                 'title' => $bannerIntermediario->titulo ?? 'VisitAltamira',
                 'ctaLabel' => $bannerIntermediario->cta_label ?? __('ui.home.banner_cta'),
-                'href' => $bannerIntermediario->cta_url ?? $bannerIntermediario->href ?? (R::has('site.explorar') ? route('site.explorar') : '#'),
+                'href' => $bannerIntermediario->cta_url ?? $bannerIntermediario->href ?? (localized_route('site.explorar')),
                 'heroClass' => 'site-hero-home-editorial-banner',
             ])
         </section>
@@ -217,7 +217,7 @@
         'eyebrow' => __('ui.home.points_eyebrow'),
         'title' => __('ui.home.points_title'),
         'subtitle' => __('ui.home.points_subtitle'),
-        'href' => R::has('site.explorar') ? route('site.explorar') : '#',
+        'href' => localized_route('site.explorar'),
         'items' => $pointCards,
         'layout' => 'carousel',
         'cardVariant' => 'compact',

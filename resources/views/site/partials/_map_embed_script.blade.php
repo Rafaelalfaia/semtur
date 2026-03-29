@@ -25,6 +25,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     waitLeaflet().then(() => {
+        const i18nConfig = (config.i18n && typeof config.i18n === 'object') ? config.i18n : {};
+        const i18n = {
+            altamira: i18nConfig.altamira || 'Altamira',
+            company: i18nConfig.company || 'Empresa',
+            point: i18nConfig.point || 'Ponto turístico',
+            detail: i18nConfig.detail || 'Detalhe',
+            route: i18nConfig.route || 'Rota',
+            focus: i18nConfig.focus || 'Focar',
+            all: i18nConfig.all || 'Todos',
+            itemName: i18nConfig.itemName || 'Item turístico',
+            helperWithRoute: i18nConfig.helperWithRoute || 'Foque, abra ou siga a rota.',
+            helperWithoutRoute: i18nConfig.helperWithoutRoute || 'Foque no mapa ou abra o detalhe.',
+            emptyTitle: i18nConfig.emptyTitle || 'Nada apareceu nesta área',
+            emptyCopy: i18nConfig.emptyCopy || 'Mova o mapa, limpe a busca ou troque de categoria para continuar explorando.',
+            emptyStatus: i18nConfig.emptyStatus || 'Nenhum local publicado nesta visualização.',
+        };
         const routeToken = config.routeToken || '__TOKEN__';
         const empresaPatterns = Array.isArray(config.empresaPatterns) ? config.empresaPatterns : [];
         const pontoPatterns = Array.isArray(config.pontoPatterns) ? config.pontoPatterns : [];
@@ -571,3 +587,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+

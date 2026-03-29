@@ -14,10 +14,10 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Editar evento"
-    subtitle="Atualize dados, imagens e status editorial do evento sem sair do fluxo padrao do console."
+    subtitle="Atualize dados, imagens e status editorial do evento sem sair do fluxo padrão do console."
   >
     <div class="flex flex-wrap gap-2">
-      <a class="ui-btn-secondary" href="{{ route('coordenador.eventos.edicoes.index', $evento) }}">Gerenciar edicoes</a>
+      <a class="ui-btn-secondary" href="{{ route('coordenador.eventos.edicoes.index', $evento) }}">Gerenciar edições</a>
       <a class="ui-btn-secondary" href="{{ route('coordenador.eventos.index') }}">Voltar</a>
     </div>
   </x-dashboard.page-header>

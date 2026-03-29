@@ -44,7 +44,7 @@ class RoteiroController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(string $locale, string $slug)
     {
         $roteiro = Roteiro::publicados()
             ->where('slug', $slug)

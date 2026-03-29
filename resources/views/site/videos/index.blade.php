@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', __('ui.videos.title') . ' � VisitAltamira')
+@section('title', __('ui.videos.title') . ' • VisitAltamira')
 @section('meta.description', __('ui.videos.meta_description'))
 @section('meta.image', asset('imagens/altamira.jpg'))
 
@@ -34,7 +34,7 @@
                             {{ __('ui.videos.explore_videos') }}
                         </a>
 
-                        <a href="{{ route('site.explorar') }}" class="inline-flex items-center rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15">
+                        <a href="{{ localized_route('site.explorar') }}" class="inline-flex items-center rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15">
                             {{ __('ui.videos.view_more_options') }}
                         </a>
                     </div>
@@ -79,7 +79,7 @@
 
                     <div class="flex flex-wrap gap-2 pt-2">
                         <button type="submit" class="inline-flex items-center rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-cyan-500">{{ __('ui.videos.apply_filters') }}</button>
-                        <a href="{{ route('site.videos') }}" class="inline-flex items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10">{{ __('ui.common.clear') }}</a>
+                        <a href="{{ localized_route('site.videos') }}" class="inline-flex items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10">{{ __('ui.common.clear') }}</a>
                     </div>
                 </form>
             </aside>
@@ -114,7 +114,7 @@
                                     <h3 class="text-lg font-semibold text-slate-100">{{ $video->titulo }}</h3>
                                     <p class="mt-3 text-sm leading-7 text-slate-300">{{ Str::limit(strip_tags((string) $video->descricao), 140) }}</p>
                                     <div class="mt-5 flex flex-wrap gap-2">
-                                        <a href="{{ route('site.videos.show', $video->slug) }}" class="inline-flex items-center rounded-2xl bg-cyan-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-cyan-500">{{ __('ui.videos.open_video') }}</a>
+                                        <a href="{{ localized_route('site.videos.show', ['slug' => $video->slug]) }}" class="inline-flex items-center rounded-2xl bg-cyan-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-cyan-500">{{ __('ui.videos.open_video') }}</a>
                                         <a href="{{ $video->link_acesso }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/10">{{ __('ui.videos.google_drive') }}</a>
                                     </div>
                                 </div>

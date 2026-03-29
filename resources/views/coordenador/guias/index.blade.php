@@ -2,7 +2,7 @@
 
 @section('title', 'Guias e Revistas')
 @section('page.title', 'Guias e Revistas')
-@section('topbar.description', 'Gerencie materiais institucionais com filtros, status editorial e o mesmo padrao visual do console.')
+@section('topbar.description', 'Gerencie materiais institucionais com filtros, status editorial e o mesmo padrão visual do console.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Guias e Revistas</span>

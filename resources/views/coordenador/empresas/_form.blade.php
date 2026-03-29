@@ -188,7 +188,7 @@
           <span>{{ $cat->nome }}</span>
         </label>
       @empty
-        <div class="ui-company-category-empty">Nenhuma categoria disponivel no momento.</div>
+        <div class="ui-company-category-empty">Nenhuma categoria disponível no momento.</div>
       @endforelse
     </div>
     @error('categorias')<p class="ui-form-error">{{ $message }}</p>@enderror

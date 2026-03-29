@@ -3,10 +3,10 @@
     use Illuminate\Support\Facades\Route as R;
 
     $routeUrl = function (string $name, string $fallback = '#') {
-        return R::has($name) ? route($name) : $fallback;
+        return R::has($name) ? localized_route($name) : $fallback;
     };
 
-    $perfilHref = R::has('login') ? route('login') : url('/login');
+    $perfilHref = R::has('login') ? localized_route('login') : localized_route('site.home');
     $perfilLabel = __('ui.nav.login');
 
     $u = Auth::user();
@@ -19,7 +19,7 @@
             } elseif ($u->hasRole('Coordenador') && R::has('coordenador.dashboard')) {
                 $perfilHref = route('coordenador.dashboard');
             } elseif ($u->hasRole('Cidadao') && R::has('site.perfil.index')) {
-                $perfilHref = route('site.perfil.index');
+                $perfilHref = localized_route('site.perfil.index');
             } elseif (R::has('dashboard')) {
                 $perfilHref = route('dashboard');
             }
@@ -41,7 +41,7 @@
         [
             'key' => 'home',
             'label' => __('ui.nav.home'),
-            'href' => $routeUrl('site.home', url('/')),
+            'href' => $routeUrl('site.home', localized_route('site.home')),
             'match' => ['site.home'],
         ],
         [

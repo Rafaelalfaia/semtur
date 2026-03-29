@@ -1,7 +1,7 @@
 @extends('console.layout')
 @section('title','Nova categoria')
 @section('page.title','Nova categoria')
-@section('topbar.description', 'Cadastre uma categoria com o mesmo padrao estrutural, visual e de modos do console.')
+@section('topbar.description', 'Cadastre uma categoria com o mesmo padrão estrutural, visual e de modos do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.categorias.index') }}" class="ui-console-topbar-tab">Categorias</a>

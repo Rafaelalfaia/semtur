@@ -31,9 +31,10 @@ class EventoPublicController extends Controller
     }
 
     // /eventos/{slug}/{ano?}
-    public function show(string $slug, ?int $ano = null)
+    public function show(string $locale, string $slug, ?string $ano = null)
     {
         $evento = Evento::where('slug',$slug)->firstOrFail();
+        $ano = filled($ano) ? (int) $ano : null;
 
         // edição escolhida (ou última publicada)
         $edicao = $evento->edicoes()

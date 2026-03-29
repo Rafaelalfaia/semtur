@@ -5,7 +5,7 @@
 <div class="min-h-dvh bg-white text-slate-900">
   <header class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-100">
     <div class="mx-auto max-w-md px-4 py-3 flex items-center gap-3">
-      <a href="{{ route('site.perfil.index') }}" class="h-10 w-10 rounded-full bg-slate-100 grid place-items-center">
+      <a href="{{ localized_route('site.perfil.index') }}" class="h-10 w-10 rounded-full bg-slate-100 grid place-items-center">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
       </a>
       <h1 class="text-lg font-semibold">Redes Sociais</h1>
@@ -19,7 +19,7 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('site.perfil.redes.atualizar') }}" class="space-y-4">
+    <form method="POST" action="{{ localized_route('site.perfil.redes.atualizar') }}" class="space-y-4">
       @csrf @method('PUT')
 
       <div>

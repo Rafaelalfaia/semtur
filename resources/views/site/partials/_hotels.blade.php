@@ -3,13 +3,13 @@
   <div class="mx-auto max-w-7xl px-4 py-10">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-semibold">Hotéis</h2>
-      <a href="{{ route('site.explorar', ['tipo' => 'hoteis']) }}" class="text-emerald-700 hover:underline">Ver todos</a>
+      <a href="{{ localized_route('site.explorar', ['tipo' => 'hoteis']) }}" class="text-emerald-700 hover:underline">Ver todos</a>
     </div>
 
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
       @foreach($hoteis as $h)
         <article class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow">
-          <a href="{{ route('site.explorar', ['empresa' => $h->slug]) }}" class="block">
+          <a href="{{ localized_route('site.explorar', ['empresa' => $h->slug]) }}" class="block">
             <div class="aspect-[4/3] bg-slate-100 dark:bg-slate-800 relative">
               @if($h->foto_capa_path)
                 <img src="{{ Storage::url($h->foto_capa_path) }}" class="w-full h-full object-cover" alt="{{ $h->nome }}">

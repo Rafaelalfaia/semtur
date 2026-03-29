@@ -1,4 +1,4 @@
-﻿@php $items = collect($instagram ?? [])->values(); @endphp
+@php $items = collect($instagram ?? [])->values(); @endphp
 
 @if($items->isNotEmpty())
     <section class="site-section site-home-instagram-section" x-data="{

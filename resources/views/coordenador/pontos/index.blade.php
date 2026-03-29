@@ -1,8 +1,8 @@
 @extends('console.layout')
 
-@section('title', 'Pontos Turisticos')
-@section('page.title', 'Pontos Turisticos')
-@section('topbar.description', 'Gerencie pontos turisticos com filtros, status editoriais e acoes de recomendacao sem sair do shell principal.')
+@section('title', 'Pontos Turísticos')
+@section('page.title', 'Pontos Turísticos')
+@section('topbar.description', 'Gerencie pontos turísticos com filtros, status editoriais e ações de recomendação sem sair do shell principal.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Listagem</span>
@@ -25,8 +25,8 @@
 
 <div class="ui-console-page">
   <x-dashboard.page-header
-    title="Pontos turisticos"
-    subtitle="Listagem editorial com filtros, status e acoes rapidas em um padrao compativel com o console."
+    title="Pontos turísticos"
+    subtitle="Listagem editorial com filtros, status e ações rápidas em um padrão compatível com o console."
   >
     <x-slot:actions>
       @if($canCreate)
@@ -61,7 +61,7 @@
       </form>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card id="pontos-lista" title="Lista de pontos" subtitle="Cards compactos com leitura visual e acoes">
+    <x-dashboard.section-card id="pontos-lista" title="Lista de pontos" subtitle="Cards compactos com leitura visual e ações">
       @if(($pontos ?? collect())->count() === 0)
         <div class="ui-dashboard-empty">
           {{ mb_strlen(trim((string) ($busca ?? ''))) < 3

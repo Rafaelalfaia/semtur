@@ -123,7 +123,7 @@
                 $resourceLabel = [
                     'atrativos' => 'Atrativos',
                     'edicoes' => 'Edições',
-                    'midias' => 'Midias',
+                    'midias' => 'Mídias',
                     'cache' => 'Cache',
                 ];
 

@@ -26,16 +26,16 @@
 
     <div class="relative mx-auto max-w-[1200px] px-4 pb-12 pt-8 sm:px-6 lg:px-8 lg:pb-16 lg:pt-10">
         <a
-            href="{{ route('site.rota_do_cacau.index') }}"
+            href="{{ localized_route('site.rota_do_cacau.index') }}"
             class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/15"
         >
             ← {{ __('ui.common.back_to_route') }}
         </a>
 
         <div class="mt-5 text-sm text-white/70">
-            <a href="{{ route('site.home') }}" class="transition hover:text-white">Início</a>
+            <a href="{{ localized_route('site.home') }}" class="transition hover:text-white">Início</a>
             <span class="mx-2">/</span>
-            <a href="{{ route('site.rota_do_cacau.index') }}" class="transition hover:text-white">Rota do Cacau</a>
+            <a href="{{ localized_route('site.rota_do_cacau.index') }}" class="transition hover:text-white">Rota do Cacau</a>
             <span class="mx-2">/</span>
             <span>{{ $edicao->titulo }}</span>
         </div>
@@ -287,7 +287,7 @@
                         <div class="mt-5 space-y-4">
                             @foreach($outrasEdicoes as $item)
                                 <a
-                                    href="{{ route('site.rota_do_cacau.show', $item->slug) }}"
+                                    href="{{ localized_route('site.rota_do_cacau.show', ['slug' => $item->slug]) }}"
                                     class="block rounded-[24px] border border-slate-200 bg-slate-50 p-4 transition hover:border-[#d8cfbf] hover:bg-white"
                                 >
                                     <div class="text-xs font-semibold uppercase tracking-[0.16em] text-[#7b5a2c]">{{ $item->ano }}</div>

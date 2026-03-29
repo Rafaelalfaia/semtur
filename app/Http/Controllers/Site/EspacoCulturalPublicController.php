@@ -62,7 +62,7 @@ class EspacoCulturalPublicController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(string $locale, string $slug)
     {
         $espaco = EspacoCultural::query()
             ->with([

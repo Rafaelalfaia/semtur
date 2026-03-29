@@ -1,13 +1,13 @@
 @extends('site.layouts.app')
 
 @php
-    $canonical = route('site.rota_do_cacau.index');
+    $canonical = localized_route('site.rota_do_cacau.index');
     $title = $rota?->titulo ?: 'Rota do Cacau';
-    $description = \Illuminate\Support\Str::limit(strip_tags((string) ($rota?->descricao ?: 'Conheça a Rota do Cacau em Altamira, com edições publicadas, galeria, vídeos e apoiadores de cada edição.')), 160);
+    $description = \Illuminate\Support\Str::limit(strip_tags((string) ($rota?->descricao ?: 'ConheÃ§a a Rota do Cacau em Altamira, com ediÃ§Ãµes publicadas, galeria, vÃ­deos e apoiadores de cada ediÃ§Ã£o.')), 160);
     $image = $rota?->foto_capa_url ?: ($rota?->foto_perfil_url ?: asset('imagens/altamira.jpg'));
 @endphp
 
-@section('title', $title.' • Visit Altamira')
+@section('title', $title.' â€¢ Visit Altamira')
 @section('meta.description', $description)
 @section('meta.image', $image)
 @section('meta.canonical', $canonical)
@@ -19,27 +19,27 @@
     use Illuminate\Support\Str;
 
     $heroMeta = $rota ? array_filter([
-        ($edicoes->count() ?? 0) ? (($edicoes->count() ?? 0).' edições') : null,
+        ($edicoes->count() ?? 0) ? (($edicoes->count() ?? 0).' ediÃ§Ãµes') : null,
         ($edicoes->sum('fotos_count') ?? 0) ? ($edicoes->sum('fotos_count').' fotos') : null,
-        ($edicoes->sum('videos_count') ?? 0) ? ($edicoes->sum('videos_count').' vídeos') : null,
+        ($edicoes->sum('videos_count') ?? 0) ? ($edicoes->sum('videos_count').' vÃ­deos') : null,
     ]) : [];
 @endphp
 
 <div class="site-page site-page-shell site-rota-page site-jogos-page">
     @include('site.partials._page_hero', [
-        'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
+        'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'InÃ­cio', 'href' => localized_route('site.home')],
             ['label' => 'Rota do Cacau'],
         ],
         'badge' => 'Rota do Cacau',
         'title' => $title,
-        'subtitle' => $rota?->descricao ? Str::limit(strip_tags($rota->descricao), 180) : 'Conteúdo oficial publicado a partir do coordenador, com edições, mídia e parceiros.',
+        'subtitle' => $rota?->descricao ? Str::limit(strip_tags($rota->descricao), 180) : 'ConteÃºdo oficial publicado a partir do coordenador, com ediÃ§Ãµes, mÃ­dia e parceiros.',
         'meta' => $heroMeta,
-        'primaryActionLabel' => $edicaoDestaque ? 'Ver edições' : (Route::has('site.home') ? __('ui.common.back_to_home') : null),
-        'primaryActionHref' => $edicaoDestaque ? '#edicoes-rota' : (Route::has('site.home') ? route('site.home') : null),
+        'primaryActionLabel' => $edicaoDestaque ? 'Ver ediÃ§Ãµes' : (Route::has('site.home') ? __('ui.common.back_to_home') : null),
+        'primaryActionHref' => $edicaoDestaque ? '#edicoes-rota' : (Route::has('site.home') ? localized_route('site.home') : null),
         'secondaryActionLabel' => Route::has('site.explorar') ? 'Explorar cidade' : null,
-        'secondaryActionHref' => Route::has('site.explorar') ? route('site.explorar') : null,
+        'secondaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
         'image' => $image,
         'imageAlt' => $title,
         'compact' => true,
@@ -48,8 +48,8 @@
     @if(!$rota)
         <section class="site-section">
             <div class="site-empty-state">
-                <h2 class="site-empty-state-title">Ainda não há conteúdo publicado</h2>
-                <p class="site-empty-state-copy">A Rota do Cacau vai aparecer aqui assim que o coordenador publicar o cadastro principal e as edições.</p>
+                <h2 class="site-empty-state-title">Ainda nÃ£o hÃ¡ conteÃºdo publicado</h2>
+                <p class="site-empty-state-copy">A Rota do Cacau vai aparecer aqui assim que o coordenador publicar o cadastro principal e as ediÃ§Ãµes.</p>
             </div>
         </section>
     @else
@@ -58,7 +58,7 @@
                 <div class="site-detail-profile">
                     <img src="{{ site_image_url($rota->foto_perfil_url ?: theme_asset('logo'), 'avatar') }}" alt="{{ $title }}" class="site-detail-avatar" loading="lazy" decoding="async">
                     <div>
-                        <x-section-head eyebrow="Sobre" title="Sobre a Rota do Cacau" subtitle="Tradição produtiva, território e contexto da cadeia do cacau em uma leitura pública mais clara e direta." />
+                        <x-section-head eyebrow="Sobre" title="Sobre a Rota do Cacau" subtitle="TradiÃ§Ã£o produtiva, territÃ³rio e contexto da cadeia do cacau em uma leitura pÃºblica mais clara e direta." />
                     </div>
                 </div>
 
@@ -70,7 +70,7 @@
 
         <section class="site-section">
             <section class="site-surface site-content-block">
-                <x-section-head eyebrow="Território" title="Altamira e a força do cacau na região" subtitle="Altamira é o coração desse circuito, com forte presença produtiva em áreas como Assurini, Brasil Novo e Medicilândia." />
+                <x-section-head eyebrow="TerritÃ³rio" title="Altamira e a forÃ§a do cacau na regiÃ£o" subtitle="Altamira Ã© o coraÃ§Ã£o desse circuito, com forte presenÃ§a produtiva em Ã¡reas como Assurini, Brasil Novo e MedicilÃ¢ndia." />
             </section>
         </section>
 
@@ -78,8 +78,8 @@
             <section class="site-section" id="edicoes-rota">
                 <x-section-head
                     eyebrow="Rota do Cacau"
-                    title="Edições publicadas"
-                    subtitle="A Rota do Cacau conecta Altamira e outros polos da região em vivências, memória e experiências ligadas à produção cacaueira."
+                    title="EdiÃ§Ãµes publicadas"
+                    subtitle="A Rota do Cacau conecta Altamira e outros polos da regiÃ£o em vivÃªncias, memÃ³ria e experiÃªncias ligadas Ã  produÃ§Ã£o cacaueira."
                 />
 
                 <div class="site-jogos-editions">
@@ -105,8 +105,8 @@
                                     $media->push([
                                         'type' => 'video',
                                         'src' => $video->embed_url_resolvida,
-                                        'alt' => $video->titulo ?: 'Vídeo da edição',
-                                        'title' => $video->titulo ?: 'Vídeo da edição',
+                                        'alt' => $video->titulo ?: 'VÃ­deo da ediÃ§Ã£o',
+                                        'title' => $video->titulo ?: 'VÃ­deo da ediÃ§Ã£o',
                                     ]);
                                 }
                             }
@@ -160,7 +160,7 @@
 
                                 <div class="site-jogos-edition-stats">
                                     <span class="site-page-hero-meta-item">{{ $edicao->fotos_count }} fotos</span>
-                                    <span class="site-page-hero-meta-item">{{ $edicao->videos_count }} vídeos</span>
+                                    <span class="site-page-hero-meta-item">{{ $edicao->videos_count }} vÃ­deos</span>
                                     <span class="site-page-hero-meta-item">{{ $edicao->patrocinadores_count }} parceiros</span>
                                 </div>
 
@@ -185,7 +185,7 @@
 
                                 @if($videos->isNotEmpty())
                                     <div class="site-jogos-inline-block">
-                                        <div class="site-jogos-inline-label">Vídeos</div>
+                                        <div class="site-jogos-inline-label">VÃ­deos</div>
                                         <div class="site-jogos-video-links">
                                             @foreach($videos as $videoIndex => $video)
                                                 @php
@@ -194,10 +194,10 @@
                                                 @if($video->embed_url_resolvida)
                                                     <button type="button" class="site-jogos-video-card" @click="show({{ $videoMediaIndex }})">
                                                         <span class="site-jogos-video-icon" aria-hidden="true">Play</span>
-                                                        <span class="site-jogos-video-card-title">{{ Str::limit($video->titulo ?: 'Assistir vídeo', 42) }}</span>
+                                                        <span class="site-jogos-video-card-title">{{ Str::limit($video->titulo ?: 'Assistir vÃ­deo', 42) }}</span>
                                                     </button>
                                                 @else
-                                                    <span class="site-jogos-video-text">{{ Str::limit($video->titulo ?: 'Vídeo', 42) }}</span>
+                                                    <span class="site-jogos-video-text">{{ Str::limit($video->titulo ?: 'VÃ­deo', 42) }}</span>
                                                 @endif
                                             @endforeach
                                         </div>
@@ -234,8 +234,8 @@
 
                             <div x-show="open" x-cloak class="site-lightbox" @click.self="close()" x-transition.opacity>
                                 <div class="site-lightbox-frame site-jogos-lightbox-frame">
-                                    <button type="button" class="site-lightbox-close" @click="close()" aria-label="Fechar mídia">&times;</button>
-                                    <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="Mídia anterior">&#8249;</button>
+                                    <button type="button" class="site-lightbox-close" @click="close()" aria-label="Fechar mÃ­dia">&times;</button>
+                                    <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="MÃ­dia anterior">&#8249;</button>
 
                                     <template x-if="current()?.type === 'photo'">
                                         <img :src="current()?.src" :alt="current()?.alt || ''" class="site-lightbox-image">
@@ -245,14 +245,14 @@
                                         <iframe
                                             class="site-jogos-lightbox-embed"
                                             :src="current()?.src"
-                                            :title="current()?.title || 'Vídeo da edição'"
+                                            :title="current()?.title || 'VÃ­deo da ediÃ§Ã£o'"
                                             loading="lazy"
                                             allow="autoplay; encrypted-media; picture-in-picture"
                                             allowfullscreen
                                         ></iframe>
                                     </template>
 
-                                    <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="Próxima mídia">&#8250;</button>
+                                    <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="PrÃ³xima mÃ­dia">&#8250;</button>
                                 </div>
                             </div>
                         </article>
@@ -263,6 +263,4 @@
     @endif
 </div>
 @endsection
-
-
 

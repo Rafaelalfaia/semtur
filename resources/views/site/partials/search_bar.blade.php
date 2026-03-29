@@ -1,7 +1,11 @@
-@props(['action' => url('/explorar'), 'q' => ''])
+@props(['action' => null, 'q' => ''])
+
+@php
+    $searchAction = $action ?: localized_route('site.explorar');
+@endphp
 
 <div class="pointer-events-none absolute left-0 right-0 top-4 md:top-6 z-30 flex justify-center px-4">
-  <form x-ref="form" method="GET" action="{{ $action }}"
+  <form x-ref="form" method="GET" action="{{ $searchAction }}"
         class="pointer-events-auto w-full max-w-md glass rounded-full px-3 py-2 flex items-center gap-2">
     <svg aria-hidden="true" class="w-5 h-5 text-slate-500" viewBox="0 0 24 24" fill="none">
       <path d="M21 21l-3.8-3.8m.8-5.2a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"

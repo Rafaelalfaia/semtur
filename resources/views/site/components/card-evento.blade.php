@@ -1,6 +1,6 @@
 @props(['evento','edicao'])
 
-<a href="{{ route('eventos.show', [$evento->slug, $edicao?->ano]) }}"
+<a href="{{ localized_route('eventos.show', ['slug' => $evento->slug, 'ano' => $edicao?->ano]) }}"
    class="block rounded-2xl bg-white shadow-sm hover:shadow-md transition overflow-hidden">
 
   <div class="relative h-36 w-full">

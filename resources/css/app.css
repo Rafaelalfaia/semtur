@@ -11,7 +11,7 @@
     height: clamp(420px, 62vh, 720px);
 }
 
-/* UtilitÃƒÂ¡rio para respeitar ÃƒÂ¡reas seguras (notch) quando precisar */
+/* Utilitario para respeitar areas seguras (notch) quando precisar */
 .safe {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
@@ -19,7 +19,7 @@
     padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* ---------- Viewport robusto (sem Ã¢â‚¬Å“buraco brancoÃ¢â‚¬Â no mobile) ---------- */
+/* ---------- Viewport robusto (sem buraco branco no mobile) ---------- */
 html,
 body {
     height: 100%;
@@ -5812,8 +5812,8 @@ body {
 
 /* ===================================================================== */
 /*  Banner Destaque: Cropper sem UI + imagem preenchendo o frame         */
-/*  (ESCOPADO aos previews para nÃƒÂ£o afetar outros usos do Cropper)       */
-/*  -> deixe ESTE BLOCO por ÃƒÂºltimo no app.css                             */
+/*  (ESCOPADO aos previews para nao afetar outros usos do Cropper)       */
+/*  -> deixe ESTE BLOCO por ultimo no app.css                             */
 /* ===================================================================== */
 /* ==== Banner Destaque: Cropper sem UI + imagem preenchendo o frame ==== */
 /* ==== Banner Destaque: frame fill + sem UI do cropper ==== */
@@ -9811,7 +9811,7 @@ body {
         }
     }
 
-    /* === HOME MAPA: altura controlada sem travar interaÃƒÂ§ÃƒÂ£o === */
+    /* === HOME MAPA: altura controlada sem travar interacao === */
     .site-home-map-viewport--compact {
         max-height: min(58svh, 460px);
     }

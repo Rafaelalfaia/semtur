@@ -54,7 +54,7 @@
         <a href="#" class="rounded-lg bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Revisar pendências</a>
         <a href="#" class="rounded-lg bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Marcar como destaque</a>
         <a href="#" class="rounded-lg bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Relatórios rápidos</a>
-        <a href="#" class="rounded-lg bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Configurar mapa</a>
+        <a href="#" class="rounded-lg bg-white/5 px-4 py-3 text-sm hover:bg-white/10">Configurar o mapa</a>
       </div>
 
       <div class="mt-6 text-xs text-slate-400">

@@ -61,7 +61,7 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/');
+        return redirect()->to(localized_route('site.home'));
     }
 
     protected function redirectByRole(): string
@@ -73,7 +73,7 @@ class AuthenticatedSessionController extends Controller
             if ($user->hasRole('Admin'))        return route('admin.dashboard');
             if ($user->hasRole('Coordenador'))  return route('coordenador.dashboard');
             if ($user->hasRole('Tecnico'))      return route('tecnico.dashboard');
-            if ($user->hasRole('Cidadao'))      return route('site.home');
+            if ($user->hasRole('Cidadao'))      return localized_route('site.home');
         }
 
         // Fallbacks (se não usar Spatie)
@@ -82,7 +82,7 @@ class AuthenticatedSessionController extends Controller
                 'Admin'       => route('admin.dashboard'),
                 'Coordenador' => route('coordenador.dashboard'),
                 'Tecnico'     => route('tecnico.dashboard'),
-                'Cidadao'     => route('site.home'),
+                'Cidadao'     => localized_route('site.home'),
                 default       => route('dashboard'), // genérico, se existir
             };
         }

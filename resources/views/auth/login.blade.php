@@ -58,7 +58,7 @@
                     </div>
                 @endif
 
-                <a href="{{ route('google.redirect') }}" class="ui-auth-google" aria-label="{{ __('ui.auth.google_login') }}">
+                <a href="{{ route('google.redirect.localized', ['locale' => route_locale()]) }}" class="ui-auth-google" aria-label="{{ __('ui.auth.google_login') }}">
                     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                         <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.827 31.659 29.333 35 24 35c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.156 7.961 3.039l5.657-5.657C34.758 5.119 29.651 3 24 3 12.955 3 4 11.955 4 23s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.651-.389-3.917z"/>
                         <path fill="#FF3D00" d="M6.306 14.691l6.571 4.815C14.531 16.047 18.951 13 24 13c3.059 0 5.842 1.156 7.961 3.039l5.657-5.657C34.758 5.119 29.651 3 24 3 16.318 3 9.656 7.337 6.306 14.691z"/>

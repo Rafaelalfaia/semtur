@@ -1,7 +1,12 @@
-@extends('layouts.app')
-{{-- Se no teu projeto o layout interno for console.layout, troque só esta linha. --}}
+@extends('console.layout')
 
 @section('title', 'Onde ficar')
+@section('page.title', 'Onde ficar')
+@section('topbar.description', 'Gerencie a página editorial de hospedagem com o mesmo shell compartilhado do console.')
+
+@section('topbar.nav')
+  <span class="ui-console-topbar-tab is-active">Onde ficar</span>
+@endsection
 
 @section('content')
 @php
@@ -32,7 +37,7 @@
 @endphp
 
 <div
-    class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8"
+    class="ui-console-page"
     x-data="{
         heroPreview: @js($heroAtual),
         empresasDisponiveis: @js($empresasDisponiveis),
@@ -66,34 +71,14 @@
     }"
 >
     <div class="space-y-6">
-        <div class="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:flex-row lg:items-start lg:justify-between">
-            <div class="space-y-2">
-                <div class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                    Curadoria de hospedagem
-                </div>
-
-                <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-                    Onde ficar
-                </h1>
-
-                <p class="max-w-3xl text-sm leading-7 text-slate-600">
-                    Aqui você monta a página pública de estadia do site, define os textos editoriais,
-                    a imagem principal e seleciona manualmente as empresas que devem aparecer em
-                    <span class="font-medium text-slate-900">/onde-ficar</span>.
-                </p>
-            </div>
-
-            <div class="flex flex-wrap gap-3">
-                <a
-                    href="{{ $previewPublico }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                >
-                    Ver página pública
-                </a>
-            </div>
-        </div>
+        <x-dashboard.page-header
+            title="Onde ficar"
+            subtitle="Defina os textos editoriais, a imagem principal e as empresas que devem aparecer em /onde-ficar."
+        >
+            <a href="{{ $previewPublico }}" target="_blank" rel="noopener noreferrer" class="ui-btn-secondary">
+                Ver página pública
+            </a>
+        </x-dashboard.page-header>
 
         @if(session('ok'))
             <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
@@ -116,7 +101,7 @@
             action="{{ route('coordenador.onde_ficar.update') }}"
             method="POST"
             enctype="multipart/form-data"
-            class="space-y-6"
+            class="mt-5 space-y-6"
         >
             @csrf
             @method('PUT')

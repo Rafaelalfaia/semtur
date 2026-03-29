@@ -10,7 +10,7 @@ class EmpresaController extends Controller
     /**
      * Mostra o detalhe da empresa (apenas 'publicado'), aceitando slug ou id.
      */
-    public function show(string $empresa)
+    public function show(string $locale, string $empresa)
     {
         $query = Empresa::query()
             ->where('status', 'publicado')

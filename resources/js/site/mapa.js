@@ -1,4 +1,11 @@
 window.MapaPage = function () {
+    const currentLocale = (() => {
+        const segment = window.location.pathname.split("/").filter(Boolean)[0] || "";
+        return ["pt", "en", "es"].includes(segment) ? segment : "pt";
+    })();
+
+    const localizedPath = (base, token) => `/${currentLocale}${base}/${token}`;
+
     return {
         map: null,
 
@@ -23,13 +30,13 @@ window.MapaPage = function () {
 
                 const slugOrId = m.slug || m.id;
                 const href = m.type === "empresa"
-                    ? `/empresa/${slugOrId}`
-                    : `/ponto/${slugOrId}`;
+                    ? localizedPath("/empresa", slugOrId)
+                    : localizedPath("/ponto", slugOrId);
 
                 L.marker([m.lat, m.lng])
                     .addTo(this.map)
                     .bindPopup(
-                        `<a href="${href}">${m.nome || "Sem título"}</a>`
+                        `<a href="${href}">${m.nome || "Sem titulo"}</a>`
                     );
 
                 bounds.push([m.lat, m.lng]);

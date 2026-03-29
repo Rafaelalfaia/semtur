@@ -44,7 +44,7 @@
     <div class="ui-profile-layout mt-5">
       <x-dashboard.section-card
         title="Identidade da conta"
-        subtitle="Foto institucional e referencia visual da sua conta"
+        subtitle="Foto institucional e referência visual da sua conta"
         class="ui-profile-avatar-card"
       >
         <div class="ui-profile-avatar-shell">
@@ -182,3 +182,4 @@
     })();
   </script>
 @endsection
+

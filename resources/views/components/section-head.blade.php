@@ -1,4 +1,4 @@
-﻿@props([
+@props([
     'title',
     'subtitle' => null,
     'href' => null,

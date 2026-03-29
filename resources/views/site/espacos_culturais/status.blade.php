@@ -1,7 +1,7 @@
 @extends('site.layouts.app')
 
-@section('title', 'Status da solicita��o � ' . $agendamento->protocolo)
-@section('meta.description', 'Acompanhe o status da solicita��o de visita ' . $agendamento->protocolo . '.')
+@section('title', __('ui.space_booking_status.title_prefix') . ' • ' . $agendamento->protocolo)
+@section('meta.description', __('ui.space_booking_status.meta_prefix') . ' ' . $agendamento->protocolo . '.')
 
 @section('site.content')
 @php
@@ -12,15 +12,15 @@
     <div class="mx-auto w-full max-w-[1200px] px-4 py-14 sm:px-6 lg:px-8">
         <div class="max-w-3xl">
             <span class="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-sky-200">
-                Protocolo {{ $agendamento->protocolo }}
+                {{ __('ui.space_booking_status.protocol') }} {{ $agendamento->protocolo }}
             </span>
 
             <h1 class="mt-5 text-3xl font-bold tracking-tight sm:text-5xl">
-                Solicita��o registrada
+                {{ __('ui.space_booking_status.registered') }}
             </h1>
 
             <p class="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
-                Aqui voc� pode acompanhar o status da sua solicita��o de visita e continuar o atendimento pelo WhatsApp, quando dispon�vel.
+                {{ __('ui.space_booking_status.intro') }}
             </p>
         </div>
     </div>
@@ -38,8 +38,8 @@
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h2 class="text-xl font-bold tracking-tight text-slate-900">Resumo da solicita��o</h2>
-                        <p class="mt-2 text-sm text-slate-500">Confira os dados enviados no formul�rio.</p>
+                        <h2 class="text-xl font-bold tracking-tight text-slate-900">{{ __('ui.space_booking_status.request_summary') }}</h2>
+                        <p class="mt-2 text-sm text-slate-500">{{ __('ui.space_booking_status.request_summary_copy') }}</p>
                     </div>
 
                     <span class="rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em]
@@ -53,55 +53,55 @@
 
                 <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Espa�o</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.space_booking_status.space') }}</div>
                         <div class="mt-1 font-medium text-slate-900">{{ $agendamento->espaco?->nome }}</div>
                     </div>
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Tipo</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.common.type') }}</div>
                         <div class="mt-1 font-medium text-slate-900">{{ $agendamento->espaco?->tipo_label }}</div>
                     </div>
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Data da visita</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.space_booking_status.visit_date') }}</div>
                         <div class="mt-1 font-medium text-slate-900">
                             {{ optional($agendamento->data_visita)->format('d/m/Y') }}
                         </div>
                     </div>
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Hor�rio</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.space_booking_status.time') }}</div>
                         <div class="mt-1 font-medium text-slate-900">
-                            {{ $agendamento->horario?->faixa_label ?: 'N�o informado' }}
+                            {{ $agendamento->horario?->faixa_label ?: __('ui.space_booking_status.not_informed') }}
                         </div>
                     </div>
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Respons�vel</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.space_booking_status.responsible') }}</div>
                         <div class="mt-1 font-medium text-slate-900">{{ $agendamento->nome }}</div>
                     </div>
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Telefone</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.common.contacts') }}</div>
                         <div class="mt-1 font-medium text-slate-900">{{ $agendamento->telefone }}</div>
                     </div>
 
                     @if ($agendamento->email)
                         <div>
-                            <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">E-mail</div>
+                            <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.auth.email') }}</div>
                             <div class="mt-1 font-medium text-slate-900">{{ $agendamento->email }}</div>
                         </div>
                     @endif
 
                     <div>
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Quantidade de visitantes</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.space_booking_status.visitors_count') }}</div>
                         <div class="mt-1 font-medium text-slate-900">{{ $agendamento->qtd_visitantes }}</div>
                     </div>
                 </div>
 
                 @if ($agendamento->observacao_visitante)
                     <div class="mt-6 rounded-2xl bg-slate-50 p-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Observa��o enviada</div>
+                        <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.space_booking_status.sent_observation') }}</div>
                         <div class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">
                             {{ $agendamento->observacao_visitante }}
                         </div>
@@ -112,20 +112,20 @@
 
         <aside class="space-y-6">
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold tracking-tight text-slate-900">Pr�ximos passos</h2>
+                <h2 class="text-lg font-bold tracking-tight text-slate-900">{{ __('ui.space_booking_status.next_steps') }}</h2>
 
                 <div class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
                     <p>
-                        Guarde o protocolo <span class="font-semibold text-slate-900">{{ $agendamento->protocolo }}</span> para consultar esta solicita��o.
+                        {{ __('ui.space_booking_status.save_protocol', ['protocol' => $agendamento->protocolo]) }}
                     </p>
 
                     <p>
-                        O status atual � <span class="font-semibold text-slate-900">{{ $statusAtual }}</span>.
+                        {{ __('ui.space_booking_status.current_status', ['status' => $statusAtual]) }}
                     </p>
 
                     @if ($agendamento->espaco?->agendamento_instrucoes)
                         <div class="rounded-2xl bg-slate-50 p-4">
-                            <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Orienta��es</div>
+                            <div class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">{{ __('ui.space_booking_status.guidance') }}</div>
                             <div class="mt-2 text-sm leading-6 text-slate-600">
                                 {{ $agendamento->espaco->agendamento_instrucoes }}
                             </div>
@@ -136,7 +136,7 @@
                 @if ($agendamento->whatsapp_link)
                     <div class="mt-6">
                         <a
-                            href="{{ route('site.museus.agendamentos.whatsapp', $agendamento->protocolo) }}"
+                            href="{{ localized_route('site.museus.agendamentos.whatsapp', ['protocolo' => $agendamento->protocolo]) }}"
                             class="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
                         >
                             Continuar pelo WhatsApp
@@ -146,12 +146,12 @@
             </div>
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-bold tracking-tight text-slate-900">Navega��o</h2>
+                <h2 class="text-lg font-bold tracking-tight text-slate-900">{{ __('ui.space_booking_status.navigation') }}</h2>
 
                 <div class="mt-4 flex flex-col gap-3">
                     @if ($agendamento->espaco)
                         <a
-                            href="{{ route('site.museus.show', $agendamento->espaco->slug) }}"
+                            href="{{ localized_route('site.museus.show', ['slug' => $agendamento->espaco->slug]) }}"
                             class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                         >
                             {{ __('ui.common.back_to_space') }}
@@ -159,10 +159,10 @@
                     @endif
 
                     <a
-                        href="{{ route('site.museus') }}"
+                        href="{{ localized_route('site.museus') }}"
                         class="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
                     >
-                        Ver outros espa�os
+                        {{ __('ui.space_booking_status.view_other_spaces') }}
                     </a>
                 </div>
             </div>

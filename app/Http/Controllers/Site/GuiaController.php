@@ -39,7 +39,7 @@ class GuiaController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(string $locale, string $slug)
     {
         $material = GuiaRevista::publicados()
             ->where('slug', $slug)

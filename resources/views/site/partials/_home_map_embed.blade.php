@@ -1,15 +1,15 @@
-﻿@php
+@php
     use Illuminate\Support\Facades\Route as R;
 
     $mapCategories = collect($mapCategories ?? []);
     $homeMapCategories = $mapCategories->take(4)->values();
     $apiFeed = R::has('api.mapa.feed') ? route('api.mapa.feed') : url('/api/mapa/feed');
-    $mapHref = R::has('site.mapa') ? route('site.mapa') : '#';
+    $mapHref = R::has('site.mapa') ? localized_route('site.mapa') : '#';
     $TOK = '__TOKEN__';
 
     $safeUrl = function (string $name, array $params = [], $fallback = null) {
         try {
-            return route($name, $params);
+            return localized_route($name, $params);
         } catch (\Throwable $e) {
             return $fallback;
         }
@@ -129,6 +129,21 @@
             'filterButtonSelector' => '[data-home-map-filter]',
             'emptyTitle' => __('ui.home.map_empty_title'),
             'emptyCopy' => __('ui.home.map_empty_copy'),
+            'i18n' => [
+                'altamira' => __('ui.common.altamira'),
+                'company' => __('ui.explore.company_badge'),
+                'point' => __('ui.explore.point_badge'),
+                'detail' => __('ui.common.detail'),
+                'route' => __('ui.common.route'),
+                'focus' => __('ui.common.focus'),
+                'all' => __('ui.common.all'),
+                'itemName' => __('ui.map_page.item_name'),
+                'helperWithRoute' => __('ui.map_page.helper_with_route'),
+                'helperWithoutRoute' => __('ui.map_page.helper_without_route'),
+                'emptyTitle' => __('ui.home.map_empty_title'),
+                'emptyCopy' => __('ui.home.map_empty_copy'),
+                'emptyStatus' => __('ui.map_page.empty_status'),
+            ],
         ],
     ])
 @endpush

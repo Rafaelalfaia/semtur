@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', 'Agendar visita • ' . $espaco->nome)
+@section('title', 'Agendar visita � ' . $espaco->nome)
 @section('meta.description', 'Solicite o agendamento de visita para ' . $espaco->nome . '.')
 
 @section('site.content')
@@ -14,7 +14,7 @@
             'Ola! Gostaria de fazer um agendamento para visitar '.$espaco->nome.'.',
             'Tipo: '.$espaco->tipo_label,
             filled($espaco->cidade) ? 'Cidade: '.$espaco->cidade : 'Cidade: Altamira',
-            'Pode me orientar sobre disponibilidade e próximos passos?',
+            'Pode me orientar sobre disponibilidade e proximos passos?',
         ]));
 
         $agendamentoWhatsappHref = 'https://wa.me/'.$espaco->agendamento_whatsapp_phone.'?text='.rawurlencode($mensagemAgendamento);
@@ -23,11 +23,11 @@
 
 <div class="site-page site-page-shell site-espacos-page">
     @include('site.partials._page_hero', [
-        'backHref' => route('site.museus.show', $espaco->slug),
+        'backHref' => localized_route('site.museus.show', ['slug' => $espaco->slug]),
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
-            ['label' => 'Museus e teatros', 'href' => Route::has('site.museus') ? route('site.museus') : null],
-            ['label' => $espaco->nome, 'href' => route('site.museus.show', $espaco->slug)],
+            ['label' => 'Inicio', 'href' => localized_route('site.home')],
+            ['label' => 'Museus e teatros', 'href' => Route::has('site.museus') ? localized_route('site.museus') : null],
+            ['label' => $espaco->nome, 'href' => localized_route('site.museus.show', ['slug' => $espaco->slug])],
             ['label' => 'Agendar visita'],
         ],
         'badge' => 'Agendamento',
@@ -41,7 +41,7 @@
         'primaryActionLabel' => $agendamentoWhatsappHref ? 'Fazer agendamento' : null,
         'primaryActionHref' => $agendamentoWhatsappHref,
         'secondaryActionLabel' => 'Ver espaco',
-        'secondaryActionHref' => route('site.museus.show', $espaco->slug),
+        'secondaryActionHref' => localized_route('site.museus.show', ['slug' => $espaco->slug]),
         'image' => $capa,
         'imageAlt' => $espaco->nome,
         'compact' => true,
@@ -69,7 +69,7 @@
                     @endif
 
                     <form
-                        action="{{ route('site.museus.agendar.store', $espaco->slug) }}"
+                        action="{{ localized_route('site.museus.agendar.store', ['espaco' => $espaco->slug]) }}"
                         method="POST"
                         x-data="{
                             dataVisita: '{{ old('data_visita') }}',
@@ -123,26 +123,26 @@
                         </div>
 
                         <div>
-                            <label class="site-espacos-label">Horário</label>
+                            <label class="site-espacos-label">Horario</label>
                             <select name="espaco_cultural_horario_id" x-model="horarioSelecionado" class="site-espacos-input" required>
                                 <option value="">Selecione</option>
                                 <template x-for="horario in horariosFiltrados()" :key="horario.id">
-                                    <option :value="horario.id" x-text="`${horario.dia_label} • ${horario.faixa_label}`"></option>
+                                    <option :value="horario.id" x-text="`${horario.dia_label} � ${horario.faixa_label}`"></option>
                                 </template>
                             </select>
 
                             <template x-if="dataVisita && horariosFiltrados().length === 0">
-                                <p class="site-espacos-form-help">Não há horários cadastrados para o dia selecionado.</p>
+                                <p class="site-espacos-form-help">Nao ha horarios cadastrados para o dia selecionado.</p>
                             </template>
                         </div>
 
                         <div class="site-espacos-form-span">
-                            <label class="site-espacos-label">Observação</label>
+                            <label class="site-espacos-label">Observacao</label>
                             <textarea name="observacao_visitante" rows="5" class="site-espacos-input site-espacos-textarea" placeholder="Informe detalhes importantes sobre a visita">{{ old('observacao_visitante') }}</textarea>
                         </div>
 
                         <div class="site-inline-actions site-espacos-form-actions site-espacos-form-span">
-                            <a href="{{ route('site.museus.show', $espaco->slug) }}" class="site-button-secondary">{{ __('ui.common.back') }}</a>
+                            <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" class="site-button-secondary">{{ __('ui.common.back') }}</a>
                             @if($agendamentoWhatsappHref)
                                 <a href="{{ $agendamentoWhatsappHref }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary site-whatsapp-button site-whatsapp-button--secondary">
                                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="site-whatsapp-button-icon">
@@ -159,7 +159,7 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Espaço" title="Resumo rápido" subtitle="Contexto do local para revisar antes de concluir o pedido." />
+                    <x-section-head eyebrow="Espaco" title="Resumo rapido" subtitle="Contexto do local para revisar antes de concluir o pedido." />
 
                     <div class="site-location-card-list">
                         <div class="site-location-card">
@@ -180,7 +180,7 @@
 
                     @if ($espaco->agendamento_instrucoes)
                         <div class="site-espacos-note-card">
-                            <span class="site-espacos-note-label">Instruções</span>
+                            <span class="site-espacos-note-label">Instrucoes</span>
                             <p class="site-card-list-summary">{{ $espaco->agendamento_instrucoes }}</p>
                         </div>
                     @endif
@@ -188,7 +188,7 @@
 
                 @if ($horarios->count())
                     <section class="site-surface-soft site-content-block">
-                        <x-section-head eyebrow="Grade semanal" title="Horários cadastrados" subtitle="A seleção de horário no formulário segue exatamente esta grade." />
+                        <x-section-head eyebrow="Grade semanal" title="Horarios cadastrados" subtitle="A selecao de horario no formulario segue exatamente esta grade." />
 
                         <div class="site-espacos-detail-schedule">
                             @foreach ($horarios as $horario)
@@ -215,5 +215,3 @@
     </section>
 </div>
 @endsection
-
-

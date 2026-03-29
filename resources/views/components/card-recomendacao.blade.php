@@ -19,10 +19,9 @@
           if (!empty($parts['query'])) parse_str($parts['query'], $q);
 
           if (!empty($q['ponto'])) {
-              $computedHref = route('site.ponto', $q['ponto']);
+              $computedHref = localized_route('site.ponto', ['ponto' => $q['ponto']]);
           } elseif (!empty($q['empresa'])) {
-              // nome da rota web da empresa que criamos
-              $computedHref = route('site.empresa', $q['empresa']);
+              $computedHref = localized_route('site.empresa', ['empresa' => $q['empresa']]);
           }
       }
   } catch (\Throwable $e) {

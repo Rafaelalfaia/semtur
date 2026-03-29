@@ -33,7 +33,7 @@ class RotaDoCacauController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(string $locale, string $slug)
     {
         $rota = $this->principalPublicada();
 

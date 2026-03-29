@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', $video->titulo . ' � ' . __('ui.videos.title') . ' � VisitAltamira')
+@section('title', $video->titulo . ' • ' . __('ui.videos.title') . ' • VisitAltamira')
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) $video->descricao), 160))
 @section('meta.image', $video->capa_url ?: asset('imagens/altamira.jpg'))
 
@@ -26,7 +26,7 @@
 
             <div class="mt-7 flex flex-wrap gap-3">
                 <a href="#visualizacao" class="inline-flex items-center justify-center rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-cyan-500">{{ __('ui.home.watch_now') }}</a>
-                <a href="{{ route('site.videos') }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15">{{ __('ui.common.back_to_videos') }}</a>
+                <a href="{{ localized_route('site.videos') }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15">{{ __('ui.common.back_to_videos') }}</a>
             </div>
         </div>
 
@@ -97,12 +97,12 @@
                         </div>
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                             <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ __('ui.common.published_in') }}</div>
-                            <div class="mt-1 text-sm font-semibold text-slate-900">{{ optional($video->published_at)->format('d/m/Y') ?: '�' }}</div>
+                            <div class="mt-1 text-sm font-semibold text-slate-900">{{ optional($video->published_at)->format('d/m/Y') ?: '—' }}</div>
                         </div>
                     </div>
 
                     <div class="mt-5">
-                        <a href="{{ route('site.videos') }}" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">{{ __('ui.videos.view_more_videos') }}</a>
+                        <a href="{{ localized_route('site.videos') }}" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50">{{ __('ui.videos.view_more_videos') }}</a>
                     </div>
                 </section>
 
@@ -113,7 +113,7 @@
 
                         <div class="mt-5 space-y-4">
                             @foreach($relacionados as $item)
-                                <a href="{{ route('site.videos.show', $item->slug) }}" class="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-cyan-300 hover:bg-cyan-50">
+                                <a href="{{ localized_route('site.videos.show', ['slug' => $item->slug]) }}" class="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-cyan-300 hover:bg-cyan-50">
                                     <div class="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-700">{{ __('ui.common.video') }}</div>
                                     <div class="mt-2 text-sm font-semibold text-slate-900">{{ $item->titulo }}</div>
                                     <p class="mt-2 text-sm leading-6 text-slate-600">{{ Str::limit(strip_tags((string) $item->descricao), 90) }}</p>

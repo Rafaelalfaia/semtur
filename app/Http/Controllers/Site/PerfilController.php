@@ -70,7 +70,7 @@ class PerfilController extends Controller
 
         $u->save();
 
-        return redirect()->route('site.perfil.index')->with('status','Perfil atualizado!');
+        return redirect()->to(localized_route('site.perfil.index'))->with('status','Perfil atualizado!');
     }
 
     public function redes()
@@ -96,6 +96,6 @@ class PerfilController extends Controller
         ];
         $u->save();
 
-        return redirect()->route('site.perfil.index')->with('status','Redes sociais salvas!');
+        return redirect()->to(localized_route('site.perfil.index'))->with('status','Redes sociais salvas!');
     }
 }

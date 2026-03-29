@@ -2,7 +2,7 @@
 
 @section('title', 'Novo material')
 @section('page.title', 'Novo material')
-@section('topbar.description', 'Cadastre um guia ou revista com capa, descricao e acesso externo seguindo o padrao global do console.')
+@section('topbar.description', 'Cadastre um guia ou revista com capa, descrição e acesso externo seguindo o padrão global do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.guias.index') }}" class="ui-console-topbar-tab">Guias e Revistas</a>

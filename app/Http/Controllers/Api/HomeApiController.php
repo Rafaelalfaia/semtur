@@ -339,7 +339,7 @@ class HomeApiController extends Controller
                 'cidade' => $p->cidade,
                 'lat'    => (float) $p->{$latP},
                 'lng'    => (float) $p->{$lngP},
-                'url'    => route('site.ponto', $p->id),
+                'url'    => localized_route('site.ponto', ['ponto' => $p->id]),
                 'cats'   => [
                     'ids'   => $p->categorias->pluck('id')->all(),
                     'slugs' => $p->categorias->pluck('slug')->all(),
@@ -369,7 +369,7 @@ class HomeApiController extends Controller
                 'cidade' => $e->cidade,
                 'lat'    => (float) $e->{$latE},
                 'lng'    => (float) $e->{$lngE},
-                'url'    => route('site.empresa', $slugOrId),
+                'url'    => localized_route('site.empresa', ['empresa' => $slugOrId]),
                 'cats'   => [
                     'ids'   => $e->categorias->pluck('id')->all(),
                     'slugs' => $e->categorias->pluck('slug')->all(),

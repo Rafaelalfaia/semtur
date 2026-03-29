@@ -1,11 +1,11 @@
 @extends('console.layout')
 @section('title', 'Galeria - '.$edicao->evento->nome.' ('.$edicao->ano.')')
 @section('page.title', 'Galeria')
-@section('topbar.description', 'Gerencie a galeria da edicao com upload, ordenacao e remocao no mesmo padrao visual do console.')
+@section('topbar.description', 'Gerencie a galeria da edição com upload, ordenação e remoção no mesmo padrão visual do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
-  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edicoes</a>
+  <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-console-topbar-tab">Edições</a>
   <span class="ui-console-topbar-tab is-active">Galeria</span>
 @endsection
 
@@ -15,9 +15,9 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Galeria"
-    subtitle="Envie, remova e reorganize fotos da edicao sem quebrar a estrutura global do console."
+    subtitle="Envie, remova e reorganize fotos da edição sem quebrar a estrutura global do console."
   >
-    <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-btn-secondary">Voltar as edicoes</a>
+    <a href="{{ route('coordenador.eventos.edicoes.index', $edicao->evento) }}" class="ui-btn-secondary">Voltar às edições</a>
   </x-dashboard.page-header>
 
   @if(session('ok'))
@@ -29,10 +29,10 @@
     </div>
   @endif
 
-  <x-dashboard.section-card title="Adicionar fotos" subtitle="Envie multiplas imagens para a galeria da edicao" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Adicionar fotos" subtitle="Envie múltiplas imagens para a galeria da edição" class="ui-coord-dashboard-panel mt-5">
     <form method="POST" action="{{ route('coordenador.edicoes.midias.store', $edicao) }}" enctype="multipart/form-data" class="space-y-3">
       @csrf
-      <label class="ui-form-label">Adicionar fotos (multiplas)</label>
+      <label class="ui-form-label">Adicionar fotos (múltiplas)</label>
       <input type="file" name="fotos[]" accept="image/*" multiple class="ui-form-control">
       <button class="ui-btn-primary">Enviar</button>
     </form>

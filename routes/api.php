@@ -17,7 +17,7 @@ use App\Http\Controllers\Api\MapaApiController;
 Route::get('/home',                   [HomeApiController::class, 'index'])->name('api.home');
 Route::get('/categorias',             [HomeApiController::class, 'categorias'])->name('api.categorias');
 Route::get('/categorias/{slug}/feed', [HomeApiController::class, 'categoriaFeed'])->name('api.categoria.feed');
-Route::get('/pontos/{id}',            [HomeApiController::class, 'ponto'])->name('api.ponto');
+Route::get('/pontos/{id}',            [HomeApiController::class, 'ponto'])->whereNumber('id')->name('api.ponto');
 Route::get('/empresas/{slug}',        [HomeApiController::class, 'empresa'])->name('api.empresa');
 
 // Feed do mapa

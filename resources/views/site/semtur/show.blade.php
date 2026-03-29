@@ -1,9 +1,9 @@
 @extends('site.layouts.app')
 
 @php
-    $semturCanonical = route('site.semtur');
+    $semturCanonical = localized_route('site.semtur');
     $semturTitle = ($sec->nome ?? 'SEMTUR').' de Altamira';
-    $semturDescription = \Illuminate\Support\Str::limit(strip_tags($sec->descricao ?? 'Informações institucionais da SEMTUR de Altamira.'), 160);
+    $semturDescription = \Illuminate\Support\Str::limit(strip_tags($sec->descricao ?? __('ui.semtur.default_short')), 160);
     $semturImage = $sec->foto_capa_url ?: $sec->foto_url ?: theme_asset('hero_image');
     $semturRedes = is_array($sec->redes ?? null) ? array_filter($sec->redes) : [];
     $semturSchema = [
@@ -14,13 +14,13 @@
                 [
                     '@type' => 'ListItem',
                     'position' => 1,
-                    'name' => 'Início',
-                    'item' => \Illuminate\Support\Facades\Route::has('site.home') ? route('site.home') : url('/'),
+                    'name' => 'InÃ­cio',
+                    'item' => \Illuminate\Support\Facades\localized_route('site.home'),
                 ],
                 [
                     '@type' => 'ListItem',
                     'position' => 2,
-                    'name' => 'Secretaria',
+                    'name' => __('ui.semtur.name'),
                     'item' => $semturCanonical,
                 ],
             ],
@@ -74,29 +74,29 @@
 
     $membroCards = collect($membros ?? [])->map(fn ($membro) => [
         'title' => $membro->nome,
-        'subtitle' => $membro->cargo ?: 'Equipe SEMTUR',
+        'subtitle' => $membro->cargo ?: __('ui.semtur.team_role'),
         'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $membro->resumo), 96),
         'image' => $membro->foto_url ?: asset('imagens/avatar.png'),
         'href' => null,
-        'badge' => 'Equipe',
+        'badge' => __('ui.semtur.team_badge'),
     ]);
 @endphp
 
 <div class="site-page site-page-shell site-semtur-page">
     @include('site.partials._page_hero', [
-        'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
+        'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
-            ['label' => 'Secretaria'],
+            ['label' => 'InÃ­cio', 'href' => localized_route('site.home')],
+            ['label' => __('ui.semtur.name')],
         ],
-        'badge' => 'Secretaria',
+        'badge' => __('ui.semtur.name'),
         'title' => $sec->nome ?? 'SEMTUR',
-        'subtitle' => 'Informações institucionais, equipe e canais públicos da Secretaria Municipal de Turismo de Altamira.',
+        'subtitle' => __('ui.semtur.subtitle'),
         'meta' => [],
-        'primaryActionLabel' => Route::has('site.mapa') ? 'Ver mapa turístico' : null,
-        'primaryActionHref' => Route::has('site.mapa') ? route('site.mapa') : null,
-        'secondaryActionLabel' => Route::has('site.contato') ? 'Contato' : null,
-        'secondaryActionHref' => Route::has('site.contato') ? route('site.contato') : null,
+        'primaryActionLabel' => Route::has('site.mapa') ? __('ui.semtur.view_map') : null,
+        'primaryActionHref' => Route::has('site.mapa') ? localized_route('site.mapa') : null,
+        'secondaryActionLabel' => Route::has('site.contato') ? __('ui.portal_pages.contato.title') : null,
+        'secondaryActionHref' => Route::has('site.contato') ? localized_route('site.contato') : null,
         'image' => $heroUrl,
         'imageAlt' => $sec->nome ?? 'SEMTUR',
         'compact' => true,
@@ -109,23 +109,23 @@
                     <div class="site-detail-profile">
                         <img src="{{ site_image_url($logoUrl, "avatar") }}" alt="{{ $sec->nome ?? 'SEMTUR' }}" class="site-detail-avatar" loading="lazy" decoding="async">
                         <div>
-                            <x-section-head eyebrow="Sobre" title="Secretaria Municipal de Turismo" subtitle="Apresentação pública da secretaria e do papel institucional no ecossistema turístico da cidade." />
+                            <x-section-head :eyebrow="__('ui.semtur.about_eyebrow')" :title="__('ui.semtur.about_title')" :subtitle="__('ui.semtur.about_subtitle')" />
                         </div>
                     </div>
 
                     <div class="site-prose">
-                        {!! nl2br(e($sec->descricao ?: 'Informações institucionais da Secretaria Municipal de Turismo de Altamira.')) !!}
+                        {!! nl2br(e($sec->descricao ?: __('ui.semtur.default_long'))) !!}
                     </div>
                 </section>
             </div>
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Redes" title="Canais públicos" />
+                    <x-section-head :eyebrow="__('ui.semtur.channels_eyebrow')" :title="__('ui.semtur.channels_title')" />
 
                     @if($redeItems->isEmpty())
                         <div class="site-empty-state">
-                            <p class="site-empty-state-copy">Ainda não há canais públicos informados nesta página.</p>
+                            <p class="site-empty-state-copy">{{ __('ui.semtur.channels_empty') }}</p>
                         </div>
                     @else
                         <div class="site-detail-links">
@@ -141,14 +141,14 @@
 
     <section class="site-section">
         <x-section-head
-            eyebrow="Equipe"
-            title="Equipe SEMTUR"
-            subtitle="Profissionais publicados que ajudam a compor a presença institucional do portal."
+            :eyebrow="__('ui.semtur.team_eyebrow')"
+            :title="__('ui.semtur.team_title')"
+            :subtitle="__('ui.semtur.team_subtitle')"
         />
 
         @if($membroCards->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-copy">A equipe pública será exibida aqui assim que houver membros publicados.</p>
+                <p class="site-empty-state-copy">{{ __('ui.semtur.team_empty') }}</p>
             </div>
         @else
             <div class="site-card-list-grid">

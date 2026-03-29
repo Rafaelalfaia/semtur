@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy']);
 });
 
-Route::middleware('setLocale')
+Route::middleware('app.setLocale')
     ->prefix('{locale}')
     ->where(['locale' => 'pt|en|es'])
     ->group(function () {

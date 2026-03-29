@@ -1,7 +1,7 @@
 <div class="space-y-4">
     <div class="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
         <div class="space-y-4">
-            <x-dashboard.section-card title="Leitura rapida" subtitle="Estado atual da biblioteca local, remota e da area operacional.">
+            <x-dashboard.section-card title="Leitura rápida" subtitle="Estado atual da biblioteca local, remota e da área operacional.">
                 <dl class="space-y-3 text-sm">
                     <div class="flex items-center justify-between gap-3">
                         <dt class="text-[var(--ui-text-soft)]">Backups locais</dt>
@@ -20,12 +20,12 @@
                         <dd class="font-medium text-[var(--ui-text-title)]">{{ $systemHealth['totals']['label'] }}</dd>
                     </div>
                     <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
-                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Ultimo local</div>
+                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Último local</div>
                         <div class="mt-1 text-sm font-medium text-[var(--ui-text-title)]">{{ $summary['last_local']['name'] ?? 'Nenhum pacote' }}</div>
                         <div class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $summary['last_local']['modified_at'] ?? 'Sem registro' }}</div>
                     </div>
                     <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
-                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Ultimo R2</div>
+                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Último R2</div>
                         <div class="mt-1 text-sm font-medium text-[var(--ui-text-title)]">{{ $summary['last_remote']['name'] ?? 'Nenhum pacote' }}</div>
                         <div class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $summary['last_remote']['modified_at'] ?? 'Sem registro' }}</div>
                     </div>
@@ -40,22 +40,22 @@
                     </form>
                     <form method="POST" action="{{ route('admin.backups.audit-media') }}">
                         @csrf
-                        <button class="ui-btn-secondary w-full justify-center">Auditar midia</button>
+                        <button class="ui-btn-secondary w-full justify-center">Auditar mídia</button>
                     </form>
-                    <form method="POST" action="{{ route('admin.backups.prune-safe') }}" onsubmit="return confirm('Podar temporarios, derivados e relatorios antigos?');">
+                    <form method="POST" action="{{ route('admin.backups.prune-safe') }}" onsubmit="return confirm('Podar temporários, derivados e relatórios antigos?');">
                         @csrf
-                        <button class="ui-btn-secondary w-full justify-center">Podar temporarios seguros</button>
+                        <button class="ui-btn-secondary w-full justify-center">Podar temporários seguros</button>
                     </form>
                 </div>
 
                 @if($systemHealth['media_cleanup'])
                     <div class="mt-4 rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
-                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Ultima auditoria de midia</div>
+                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Última auditoria de mídia</div>
                         <div class="mt-1 text-sm font-medium text-[var(--ui-text-title)]">{{ $systemHealth['media_cleanup']['generated_at'] ?? 'Sem data' }}</div>
                         <div class="mt-2 grid gap-2 text-xs text-[var(--ui-text-soft)] sm:grid-cols-3">
                             <div>{{ $systemHealth['media_cleanup']['summary']['disk_files'] }} arquivos no disco</div>
                             <div>{{ $systemHealth['media_cleanup']['summary']['referenced_files'] }} referenciados</div>
-                            <div>{{ $systemHealth['media_cleanup']['summary']['orphan_files'] }} candidatos a orfao</div>
+                            <div>{{ $systemHealth['media_cleanup']['summary']['orphan_files'] }} candidatos a órfão</div>
                         </div>
                     </div>
                 @endif
@@ -63,7 +63,7 @@
         </div>
 
         <div class="space-y-4">
-            <x-dashboard.section-card title="Uso do sistema" subtitle="Leitura de peso, areas monitoradas e maiores arquivos para ajudar na operacao da VPS.">
+            <x-dashboard.section-card title="Uso do sistema" subtitle="Leitura de peso, áreas monitoradas e maiores arquivos para ajudar na operação da VPS.">
                 <div class="grid gap-3 md:grid-cols-3">
                     <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
                         <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Peso monitorado</div>
@@ -71,12 +71,12 @@
                         <p class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ number_format($systemHealth['totals']['files'], 0, ',', '.') }} arquivo(s)</p>
                     </div>
                     <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
-                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Maior area</div>
+                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Maior área</div>
                         <div class="mt-1 text-sm font-semibold text-[var(--ui-text-title)]">{{ $systemHealth['largest_areas'][0]['label'] ?? 'Sem dados' }}</div>
                         <p class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $systemHealth['largest_areas'][0]['size_label'] ?? '0 B' }}</p>
                     </div>
                     <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
-                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Ultima leitura</div>
+                        <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Última leitura</div>
                         <div class="mt-1 text-sm font-semibold text-[var(--ui-text-title)]">{{ $systemHealth['generated_at'] }}</div>
                         <p class="mt-1 text-xs text-[var(--ui-text-soft)]">Atualize a página para renovar a leitura.</p>
                     </div>
@@ -88,7 +88,7 @@
                             <div class="flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] px-4 py-3">
                                 <div>
                                     <div class="text-sm font-medium text-[var(--ui-text-title)]">{{ $area['label'] }}</div>
-                                    <div class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $area['files_count'] }} arquivo(s) ? {{ $area['path'] }}</div>
+                                    <div class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $area['files_count'] }} arquivo(s) • {{ $area['path'] }}</div>
                                 </div>
                                 <div class="text-sm font-semibold text-[var(--ui-text-title)]">{{ $area['size_label'] }}</div>
                             </div>

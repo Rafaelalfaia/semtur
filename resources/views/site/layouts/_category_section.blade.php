@@ -10,7 +10,7 @@
       <div class="flex items-center gap-3">
         <h2 class="text-xl font-semibold">{{ $categoria->nome }}</h2>
       </div>
-      <a href="{{ route('site.explorar', ['categoria' => $categoria->slug]) }}" class="text-emerald-700 hover:underline">Ver tudo</a>
+      <a href="{{ localized_route('site.explorar', ['categoria' => $categoria->slug]) }}" class="text-emerald-700 hover:underline">Ver tudo</a>
     </div>
 
     {{-- Pontos Turísticos --}}
@@ -20,7 +20,7 @@
         @foreach($pontos as $p)
           @php $capa = optional($p->midias->first())->path ?? null; @endphp
           <article class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow">
-            <a href="{{ route('site.explorar', ['ponto' => $p->id]) }}" class="block">
+            <a href="{{ localized_route('site.explorar', ['ponto' => $p->id]) }}" class="block">
               <div class="aspect-[4/3] bg-slate-100 dark:bg-slate-800">
                 @if($capa)
                   <img src="{{ Storage::url($capa) }}" class="w-full h-full object-cover" alt="{{ $p->nome }}" loading="lazy">
@@ -42,7 +42,7 @@
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
         @foreach($empresas as $e)
           <article class="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow">
-            <a href="{{ route('site.explorar', ['empresa' => $e->slug]) }}" class="block">
+            <a href="{{ localized_route('site.explorar', ['empresa' => $e->slug]) }}" class="block">
               <div class="aspect-[4/3] bg-slate-100 dark:bg-slate-800 relative">
                 @if($e->foto_capa_url)
                   <img src="{{ $e->foto_capa_url }}" class="w-full h-full object-cover" alt="{{ $e->nome }}" loading="lazy">

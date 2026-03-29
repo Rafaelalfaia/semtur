@@ -55,7 +55,7 @@
         <x-dashboard.section-card id="temas-execucao" title="Biblioteca de execução" subtitle="Temas disponíveis para preview e ativação por escopo.">
             @if($themes->count() === 0)
                 <div class="ui-empty-state">
-                    <div class="ui-empty-state-title">Nenhum tema disponivel</div>
+                    <div class="ui-empty-state-title">Nenhum tema disponível</div>
                     <p class="ui-empty-state-copy">Não há temas aprovados compatíveis com a busca atual.</p>
                 </div>
             @else

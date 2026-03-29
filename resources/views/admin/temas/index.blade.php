@@ -236,7 +236,7 @@
                                             <form method="POST" action="{{ route('admin.temas.restore-default-site') }}">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button class="ui-btn-secondary">Padrao no site</button>
+                                                <button class="ui-btn-secondary">Padrão no site</button>
                                             </form>
                                         @elseif($supportsSite && ! $isSiteActive)
                                             <form method="POST" action="{{ route('admin.temas.activate-site', $theme) }}">
@@ -250,7 +250,7 @@
                                             <form method="POST" action="{{ route('admin.temas.restore-default-auth') }}">
                                                 @csrf
                                                 @method('PATCH')
-                                                <button class="ui-btn-secondary">Padrao no auth</button>
+                                                <button class="ui-btn-secondary">Padrão no auth</button>
                                             </form>
                                         @elseif($supportsAuth && ! $isAuthActive)
                                             <form method="POST" action="{{ route('admin.temas.activate-auth', $theme) }}">

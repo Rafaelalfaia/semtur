@@ -3,13 +3,13 @@
         <div class="grid gap-3 md:grid-cols-3">
             <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
                 <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Conexão</div>
-                <div class="mt-1 text-sm font-semibold text-[var(--ui-text-title)]">{{ $remoteStatus['reachable'] ? 'Online' : ($remoteStatus['configured'] ? 'Instavel' : 'Pendente') }}</div>
+                <div class="mt-1 text-sm font-semibold text-[var(--ui-text-title)]">{{ $remoteStatus['reachable'] ? 'Online' : ($remoteStatus['configured'] ? 'Instável' : 'Pendente') }}</div>
                 <p class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $remoteStatus['message'] }}</p>
             </div>
             <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
                 <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Bucket</div>
                 <div class="mt-1 text-sm font-semibold text-[var(--ui-text-title)]">{{ $remoteConfig['bucket'] ?: 'Não definido' }}</div>
-                <p class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $remoteStatus['count'] }} item(ns) visiveis</p>
+                <p class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $remoteStatus['count'] }} item(ns) visíveis</p>
             </div>
             <div class="rounded-[18px] border border-[var(--ui-border)] bg-[var(--ui-surface-soft)] p-3">
                 <div class="text-xs uppercase tracking-[0.12em] text-[var(--ui-text-soft)]">Agenda</div>
@@ -42,7 +42,7 @@
                         <div class="mt-2 text-xs text-[var(--ui-text-soft)]">Criado em {{ $selectedBackup['manifest']['created_at'] ?? 'Sem data' }}</div>
                         <div class="mt-1 text-xs text-[var(--ui-text-soft)]">App {{ $selectedBackup['manifest']['app']['name'] ?? 'Não informado' }} · {{ $selectedBackup['manifest']['app']['env'] ?? 'env' }}</div>
                     @else
-                        <div class="mt-2 text-xs text-[var(--ui-text-soft)]">Manifesto nao encontrado no pacote.</div>
+                        <div class="mt-2 text-xs text-[var(--ui-text-soft)]">Manifesto não encontrado no pacote.</div>
                     @endif
                 </div>
             </div>

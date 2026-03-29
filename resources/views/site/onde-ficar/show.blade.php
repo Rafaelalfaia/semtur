@@ -10,20 +10,20 @@
 
     $hero = $pagina->hero_url ?: asset('imagens/altamira.jpg');
     $empresas = collect($pagina->empresasSelecionadas ?? [])->filter(fn ($item) => $item && $item->empresa)->values();
-    $explorarUrl = Route::has('site.explorar') ? route('site.explorar') : '#';
+    $explorarUrl = localized_route('site.explorar');
 @endphp
 
 <div class="site-page site-page-shell">
     @include('site.partials._page_hero', [
         'backHref' => $explorarUrl,
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'InÃ­cio', 'href' => localized_route('site.home')],
             ['label' => 'Explorar', 'href' => $explorarUrl],
             ['label' => $pagina->titulo ?: 'Onde ficar'],
         ],
         'badge' => $pagina->subtitulo ?: 'Hospedagem e conforto',
         'title' => $pagina->titulo ?: 'Onde ficar em Altamira',
-        'subtitle' => $pagina->resumo ?: 'Curadoria editorial para estadias com mais conforto, contexto e boa experiência na viagem.',
+        'subtitle' => $pagina->resumo ?: 'Curadoria editorial para estadias com mais conforto, contexto e boa experiÃªncia na viagem.',
         'meta' => [
             $empresas->count().' hospedagens',
             'Curadoria oficial',
@@ -41,7 +41,7 @@
             <div class="site-editorial-main">
                 @if(filled($pagina->texto_intro))
                     <section class="site-surface site-content-block">
-                        <x-section-head eyebrow="Introdução" title="Estadia para diferentes perfis de viagem" />
+                        <x-section-head eyebrow="IntroduÃ§Ã£o" title="Estadia para diferentes perfis de viagem" />
                         <div class="site-prose">{!! nl2br(e($pagina->texto_intro)) !!}</div>
                     </section>
                 @endif
@@ -56,7 +56,7 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Resumo" title="Visão geral" />
+                    <x-section-head eyebrow="Resumo" title="VisÃ£o geral" />
                     <div class="site-stats-grid">
                         <div class="site-stat-card">
                             <span class="site-stat-label">Hospedagens</span>
@@ -74,15 +74,15 @@
 
     <section id="hospedagens" class="site-section">
         <x-section-head
-            eyebrow="Seleção editorial"
+            eyebrow="SeleÃ§Ã£o editorial"
             title="Hospedagens recomendadas"
-            subtitle="Lugares publicados para quem busca localização, conforto e experiência de estadia mais consistente."
+            subtitle="Lugares publicados para quem busca localizaÃ§Ã£o, conforto e experiÃªncia de estadia mais consistente."
         />
 
         @if($empresas->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-title">Seleção em preparação</p>
-                <p class="site-empty-state-copy">A seleção de hospedagens ainda está sendo preparada.</p>
+                <p class="site-empty-state-title">SeleÃ§Ã£o em preparaÃ§Ã£o</p>
+                <p class="site-empty-state-copy">A seleÃ§Ã£o de hospedagens ainda estÃ¡ sendo preparada.</p>
             </div>
         @else
             <div class="site-directory-grid">
@@ -96,7 +96,7 @@
                         $site = $empresa->site_url ?? ($contatos['site'] ?? null);
                         $email = $empresa->email ?? ($contatos['email'] ?? null);
                         $descricao = $item->observacao_curta ?: strip_tags((string) $empresa->descricao);
-                        $urlEmpresa = Route::has('site.empresa') ? route('site.empresa', ['empresa' => $empresa->slug ?: $empresa->id]) : '#';
+                        $urlEmpresa = Route::has('site.empresa') ? localized_route('site.empresa', ['empresa' => $empresa->slug ?: $empresa->id]) : '#';
                     @endphp
 
                     <article class="site-directory-card">
@@ -115,8 +115,8 @@
                         <div class="site-directory-card-body">
                             <div>
                                 <h3 class="site-directory-card-title">{{ $empresa->nome }}</h3>
-                                <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' • ') ?: 'Altamira' }}</p>
-                                <p class="site-inline-meta">Uma base segura para comparar localização, conforto e acesso durante a viagem.</p>
+                                <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' â€¢ ') ?: 'Altamira' }}</p>
+                                <p class="site-inline-meta">Uma base segura para comparar localizaÃ§Ã£o, conforto e acesso durante a viagem.</p>
                             </div>
 
                             @if($descricao)

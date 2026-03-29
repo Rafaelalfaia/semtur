@@ -150,7 +150,7 @@ class HomeController extends Controller
                     'title' => $ponto->nome,
                     'subtitle' => $ponto->cidade ?? 'Altamira',
                     'image' => $image,
-                    'href' => route('site.ponto', ['ponto' => $ponto->id]),
+                    'href' => localized_route('site.ponto', ['ponto' => $ponto->id]),
                     'badge' => 'Recomendado',
                     'ordem' => $ponto->recomendacao_ordem ?? optional($ponto->recomendacoes->first())->ordem ?? 999999,
                 ];
@@ -189,7 +189,7 @@ class HomeController extends Controller
                     'title' => $empresa->nome,
                     'subtitle' => $empresa->cidade ?? 'Altamira',
                     'image' => $empresa->capa_url ?? $empresa->foto_capa_url ?? $empresa->perfil_url ?? null,
-                    'href' => route('site.empresa', ['empresa' => ($empresa->slug ?? $empresa->id)]),
+                    'href' => localized_route('site.empresa', ['empresa' => ($empresa->slug ?? $empresa->id)]),
                     'badge' => 'Curadoria do coordenador',
                     'ordem' => $empresa->recomendacao_ordem ?? optional($empresa->recomendacoes->first())->ordem ?? 999999,
                 ];
@@ -240,35 +240,35 @@ class HomeController extends Controller
                 'title' => 'Rota do Cacau',
                 'subtitle' => 'Experiência emblemática',
                 'summary' => 'Um acesso editorial para descobrir a rota com mais identidade, memória e território.',
-                'href' => route('site.rota_do_cacau.index'),
+                'href' => localized_route('site.rota_do_cacau.index'),
             ],
             [
                 'key' => 'jogos_indigenas',
                 'title' => 'Jogos Indígenas',
                 'subtitle' => 'Cultura viva',
                 'summary' => 'Um bloco de entrada para o conteúdo simbólico e coletivo dos jogos.',
-                'href' => route('site.jogos_indigenas.index'),
+                'href' => localized_route('site.jogos_indigenas.index'),
             ],
             [
                 'key' => 'onde_comer',
                 'title' => 'Onde Comer',
                 'subtitle' => 'Sabores do destino',
                 'summary' => 'Acesso estratégico para planejar refeições sem transformar a home em vitrine genérica.',
-                'href' => route('site.onde_comer'),
+                'href' => localized_route('site.onde_comer'),
             ],
             [
                 'key' => 'onde_ficar',
                 'title' => 'Onde Ficar',
                 'subtitle' => 'Base da viagem',
                 'summary' => 'Acesso direto para organizar a estadia com mais clareza.',
-                'href' => route('site.onde_ficar'),
+                'href' => localized_route('site.onde_ficar'),
             ],
             [
                 'key' => 'museus',
                 'title' => 'Museu e Teatro',
                 'subtitle' => 'Patrimônio e cena',
                 'summary' => 'Uma entrada cultural para aprofundar a experiência do destino.',
-                'href' => route('site.museus'),
+                'href' => localized_route('site.museus'),
             ],
         ];
     }
@@ -279,19 +279,19 @@ class HomeController extends Controller
             [
                 'key' => 'rota_do_cacau',
                 'title' => 'Rota do Cacau',
-                'href' => route('site.rota_do_cacau.index'),
+                'href' => localized_route('site.rota_do_cacau.index'),
                 'image' => asset('imagens/rota.png'),
             ],
             [
                 'key' => 'jogos_indigenas',
                 'title' => 'Jogos Indígenas',
-                'href' => route('site.jogos_indigenas.index'),
+                'href' => localized_route('site.jogos_indigenas.index'),
                 'image' => asset('imagens/jogos.png'),
             ],
             [
                 'key' => 'museus',
                 'title' => 'Museu e Teatro',
-                'href' => route('site.museus'),
+                'href' => localized_route('site.museus'),
                 'image' => asset('imagens/museu.png'),
             ],
         ];
@@ -304,7 +304,7 @@ class HomeController extends Controller
                 'key' => 'onde_comer',
                 'title' => 'Onde Comer',
                 'summary' => 'Restaurantes, sabores e paradas gastronômicas para organizar o roteiro com mais intenção.',
-                'href' => route('site.onde_comer'),
+                'href' => localized_route('site.onde_comer'),
                 'image' => asset('imagens/comer.png'),
                 'eyebrow' => 'Acesso utilitário',
                 'cta' => 'Explorar sabores',
@@ -313,7 +313,7 @@ class HomeController extends Controller
                 'key' => 'onde_ficar',
                 'title' => 'Onde Ficar',
                 'summary' => 'Hospedagens e bases de apoio para montar a estadia com clareza e conforto.',
-                'href' => route('site.onde_ficar'),
+                'href' => localized_route('site.onde_ficar'),
                 'image' => asset('imagens/ficar.png'),
                 'eyebrow' => 'Planejamento da viagem',
                 'cta' => 'Ver hospedagens',
@@ -322,7 +322,7 @@ class HomeController extends Controller
                 'key' => 'guias',
                 'title' => 'Revistas & Guias',
                 'summary' => 'Materiais oficiais publicados pelo coordenador para aprofundar a descoberta antes e durante a visita.',
-                'href' => route('site.guias'),
+                'href' => localized_route('site.guias'),
                 'image' => asset('imagens/guias.png'),
                 'eyebrow' => 'Conteúdo oficial',
                 'cta' => 'Abrir materiais',
@@ -537,4 +537,3 @@ class HomeController extends Controller
         return $query->first();
     }
 }
-

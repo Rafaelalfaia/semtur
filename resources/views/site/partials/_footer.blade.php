@@ -6,7 +6,7 @@
 
         @if(\Illuminate\Support\Facades\Route::has('site.semtur'))
             <p class="site-footer-meta site-footer-meta--subtle">
-                <a href="{{ route('site.semtur') }}" class="site-footer-link-subtle">{{ __('ui.footer.tourism_department') }}</a>
+                <a href="{{ localized_route('site.semtur') }}" class="site-footer-link-subtle">{{ __('ui.footer.tourism_department') }}</a>
             </p>
         @endif
 

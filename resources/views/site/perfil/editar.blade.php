@@ -2,7 +2,7 @@
 @section('title','Editar perfil')
 @section('meta.description','Área da conta do VisitAltamira para atualizar foto, nome e informações do perfil com segurança.')
 @section('meta.image', theme_asset('hero_image'))
-@section('meta.canonical', route('site.perfil.editar'))
+@section('meta.canonical', localized_route('site.perfil.editar'))
 @section('meta.noindex', 'true')
 
 @section('site.content')
@@ -10,7 +10,7 @@
   {{-- Top bar --}}
   <header class="sticky top-0 z-10 bg-white/80 backdrop-blur border-b border-slate-100">
     <div class="mx-auto max-w-lg px-4 py-3 flex items-center gap-3">
-      <a href="{{ route('site.perfil.index') }}" class="h-10 w-10 rounded-full bg-slate-100 grid place-items-center hover:bg-slate-200">
+      <a href="{{ localized_route('site.perfil.index') }}" class="h-10 w-10 rounded-full bg-slate-100 grid place-items-center hover:bg-slate-200">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
@@ -26,7 +26,7 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('site.perfil.atualizar') }}" enctype="multipart/form-data" class="space-y-5" id="perfil-form">
+    <form method="POST" action="{{ localized_route('site.perfil.atualizar') }}" enctype="multipart/form-data" class="space-y-5" id="perfil-form">
       @csrf @method('PUT')
 
       {{-- Avatar + botão de upload --}}

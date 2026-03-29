@@ -61,7 +61,7 @@
       </form>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card id="empresas-lista" title="Lista de empresas" subtitle="Cards compactos com status, links e operacao">
+    <x-dashboard.section-card id="empresas-lista" title="Lista de empresas" subtitle="Cards compactos com status, links e operação">
       @if($empresas->count() === 0)
         <div class="ui-dashboard-empty">
           {{ mb_strlen(trim((string) $busca)) < 3

@@ -10,7 +10,7 @@ use App\Models\Catalogo\{Categoria, Empresa, PontoTuristico};
 
 class CategoriaController extends Controller
 {
-    public function show(Request $r, string $slug)
+    public function show(Request $r, string $locale, string $slug)
     {
         $driver = DB::connection()->getDriverName();
         $like   = $driver === 'pgsql' ? 'ilike' : 'like';

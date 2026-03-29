@@ -144,7 +144,7 @@
               @endif
 
               @if($statusVideo === 'publicado' && Route::has('site.videos.show'))
-                <a href="{{ route('site.videos.show', $video->slug) }}" target="_blank" class="ui-btn-secondary">Ver no site</a>
+                <a href="{{ localized_route('site.videos.show', ['slug' => $video->slug]) }}" target="_blank" class="ui-btn-secondary">Ver no site</a>
               @endif
 
               <a href="{{ $video->link_acesso }}" target="_blank" rel="noopener noreferrer" class="ui-btn-secondary">Abrir link</a>

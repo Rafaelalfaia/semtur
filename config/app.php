@@ -87,7 +87,7 @@ return [
     'supported_locales' => [
         'pt' => [
             'label' => 'PT',
-            'name' => 'Portugu�s',
+            'name' => 'Portugues',
             'app_locale' => 'pt_BR',
             'html_lang' => 'pt-BR',
             'hreflang' => 'pt-BR',
@@ -103,7 +103,7 @@ return [
         ],
         'es' => [
             'label' => 'ES',
-            'name' => 'Espa�ol',
+            'name' => 'Espanol',
             'app_locale' => 'es',
             'html_lang' => 'es-ES',
             'hreflang' => 'es',

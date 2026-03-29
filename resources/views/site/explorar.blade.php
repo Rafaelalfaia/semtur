@@ -1,4 +1,4 @@
-﻿@extends('site.layouts.app')
+@extends('site.layouts.app')
 
 @php
     use Illuminate\Support\Facades\Route as R;
@@ -11,7 +11,7 @@
     $pointSource = collect(method_exists($pontos, 'items') ? $pontos->items() : $pontos);
     $companySource = collect(method_exists($empresas, 'items') ? $empresas->items() : $empresas);
     $categoriaSlugAtual = $currentCat?->slug ?? request('categoria') ?? request('cat');
-    $explorarCanonical = R::has('site.explorar') ? route('site.explorar') : url()->current();
+    $explorarCanonical = R::has('site.explorar') ? localized_route('site.explorar') : url()->current();
     $explorarTitle = $currentCat?->nome ? __('ui.explore.title_category', ['category' => $currentCat->nome]) : __('ui.explore.title_default');
     $explorarDescription = $buscaAtual !== ''
         ? __('ui.explore.description_search', ['search' => $buscaAtual])
@@ -24,7 +24,7 @@
         ->map(fn ($item) => [
             '@type' => 'ListItem',
             'position' => null,
-            'url' => R::has('site.ponto') ? route('site.ponto', $item->slug ?? $item->id) : null,
+            'url' => R::has('site.ponto') ? localized_route('site.ponto', ['ponto' => $item->slug ?? $item->id]) : null,
             'name' => $item->nome ?? __('ui.explore.point_name'),
         ])
         ->values()
@@ -32,7 +32,7 @@
             $companySource->take(3)->map(fn ($item) => [
                 '@type' => 'ListItem',
                 'position' => null,
-                'url' => R::has('site.empresa') ? route('site.empresa', $item->slug ?? $item->id) : null,
+                'url' => R::has('site.empresa') ? localized_route('site.empresa', ['empresa' => $item->slug ?? $item->id]) : null,
                 'name' => $item->nome ?? __('ui.explore.company_name'),
             ])->values()
         )
@@ -54,7 +54,7 @@
                     '@type' => 'ListItem',
                     'position' => 1,
                     'name' => __('ui.common.home'),
-                    'item' => R::has('site.home') ? route('site.home') : url('/'),
+                    'item' => localized_route('site.home'),
                 ],
                 [
                     '@type' => 'ListItem',
@@ -96,7 +96,7 @@
 @php
     $categoriaSlugAtual = $currentCat?->slug ?? request('categoria') ?? request('cat');
     $mapHref = R::has('site.mapa')
-        ? route('site.mapa', array_filter([
+        ? localized_route('site.mapa', array_filter([
             'q' => $buscaAtual !== '' ? $buscaAtual : null,
             'categoria' => $categoriaSlugAtual ?: null,
         ]))
@@ -104,11 +104,11 @@
 
     $buildItem = function ($item, string $type) use ($categoriaSlugAtual, $buscaAtual) {
         $href = $type === 'empresa' && R::has('site.empresa')
-            ? route('site.empresa', $item->slug ?? $item->id)
-            : (R::has('site.ponto') ? route('site.ponto', $item->slug ?? $item->id) : '#');
+            ? localized_route('site.empresa', ['empresa' => $item->slug ?? $item->id])
+            : (R::has('site.ponto') ? localized_route('site.ponto', ['ponto' => $item->slug ?? $item->id]) : '#');
 
         $mapHref = R::has('site.mapa')
-            ? route('site.mapa', array_filter([
+            ? localized_route('site.mapa', array_filter([
                 'focus' => $type.':'.($item->slug ?? $item->id),
                 'lat' => is_numeric($item->lat ?? null) ? (float) $item->lat : null,
                 'lng' => is_numeric($item->lng ?? null) ? (float) $item->lng : null,
@@ -137,9 +137,9 @@
 
 <div class="site-page site-page-shell site-explore-page">
     @include('site.partials._page_hero', [
-        'backHref' => R::has('site.home') ? route('site.home') : url('/'),
+        'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => __('ui.common.home'), 'href' => R::has('site.home') ? route('site.home') : url('/')],
+            ['label' => __('ui.common.home'), 'href' => localized_route('site.home')],
             ['label' => __('ui.common.explore')],
         ],
         'badge' => __('ui.common.explore'),
@@ -155,8 +155,8 @@
         'primaryActionHref' => R::has('site.mapa') ? $mapHref : null,
         'secondaryActionLabel' => $buscaAtual !== '' || $categoriaSlugAtual ? __('ui.common.clear') : (R::has('site.home') ? __('ui.common.home') : null),
         'secondaryActionHref' => ($buscaAtual !== '' || $categoriaSlugAtual)
-            ? route('site.explorar')
-            : (R::has('site.home') ? route('site.home') : null),
+            ? localized_route('site.explorar')
+            : (R::has('site.home') ? localized_route('site.home') : null),
         'image' => asset('imagens/altamira.jpg'),
         'imageAlt' => __('ui.explore.image_alt'),
         'compact' => true,
@@ -213,7 +213,7 @@
                 <div class="site-explore-categories-rail site-home-carousel-track" x-ref="viewport" role="list" aria-label="{{ __('ui.explore.categories_aria') }}" @scroll.debounce.50ms="update()" x-on:resize.window.debounce.120ms="update()">
                     <div class="site-home-carousel-slide">
                         <a
-                            href="{{ route('site.explorar') }}"
+                            href="{{ localized_route('site.explorar') }}"
                             class="{{ empty($categoriaSlugAtual) ? 'site-explore-category-card is-active' : 'site-explore-category-card' }}"
                             @if(empty($categoriaSlugAtual)) aria-current="page" @endif
                         >
@@ -239,7 +239,7 @@
 
                         <div class="site-home-carousel-slide">
                             <a
-                                href="{{ route('site.explorar', ['categoria' => $categoria->slug]) }}"
+                                href="{{ localized_route('site.explorar', ['categoria' => $categoria->slug]) }}"
                                 class="{{ $isActive ? 'site-explore-category-card is-active' : 'site-explore-category-card' }}"
                                 aria-label="{{ __('ui.explore.category_aria', ['name' => $categoria->nome]) }}"
                                 @if($isActive) aria-current="page" @endif
@@ -280,7 +280,7 @@
             <div class="site-context-strip-actions">
                 <a href="{{ $mapHref }}" class="site-button-primary">{{ __('ui.common.open_map') }}</a>
                 @if($currentCat && R::has('site.categoria'))
-                    <a href="{{ route('site.categoria', $currentCat->slug) }}" class="site-button-secondary">{{ __('ui.common.view_category') }}</a>
+                    <a href="{{ localized_route('site.categoria', ['slug' => $currentCat->slug]) }}" class="site-button-secondary">{{ __('ui.common.view_category') }}</a>
                 @endif
             </div>
         </div>

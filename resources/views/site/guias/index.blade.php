@@ -1,7 +1,7 @@
 @extends('site.layouts.app')
 
-@section('title', 'Guias e Revistas • Visit Altamira')
-@section('meta.description', 'Acesse guias e revistas oficiais para planejar sua visita, consultar materiais do destino e abrir conteúdos diretamente dentro do portal.')
+@section('title', 'Guias e Revistas � Visit Altamira')
+@section('meta.description', 'Acesse guias e revistas oficiais para planejar sua visita, consultar materiais do destino e abrir conteudos diretamente dentro do portal.')
 @section('meta.image', asset('imagens/altamira.jpg'))
 
 @section('site.content')
@@ -13,8 +13,8 @@
     $qAtual = (string) ($q ?? '');
     $totalMateriais = method_exists($materiais, 'total') ? $materiais->total() : $materiais->count();
     $agrupados = collect(method_exists($materiais, 'items') ? $materiais->items() : $materiais)->groupBy('tipo');
-    $explorarUrl = Route::has('site.explorar') ? route('site.explorar') : '#';
-    $homeUrl = Route::has('site.home') ? route('site.home') : url('/');
+    $explorarUrl = localized_route('site.explorar');
+    $homeUrl = localized_route('site.home');
     $heroMeta = array_filter([
     ]);
 @endphp
@@ -23,7 +23,7 @@
     @include('site.partials._page_hero', [
         'backHref' => $homeUrl,
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => $homeUrl],
+            ['label' => 'Inicio', 'href' => $homeUrl],
             ['label' => 'Guias e revistas'],
         ],
         'badge' => 'Materiais oficiais',
@@ -32,7 +32,7 @@
         'meta' => $heroMeta,
         'primaryActionLabel' => 'Explorar materiais',
         'primaryActionHref' => '#lista-materiais',
-        'secondaryActionLabel' => 'Ver mais opções',
+        'secondaryActionLabel' => 'Ver mais opcoes',
         'secondaryActionHref' => $explorarUrl,
         'image' => asset('imagens/altamira.jpg'),
         'imageAlt' => 'Guias e revistas de Altamira',
@@ -45,19 +45,19 @@
                 <div>
                     <p class="site-app-eyebrow">Filtros</p>
                     <h2 class="site-app-title">Encontre o material ideal</h2>
-                    <p class="site-app-copy">Refine por tipo ou busca sem sair do padrão visual do portal.</p>
+                    <p class="site-app-copy">Refine por tipo ou busca sem sair do padrao visual do portal.</p>
                 </div>
             </div>
 
             @if(!empty($tipos))
                 <div class="site-guides-filter-chips">
-                    <a href="{{ route('site.guias') }}" class="{{ $tipoAtual === '' ? 'site-year-chip is-active' : 'site-year-chip' }}">
+                    <a href="{{ localized_route('site.guias') }}" class="{{ $tipoAtual === '' ? 'site-year-chip is-active' : 'site-year-chip' }}">
                         Todos
                     </a>
 
                     @foreach(($tipos ?? []) as $tipoKey => $tipoLabel)
                         <a
-                            href="{{ route('site.guias', array_filter(['tipo' => $tipoKey, 'q' => $qAtual ?: null])) }}"
+                            href="{{ localized_route('site.guias', array_filter(['tipo' => $tipoKey, 'q' => $qAtual ?: null])) }}"
                             class="{{ $tipoAtual === $tipoKey ? 'site-year-chip is-active' : 'site-year-chip' }}"
                         >
                             {{ $tipoLabel }}
@@ -93,7 +93,7 @@
                     <button type="submit" class="site-button-primary">Aplicar filtros</button>
 
                     @if($qAtual !== '' || $tipoAtual !== '')
-                        <a href="{{ route('site.guias') }}" class="site-button-secondary">Limpar</a>
+                        <a href="{{ localized_route('site.guias') }}" class="site-button-secondary">Limpar</a>
                     @endif
                 </div>
             </form>
@@ -150,7 +150,7 @@
                                         </p>
 
                                         <div class="site-directory-card-actions">
-                                            <a href="{{ route('site.guias.show', $material->slug) }}" class="site-button-primary">Abrir material</a>
+                                            <a href="{{ localized_route('site.guias.show', ['slug' => $material->slug]) }}" class="site-button-primary">Abrir material</a>
 
                                             @if(filled($material->link_acesso))
                                                 <a

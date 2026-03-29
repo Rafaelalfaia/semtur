@@ -107,10 +107,6 @@ class MapaApiController extends Controller
 
         $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
-        $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
-
-        $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
-
         if ($q !== '') {
             $empQ->where('nome', $like, "%{$q}%");
             $ptoQ->where(function ($qq) use ($q, $like) {

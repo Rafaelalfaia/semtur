@@ -9,11 +9,11 @@
           Pontos turísticos, hotéis e experiências únicas — tudo em um só lugar.
         </p>
         <div class="flex items-center gap-3">
-          <a href="{{ route('site.explorar') }}"
+          <a href="{{ localized_route('site.explorar') }}"
              class="inline-flex items-center rounded-xl px-5 py-3 bg-emerald-600 text-white hover:bg-emerald-700 shadow">
             Explorar agora
           </a>
-          <a href="{{ route('site.mapa') }}"
+          <a href="{{ localized_route('site.mapa') }}"
              class="inline-flex items-center rounded-xl px-5 py-3 border border-emerald-600 text-emerald-700 hover:bg-emerald-50">
             Ver no mapa
           </a>

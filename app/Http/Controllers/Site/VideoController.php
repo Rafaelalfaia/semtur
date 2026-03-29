@@ -34,7 +34,7 @@ class VideoController extends Controller
         ]);
     }
 
-    public function show(string $slug)
+    public function show(string $locale, string $slug)
     {
         $video = Video::publicados()
             ->where('slug', $slug)

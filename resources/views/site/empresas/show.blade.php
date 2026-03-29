@@ -13,7 +13,7 @@
     $categoriaPrincipal = $categorias->first();
     $capaUrl = $empresa->capa_url ?? $empresa->foto_capa_url ?? $pub($empresa->capa_path ?? null) ?? theme_asset('hero_image');
     $perfilUrl = $empresa->perfil_url ?? $empresa->foto_perfil_url ?? $pub($empresa->perfil_path ?? null) ?? theme_asset('logo');
-    $empresaCanonical = Route::has('site.empresa') ? route('site.empresa', $empresa->slug ?? $empresa->id) : url()->current();
+    $empresaCanonical = Route::has('site.empresa') ? localized_route('site.empresa', ['empresa' => $empresa->slug ?? $empresa->id]) : url()->current();
     $empresaTitle = $nome.' '.__('ui.category.title_suffix');
     $empresaDescription = \Illuminate\Support\Str::limit(strip_tags($descricao ?: __('ui.company.meta_description')), 160);
     $lat = $empresa->lat ?? $empresa->latitude ?? null;
@@ -22,8 +22,8 @@
     $sameAs = collect([$socialLinks['instagram'] ?? null,$socialLinks['facebook'] ?? null,$socialLinks['youtube'] ?? null,$socialLinks['site'] ?? null,$socialLinks['whatsapp'] ?? null,$socialLinks['maps'] ?? null])->filter()->values()->all();
     $empresaSchema = [[
         '@type' => 'BreadcrumbList','@id' => $empresaCanonical.'#breadcrumbs','itemListElement' => array_values(array_filter([
-            ['@type' => 'ListItem','position' => 1,'name' => __('ui.nav.home'),'item' => Route::has('site.home') ? route('site.home') : url('/')],
-            Route::has('site.explorar') ? ['@type' => 'ListItem','position' => 2,'name' => __('ui.nav.explore'),'item' => route('site.explorar')] : null,
+            ['@type' => 'ListItem','position' => 1,'name' => __('ui.nav.home'),'item' => localized_route('site.home')],
+            Route::has('site.explorar') ? ['@type' => 'ListItem','position' => 2,'name' => __('ui.nav.explore'),'item' => localized_route('site.explorar')] : null,
             ['@type' => 'ListItem','position' => 3,'name' => $nome,'item' => $empresaCanonical],
         ])),
     ], array_filter([
@@ -54,8 +54,8 @@
     ])->filter(fn ($item) => filled($item['src']))->values();
     $pacotes = collect($pontosRelacionados ?? []);
     $mapsUrl = $empresa->maps_url ?: ((is_numeric($lat) && is_numeric($lng)) ? 'https://www.google.com/maps?q='.(float) $lat.','.(float) $lng : null);
-    $mapHref = Route::has('site.mapa') ? route('site.mapa', array_filter(['focus' => 'empresa:'.($empresa->slug ?: $empresa->id),'lat' => is_numeric($lat) ? (float) $lat : null,'lng' => is_numeric($lng) ? (float) $lng : null,'open' => 1,'categoria' => $categoriaPrincipal?->slug], fn($value) => !is_null($value) && $value !== '')) : '#';
-    $explorarHref = Route::has('site.explorar') ? route('site.explorar', array_filter(['categoria' => $categoriaPrincipal?->slug])) : '#';
+    $mapHref = Route::has('site.mapa') ? localized_route('site.mapa', array_filter(['focus' => 'empresa:'.($empresa->slug ?: $empresa->id),'lat' => is_numeric($lat) ? (float) $lat : null,'lng' => is_numeric($lng) ? (float) $lng : null,'open' => 1,'categoria' => $categoriaPrincipal?->slug], fn($value) => !is_null($value) && $value !== '')) : '#';
+    $explorarHref = Route::has('site.explorar') ? localized_route('site.explorar', array_filter(['categoria' => $categoriaPrincipal?->slug])) : '#';
 
     $socialItems = collect([
         ['type' => 'whatsapp', 'label' => 'WhatsApp', 'href' => $socialLinks['whatsapp'] ?? null],
@@ -71,7 +71,7 @@
         'subtitle' => $item->cidade ?? __('ui.common.altamira'),
         'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 72),
         'image' => $item->capa_url ?? $item->foto_capa_url ?? null,
-        'href' => Route::has('site.ponto') ? route('site.ponto', $item->slug ?? $item->id) : '#',
+        'href' => Route::has('site.ponto') ? localized_route('site.ponto', ['ponto' => $item->slug ?? $item->id]) : '#',
     ]);
 
     $localizacao = collect([
@@ -84,9 +84,9 @@
 
 <div class="site-page site-page-shell site-empresa-page">
     @include('site.partials._page_hero', [
-        'backHref' => $explorarHref !== '#' ? $explorarHref : (Route::has('site.home') ? route('site.home') : url('/')),
+        'backHref' => $explorarHref !== '#' ? $explorarHref : (localized_route('site.home')),
         'breadcrumbs' => [
-            ['label' => __('ui.nav.home'), 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => __('ui.nav.home'), 'href' => localized_route('site.home')],
             ['label' => __('ui.nav.explore'), 'href' => $explorarHref !== '#' ? $explorarHref : null],
             ['label' => $nome],
         ],
@@ -119,7 +119,7 @@
                 @if($categorias->isNotEmpty())
                     <div class="site-detail-chip-row">
                         @foreach($categorias as $categoria)
-                            <a href="{{ Route::has('site.explorar') ? route('site.explorar', ['categoria' => $categoria->slug]) : '#' }}" class="site-filter-chip">{{ $categoria->nome }}</a>
+                            <a href="{{ Route::has('site.explorar') ? localized_route('site.explorar', ['categoria' => $categoria->slug]) : '#' }}" class="site-filter-chip">{{ $categoria->nome }}</a>
                         @endforeach
                     </div>
                 @endif

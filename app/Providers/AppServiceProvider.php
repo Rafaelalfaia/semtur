@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use App\Models\Catalogo\Categoria;
 use App\Models\Catalogo\Empresa;
 use App\Models\Catalogo\EmpresaRecomendacao;
@@ -18,6 +20,7 @@ use App\Models\Conteudo\BannerDestaque;
 use App\Observers\SiteSyncObserver;
 use App\Services\ThemeManager;
 use App\Services\ThemeResolver;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
@@ -28,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        require_once app_path('Support/helpers.php');
         require_once app_path('Support/theme_helpers.php');
 
         $this->app->singleton(ThemeResolver::class, fn () => new ThemeResolver());
@@ -37,8 +41,32 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         URL::defaults([
-            'locale' => config('app.locale_prefix_fallback', 'pt'),
+            'locale' => route_locale(),
         ]);
+
+        $resolveLocale = static function (?string $preferredLocale = null): string {
+            return route_locale($preferredLocale);
+        };
+
+        ResetPassword::createUrlUsing(function ($user, string $token) use ($resolveLocale) {
+            return route('password.reset', [
+                'locale' => $resolveLocale(),
+                'token' => $token,
+                'email' => $user->email,
+            ]);
+        });
+
+        VerifyEmail::createUrlUsing(function ($notifiable) use ($resolveLocale) {
+            return URL::temporarySignedRoute(
+                'verification.verify',
+                Carbon::now()->addMinutes(config('auth.verification.expire', 60)),
+                [
+                    'locale' => $resolveLocale(),
+                    'id' => $notifiable->getKey(),
+                    'hash' => sha1($notifiable->getEmailForVerification()),
+                ]
+            );
+        });
 
         Categoria::observe(SiteSyncObserver::class);
         Empresa::observe(SiteSyncObserver::class);

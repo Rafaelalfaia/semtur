@@ -8,7 +8,9 @@
       ?? $evento->perfil_url
       ?? ($evento->perfil_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($evento->perfil_path) : null)
       ?? theme_asset('hero_image');
-  $seoCanonical = isset($edicao->ano) && $edicao->ano ? route('eventos.show', [$evento->slug ?? $evento->id, $edicao->ano]) : route('eventos.show', [$evento->slug ?? $evento->id]);
+  $seoCanonical = isset($edicao->ano) && $edicao->ano
+      ? localized_route('eventos.show', ['slug' => $evento->slug ?? $evento->id, 'ano' => $edicao->ano])
+      : localized_route('eventos.show', ['slug' => $evento->slug ?? $evento->id]);
 @endphp
 
 @section('title', $seoTitle)
@@ -23,8 +25,8 @@
           '@type' => 'BreadcrumbList',
           '@id' => $seoCanonical.'#breadcrumbs',
           'itemListElement' => array_values(array_filter([
-              ['@type' => 'ListItem','position' => 1,'name' => __('ui.nav.home'),'item' => \Illuminate\Support\Facades\Route::has('site.home') ? route('site.home') : url('/')],
-              \Illuminate\Support\Facades\Route::has('eventos.index') ? ['@type' => 'ListItem','position' => 2,'name' => __('ui.events.title'),'item' => route('eventos.index')] : null,
+              ['@type' => 'ListItem','position' => 1,'name' => __('ui.nav.home'),'item' => \Illuminate\Support\Facades\localized_route('site.home')],
+              \Illuminate\Support\Facades\Route::has('eventos.index') ? ['@type' => 'ListItem','position' => 2,'name' => __('ui.events.title'),'item' => localized_route('eventos.index')] : null,
               ['@type' => 'ListItem','position' => 3,'name' => $seoTitle,'item' => $seoCanonical],
           ])),
       ],
@@ -58,7 +60,7 @@
   $onde = trim($edicao->local ?? '') ?: $cidade;
   $lat = is_numeric($edicao->lat ?? null) ? (float) $edicao->lat : null;
   $lng = is_numeric($edicao->lng ?? null) ? (float) $edicao->lng : null;
-  $mapBase = Route::has('site.mapa') ? route('site.mapa') : url('/mapa');
+  $mapBase = Route::has('site.mapa') ? localized_route('site.mapa') : localized_route('site.mapa');
   $slugOrId = $evento->slug ?? $evento->id;
   $mapQuery = array_filter(['focus' => 'evento:'.$slugOrId,'lat' => $lat,'lng' => $lng,'open' => 1], fn($v) => $v !== null && $v !== '');
   $mapHref = $mapBase.(count($mapQuery) ? ('?'.http_build_query($mapQuery)) : '');
@@ -80,11 +82,11 @@
         'badge' => __('ui.events.event'),
         'title' => $nome,
         'subtitle' => __('ui.events.description_subtitle'),
-        'meta' => [$cidade, $quando, $nota ? number_format($nota, 1, ',', '.').' de avalia��o' : null],
+        'meta' => [$cidade, $quando, $nota ? number_format($nota, 1, ',', '.').' de avaliaÃ§Ã£o' : null],
         'primaryActionLabel' => __('ui.common.open_map'),
         'primaryActionHref' => $mapHref,
         'secondaryActionLabel' => Route::has('eventos.index') ? __('ui.agenda.view_full_agenda') : null,
-        'secondaryActionHref' => Route::has('eventos.index') ? route('eventos.index') : null,
+        'secondaryActionHref' => Route::has('eventos.index') ? localized_route('eventos.index') : null,
         'image' => $capaUrl,
         'imageAlt' => $nome,
     ])
@@ -95,7 +97,7 @@
                 <x-section-head :eyebrow="__('ui.events.editions')" :title="__('ui.events.choose_year')" :subtitle="__('ui.events.choose_year_subtitle')" />
                 <div class="site-filter-row">
                     @foreach($anos as $ano)
-                        <a href="{{ route('eventos.show', [$evento->slug ?? $evento->id, $ano]) }}" class="{{ $ano == $edicao->ano ? 'site-year-chip is-active' : 'site-year-chip' }}">{{ $ano }}</a>
+                        <a href="{{ localized_route('eventos.show', ['slug' => $evento->slug ?? $evento->id, 'ano' => $ano]) }}" class="{{ $ano == $edicao->ano ? 'site-year-chip is-active' : 'site-year-chip' }}">{{ $ano }}</a>
                     @endforeach
                 </div>
             </div>

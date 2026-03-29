@@ -4,61 +4,60 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
-    public function redirect()
+    public function redirect(): RedirectResponse
     {
-        // Cadastro/login via Google é somente para o papel "Cidadao".
-        // Como é público, apenas redirecionamos. O papel será garantido no callback.
         return Socialite::driver('google')->redirect();
     }
 
-    public function callback()
+    public function callback(Request $request): RedirectResponse
     {
-        $g = Socialite::driver('google')->stateless()->user();
+        $googleUser = Socialite::driver('google')->stateless()->user();
 
-        // Tenta achar por google_id
-        $user = User::where('google_id', $g->getId())->first();
+        $googleId = (string) $googleUser->getId();
+        $email = $googleUser->getEmail() ? strtolower($googleUser->getEmail()) : null;
+        $name = $googleUser->getName() ?: $googleUser->getNickname() ?: ($email ? strtok($email, '@') : 'Usuario');
 
-        // Ou pela correspondência do e-mail
-        if (!$user && $g->getEmail()) {
-            $user = User::where('email', strtolower($g->getEmail()))->first();
+        $user = User::where('google_id', $googleId)->first();
+
+        if (! $user && $email) {
+            $user = User::where('email', $email)->first();
         }
 
-        if (!$user) {
-            // Criar novo cidadão (apenas)
+        if (! $user) {
             $user = User::create([
-                'name'         => $g->getName() ?: ($g->getNickname() ?: 'Novo Cidadão'),
-                'email'        => $g->getEmail() ? strtolower($g->getEmail()) : null,
-                'google_id'    => $g->getId(),
-                'google_email' => $g->getEmail(),
-                'password'     => bcrypt(Str::random(32)), // placeholder
+                'name' => $name,
+                'email' => $email,
+                'google_id' => $googleId,
+                'avatar_url' => $googleUser->getAvatar(),
+                'password' => Hash::make(Str::random(40)),
             ]);
-
-            if (method_exists($user, 'assignRole')) {
-                $user->assignRole('Cidadao');
-            }
         } else {
-            // Se já existe, só vincula google_id se ainda não tiver
-            if (!$user->google_id) {
-                $user->google_id    = $g->getId();
-                $user->google_email = $g->getEmail();
-                $user->save();
-            }
+            $user->update([
+                'name' => $name,
+                'google_id' => $googleId,
+                'avatar_url' => $googleUser->getAvatar(),
+            ]);
+        }
 
-            // Se o usuário NÃO for Cidadao, bloqueia login via Google
-            if (method_exists($user, 'hasRole') && !$user->hasRole('Cidadao')) {
-                return redirect()->route('login')->withErrors([
-                    'email' => 'Login via Google é permitido somente para Cidadão.',
-                ]);
+        if (method_exists($user, 'roles') && method_exists($user, 'assignRole')) {
+            if (! $user->roles()->exists()) {
+                $user->assignRole('Cidadao');
             }
         }
 
         Auth::login($user, remember: true);
-        return redirect()->route('dashboard');
+
+        return redirect()->intended(localized_route('site.home', [
+            'locale' => route_locale(null, $request),
+        ]));
     }
 }

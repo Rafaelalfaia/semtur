@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,8 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission'         => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'coordenador.permission' => \App\Http\Middleware\EnsureCoordenadorAreaPermission::class,
-            'setLocale'          => \App\Http\Middleware\SetLocale::class,
+            'app.setLocale'      => \App\Http\Middleware\SetLocale::class,
         ]);
+
+        $middleware->redirectGuestsTo(function (Request $request) {
+            return localized_route('login', ['locale' => route_locale(null, $request)]);
+        });
     })
 
     ->withExceptions(function ($exceptions) {

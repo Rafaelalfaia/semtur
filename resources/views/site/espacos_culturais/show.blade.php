@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', $espaco->nome . ' • ' . $espaco->tipo_label)
+@section('title', $espaco->nome . ' � ' . $espaco->tipo_label)
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($espaco->resumo ?: $espaco->descricao)), 160))
 @section('meta.image', $espaco->capa_url ?: (optional($espaco->midias->first())->url ?: asset('imagens/altamira.jpg')))
 
@@ -17,7 +17,7 @@
 
     $localizacao = collect([
         ['label' => 'Tipo', 'value' => $espaco->tipo_label],
-        ['label' => 'Endereço', 'value' => $espaco->endereco],
+        ['label' => 'Endereco', 'value' => $espaco->endereco],
         ['label' => 'Bairro', 'value' => $espaco->bairro],
         ['label' => 'Cidade', 'value' => $espaco->cidade ?: 'Altamira'],
     ])->filter(fn ($item) => filled($item['value']))->values();
@@ -25,10 +25,10 @@
     $agendamentoWhatsappHref = null;
     if ($espaco->agendamento_disponivel && filled($espaco->agendamento_whatsapp_phone)) {
         $mensagemAgendamento = implode("\n", array_filter([
-            'Olá! Gostaria de fazer um agendamento para visitar '.$espaco->nome.'.',
+            'Ola! Gostaria de fazer um agendamento para visitar '.$espaco->nome.'.',
             'Tipo: '.$espaco->tipo_label,
             filled($espaco->cidade) ? 'Cidade: '.$espaco->cidade : 'Cidade: Altamira',
-            'Pode me orientar sobre disponibilidade e próximos passos?',
+            'Pode me orientar sobre disponibilidade e proximos passos?',
         ]));
 
         $agendamentoWhatsappHref = 'https://wa.me/'.$espaco->agendamento_whatsapp_phone.'?text='.rawurlencode($mensagemAgendamento);
@@ -37,24 +37,24 @@
 
 <div class="site-page site-page-shell site-espacos-page">
     @include('site.partials._page_hero', [
-        'backHref' => Route::has('site.museus') ? route('site.museus') : url()->previous(),
+        'backHref' => Route::has('site.museus') ? localized_route('site.museus') : url()->previous(),
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
-            ['label' => 'Museus e teatros', 'href' => Route::has('site.museus') ? route('site.museus') : null],
+            ['label' => 'Inicio', 'href' => localized_route('site.home')],
+            ['label' => 'Museus e teatros', 'href' => Route::has('site.museus') ? localized_route('site.museus') : null],
             ['label' => $espaco->nome],
         ],
         'badge' => $espaco->tipo_label,
         'title' => $espaco->nome,
-        'subtitle' => 'Informações públicas, grade semanal e orientações para agendar visitas ao espaço cultural.',
+        'subtitle' => 'Informacoes publicas, grade semanal e orientacoes para agendar visitas ao espaco cultural.',
         'meta' => [
             $espaco->bairro,
             $espaco->cidade ?: 'Altamira',
-            $espaco->agendamento_disponivel ? 'Agendamento disponível' : 'Sem agendamento online',
+            $espaco->agendamento_disponivel ? 'Agendamento disponivel' : 'Sem agendamento online',
         ],
         'primaryActionLabel' => $agendamentoWhatsappHref ? 'Fazer agendamento' : ($espaco->agendamento_disponivel ? 'Agendar visita' : null),
-        'primaryActionHref' => $agendamentoWhatsappHref ?: ($espaco->agendamento_disponivel ? route('site.museus.agendar', $espaco->slug) : null),
+        'primaryActionHref' => $agendamentoWhatsappHref ?: ($espaco->agendamento_disponivel ? localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) : null),
         'secondaryActionLabel' => $espaco->maps_url ? __('ui.common.see_on_map') : __('ui.common.back_to_listing'),
-        'secondaryActionHref' => $espaco->maps_url ?: (Route::has('site.museus') ? route('site.museus') : url('/')),
+        'secondaryActionHref' => $espaco->maps_url ?: localized_route('site.museus'),
         'image' => $capa,
         'imageAlt' => $espaco->nome,
     ])
@@ -69,13 +69,13 @@
                             <x-section-head
                                 eyebrow="Sobre"
                                 title="Planeje a visita"
-                                subtitle="Museus e o teatro municipal entram aqui com leitura simples, horários claros e caminho direto para o agendamento."
+                                subtitle="Museus e o teatro municipal entram aqui com leitura simples, horarios claros e caminho direto para o agendamento."
                             />
                         </div>
                     </div>
 
                     <div class="site-detail-copy site-prose">
-                        {!! $espaco->descricao ? nl2br(e($espaco->descricao)) : '<p>Este espaço ainda não tem uma apresentação pública detalhada.</p>' !!}
+                        {!! $espaco->descricao ? nl2br(e($espaco->descricao)) : '<p>Este espaco ainda nao tem uma apresentacao publica detalhada.</p>' !!}
                     </div>
                 </section>
 
@@ -94,7 +94,7 @@
                     >
                         <x-section-head
                             eyebrow="Galeria"
-                            title="Imagens do espaço"
+                            title="Imagens do espaco"
                             subtitle="Abra as fotos para ver melhor o ambiente e navegar entre as imagens publicadas."
                         />
 
@@ -111,7 +111,7 @@
                                 <button type="button" class="site-lightbox-close" @click="close()" aria-label="Fechar galeria">&times;</button>
                                 <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="Foto anterior">&#8249;</button>
                                 <img :src="images[index]?.src" :alt="images[index]?.alt || ''" class="site-lightbox-image">
-                                <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="Próxima foto">&#8250;</button>
+                                <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="Proxima foto">&#8250;</button>
                             </div>
                         </div>
                     </section>
@@ -120,11 +120,11 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Informações" title="Dados públicos" subtitle="Tudo o que ajuda a decidir se este espaço é adequado para sua visita." />
+                    <x-section-head eyebrow="Informacoes" title="Dados publicos" subtitle="Tudo o que ajuda a decidir se este espaco e adequado para sua visita." />
 
                     @if($localizacao->isEmpty())
                         <div class="site-empty-state">
-                            <p class="site-empty-state-copy">Os dados públicos deste espaço ainda estão em atualização.</p>
+                            <p class="site-empty-state-copy">Os dados publicos deste espaco ainda estao em atualizacao.</p>
                         </div>
                     @else
                         <div class="site-location-card-list">
@@ -146,7 +146,7 @@
 
                 @if($espaco->horarios->count())
                     <section class="site-surface-soft site-content-block">
-                        <x-section-head eyebrow="Grade semanal" title="Horários disponíveis" subtitle="Consulte dias, faixas de visita e observações publicadas pelo coordenador." />
+                        <x-section-head eyebrow="Grade semanal" title="Horarios disponiveis" subtitle="Consulte dias, faixas de visita e observacoes publicadas pelo coordenador." />
 
                         <div class="site-espacos-detail-schedule">
                             @foreach($espaco->horarios as $horario)
@@ -171,7 +171,7 @@
 
                 @if($espaco->agendamento_disponivel)
                     <section class="site-surface site-content-block site-espacos-booking-cta">
-                        <x-section-head eyebrow="Agendamento" title="Solicite sua visita" subtitle="Use o formulário público ou fale direto no WhatsApp do atendimento cadastrado pelo coordenador." />
+                        <x-section-head eyebrow="Agendamento" title="Solicite sua visita" subtitle="Use o formulario publico ou fale direto no WhatsApp do atendimento cadastrado pelo coordenador." />
 
                         @if($espaco->agendamento_instrucoes)
                             <p class="site-card-list-summary">{{ $espaco->agendamento_instrucoes }}</p>
@@ -186,7 +186,7 @@
                                     <span>Fazer agendamento</span>
                                 </a>
                             @endif
-                            <a href="{{ route('site.museus.agendar', $espaco->slug) }}" class="site-button-secondary">Abrir formulário</a>
+                            <a href="{{ localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) }}" class="site-button-secondary">Abrir formulario</a>
                         </div>
                     </section>
                 @endif
@@ -195,4 +195,3 @@
     </section>
 </div>
 @endsection
-

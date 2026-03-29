@@ -25,7 +25,7 @@
   >
     <div class="flex flex-wrap gap-2">
       @if ($espaco->slug)
-        <a href="{{ route('site.museus.show', $espaco->slug) }}" target="_blank" class="ui-btn-secondary">Ver no site</a>
+        <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" target="_blank" class="ui-btn-secondary">Ver no site</a>
       @endif
       <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-btn-secondary">Voltar</a>
     </div>

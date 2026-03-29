@@ -19,7 +19,7 @@
   >
     <div class="flex flex-wrap gap-2">
       @if(($video->status ?? null) === 'publicado' && Route::has('site.videos.show'))
-        <a href="{{ route('site.videos.show', $video->slug) }}" target="_blank" class="ui-btn-secondary">Ver no site</a>
+        <a href="{{ localized_route('site.videos.show', ['slug' => $video->slug]) }}" target="_blank" class="ui-btn-secondary">Ver no site</a>
       @endif
       <a href="{{ route('coordenador.videos.index') }}" class="ui-btn-secondary">Voltar</a>
     </div>

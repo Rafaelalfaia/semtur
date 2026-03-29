@@ -55,7 +55,7 @@
                         </a>
 
                         <a
-                            href="{{ route('site.explorar') ?? url('/explorar') }}"
+                            href="{{ localized_route('site.explorar') }}"
                             class="inline-flex items-center rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15"
                         >
                             Ver mais opções
@@ -93,7 +93,7 @@
 
         <div class="mt-5 flex gap-3 overflow-x-auto pb-1">
             <a
-                href="{{ route('site.roteiros') }}"
+                href="{{ localized_route('site.roteiros') }}"
                 class="inline-flex shrink-0 items-center rounded-full border px-4 py-2 text-sm transition {{ $duracaoAtual === '' && $perfilAtual === '' ? 'border-emerald-400 bg-emerald-500/15 text-emerald-200' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' }}"
             >
                 Todos
@@ -101,7 +101,7 @@
 
             @foreach($chipsDuracao as $key => $label)
                 <a
-                    href="{{ route('site.roteiros', array_filter(['duracao' => $key, 'perfil' => $perfilAtual ?: null, 'q' => $qAtual ?: null])) }}"
+                    href="{{ localized_route('site.roteiros', array_filter(['duracao' => $key, 'perfil' => $perfilAtual ?: null, 'q' => $qAtual ?: null])) }}"
                     class="inline-flex shrink-0 items-center rounded-full border px-4 py-2 text-sm transition {{ $duracaoAtual === $key ? 'border-emerald-400 bg-emerald-500/15 text-emerald-200' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' }}"
                 >
                     {{ $label }}
@@ -110,7 +110,7 @@
 
             @foreach($chipsPerfis as $key => $label)
                 <a
-                    href="{{ route('site.roteiros', array_filter(['perfil' => $key, 'duracao' => $duracaoAtual ?: null, 'q' => $qAtual ?: null])) }}"
+                    href="{{ localized_route('site.roteiros', array_filter(['perfil' => $key, 'duracao' => $duracaoAtual ?: null, 'q' => $qAtual ?: null])) }}"
                     class="inline-flex shrink-0 items-center rounded-full border px-4 py-2 text-sm transition {{ $perfilAtual === $key ? 'border-emerald-400 bg-emerald-500/15 text-emerald-200' : 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' }}"
                 >
                     {{ $label }}
@@ -178,7 +178,7 @@
                         </button>
 
                         <a
-                            href="{{ route('site.roteiros') }}"
+                            href="{{ localized_route('site.roteiros') }}"
                             class="inline-flex items-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10"
                         >
                             Limpar
@@ -218,7 +218,7 @@
 
                             <div class="mt-6">
                                 <a
-                                    href="{{ route('site.roteiros') }}"
+                                    href="{{ localized_route('site.roteiros') }}"
                                     class="inline-flex items-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-500"
                                 >
                                     Ver todos os roteiros
@@ -300,7 +300,7 @@
                                         </div>
 
                                         <a
-                                            href="{{ route('site.roteiros.show', $roteiro->slug) }}"
+                                            href="{{ localized_route('site.roteiros.show', ['slug' => $roteiro->slug]) }}"
                                             class="inline-flex items-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-500"
                                         >
                                             Ver roteiro

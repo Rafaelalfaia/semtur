@@ -1,4 +1,4 @@
-﻿@extends('site.layouts.app')
+@extends('site.layouts.app')
 
 @php
     use Illuminate\Support\Facades\Route;
@@ -28,7 +28,7 @@
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) ($edicao->resumo ?? $evento->descricao ?? '')), 110),
             'image' => $image,
             'href' => Route::has('eventos.show')
-                ? route('eventos.show', [$evento->slug ?? $evento->id, $ano ?: now()->year])
+                ? localized_route('eventos.show', ['slug' => $evento->slug ?? $evento->id, 'ano' => $ano ?: now()->year])
                 : ($evento->slug ?? '#'),
             'badge' => $periodo ?: ($ano ?: __('ui.agenda.title')),
             'meta' => filled($edicao->local ?? null) ? $edicao->local : __('ui.agenda.published_programming'),
@@ -80,9 +80,9 @@
     @if($isAgendaPage)
         <div class="site-page site-page-shell site-portal-page site-portal-page--agenda">
             @include('site.partials._page_hero', [
-                'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
+                'backHref' => localized_route('site.home'),
                 'breadcrumbs' => [
-                    ['label' => __('ui.common.home'), 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+                    ['label' => __('ui.common.home'), 'href' => localized_route('site.home')],
                     ['label' => $page['title'] ?? __('ui.agenda.title')],
                 ],
                 'badge' => $page['eyebrow'] ?? __('ui.agenda.city_programming'),
@@ -95,7 +95,7 @@
                 'primaryActionLabel' => $page['cta_label'] ?? null,
                 'primaryActionHref' => $page['cta_href'] ?? null,
                 'secondaryActionLabel' => Route::has('site.explorar') ? __('ui.agenda.explore_city') : null,
-                'secondaryActionHref' => Route::has('site.explorar') ? route('site.explorar') : null,
+                'secondaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
                 'image' => $agendaHeroImage,
                 'imageAlt' => $page['title'] ?? __('ui.agenda.title'),
                 'compact' => true,
@@ -221,7 +221,7 @@
                         <div class="site-agenda-portal-cta-actions">
                             <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ $page['cta_label'] }}</a>
                             @if(Route::has('site.mapa'))
-                                <a href="{{ route('site.mapa') }}" class="site-button-secondary">{{ __('ui.common.map') }}</a>
+                                <a href="{{ localized_route('site.mapa') }}" class="site-button-secondary">{{ __('ui.common.map') }}</a>
                             @endif
                         </div>
                     </div>
@@ -247,7 +247,7 @@
             <div class="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 md:py-12">
                 @include('site.partials._breadcrumbs', [
                     'items' => [
-                        ['label' => __('ui.common.home'), 'href' => route('site.home')],
+                        ['label' => __('ui.common.home'), 'href' => localized_route('site.home')],
                         ['label' => $page['title'] ?? __('ui.common.view_more')],
                     ],
                 ])

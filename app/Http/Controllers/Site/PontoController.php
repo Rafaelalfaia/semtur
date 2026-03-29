@@ -10,7 +10,7 @@ class PontoController extends Controller
     /**
      * Mostra o detalhe do ponto (apenas 'publicado'), aceitando slug ou id.
      */
-    public function show(string $ponto)
+    public function show(string $locale, string $ponto)
     {
         $query = PontoTuristico::query()
             ->where('status', 'publicado')

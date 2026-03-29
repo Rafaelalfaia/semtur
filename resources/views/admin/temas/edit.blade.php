@@ -2,7 +2,7 @@
 
 @section('title', 'Editar tema')
 
-@section('topbar.description', 'Refine tokens, assets, escopos e vigencia do tema sem quebrar o fluxo administrativo ja existente.')
+@section('topbar.description', 'Refine tokens, assets, escopos e vigência do tema sem quebrar o fluxo administrativo já existente.')
 
 @section('topbar.nav')
     <a href="{{ route('admin.temas.index') }}" class="ui-console-topbar-tab">Temas</a>
@@ -24,7 +24,7 @@
 <div class="ui-console-page">
     <x-dashboard.page-header
         title="Editar tema"
-        subtitle="Ajuste a experiencia administrativa, aplique preview local e publique quando a identidade estiver pronta."
+        subtitle="Ajuste a experiência administrativa, aplique preview local e publique quando a identidade estiver pronta."
     >
         <x-slot:actions>
             <a href="{{ route('admin.temas.index') }}" class="ui-btn-secondary">Voltar</a>
@@ -80,7 +80,7 @@
                     <form method="POST" action="{{ route('admin.temas.restore-default') }}">
                         @csrf
                         @method('PATCH')
-                        <button class="ui-btn-secondary">Padrao no console</button>
+                        <button class="ui-btn-secondary">Padrão no console</button>
                     </form>
                 @elseif($supportsConsole && ! $isConsoleActive)
                     <form method="POST" action="{{ route('admin.temas.activate', $theme) }}">
@@ -94,7 +94,7 @@
                     <form method="POST" action="{{ route('admin.temas.restore-default-site') }}">
                         @csrf
                         @method('PATCH')
-                        <button class="ui-btn-secondary">Padrao no site</button>
+                        <button class="ui-btn-secondary">Padrão no site</button>
                     </form>
                 @elseif($supportsSite && ! $isSiteActive)
                     <form method="POST" action="{{ route('admin.temas.activate-site', $theme) }}">
@@ -108,7 +108,7 @@
                     <form method="POST" action="{{ route('admin.temas.restore-default-auth') }}">
                         @csrf
                         @method('PATCH')
-                        <button class="ui-btn-secondary">Padrao no auth</button>
+                        <button class="ui-btn-secondary">Padrão no auth</button>
                     </form>
                 @elseif($supportsAuth && ! $isAuthActive)
                     <form method="POST" action="{{ route('admin.temas.activate-auth', $theme) }}">

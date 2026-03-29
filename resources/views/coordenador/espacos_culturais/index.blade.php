@@ -121,7 +121,7 @@
               <a href="{{ route('coordenador.espacos-culturais.edit', $espaco) }}" class="ui-btn-primary">Editar</a>
 
               @if ($espaco->slug)
-                <a href="{{ route('site.museus.show', $espaco->slug) }}" target="_blank" class="ui-btn-secondary">Ver site</a>
+                <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" target="_blank" class="ui-btn-secondary">Ver site</a>
               @endif
 
               <a href="{{ route('coordenador.espacos-culturais.agendamentos.index', ['espaco_id' => $espaco->id]) }}" class="ui-btn-secondary">Agendamentos</a>

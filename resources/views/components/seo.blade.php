@@ -22,7 +22,7 @@
     $htmlLocale = data_get($activeLocaleMeta, 'html_lang', $activePrefix === 'pt' ? 'pt-BR' : $activePrefix);
 
     $fallbackTitle = 'VisitAltamira - Altamira, Rio Xingu (Para, Amazonia)';
-    $fallbackDesc = 'Guia oficial de Altamira e do Rio Xingu no Para: pontos turisticos, experiencias, gastronomia e servicos para planejar a visita com mais contexto.';
+    $fallbackDesc = 'Guia oficial de Altamira e do Rio Xingu no Pará: pontos turísticos, experiências, gastronomia e serviços para planejar a visita com mais contexto.';
 
     $resolvedTitle = trim((string) $title);
     $titleTag = $resolvedTitle === ''
@@ -58,10 +58,10 @@
 
     $hrefPtBr = $alternateLinks->get('pt-BR', $canon);
     $hrefXDef = $hrefPtBr ?: $canon;
-    $keywords = 'VisitAltamira, Altamira, Para, Amazonia, Rio Xingu, turismo, guia turistico, gastronomia, hospedagem, experiencias';
+    $keywords = 'VisitAltamira, Altamira, Pará, Amazônia, Rio Xingu, turismo, guia turístico, gastronomia, hospedagem, experiências';
     $maskIconExists = file_exists(public_path('icons/mask-icon.svg'));
     $logoUrl = $toAbsoluteUrl('icons/pwa-512.png') ?: $imgUrl;
-    $searchTarget = Route::has('site.explorar') ? route('site.explorar').'?busca={search_term_string}' : null;
+    $searchTarget = Route::has('site.explorar') ? localized_route('site.explorar').'?q={search_term_string}' : null;
 
     $websiteId = $baseUrl.'#website';
     $organizationId = $baseUrl.'#organization';
@@ -143,7 +143,7 @@
 @if ($maskIconExists)
 <link rel="mask-icon" href="/icons/mask-icon.svg{{ $v }}" color="#0e1b12">
 @endif
-<link rel="manifest" href="/manifest.webmanifest{{ $v }}">
+<link rel="manifest" href="{{ Route::has('site.manifest') ? route('site.manifest', ['locale' => $activePrefix]).$v : '/manifest.webmanifest'.$v }}">
 <link rel="shortcut icon" href="/favicon.ico{{ $v }}">
 <meta name="theme-color" content="#0e1b12">
 

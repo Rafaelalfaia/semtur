@@ -2,11 +2,11 @@
 <section class="mx-auto max-w-7xl px-4 py-10">
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-xl font-semibold">Categorias</h2>
-    <a href="{{ route('site.explorar') }}" class="text-emerald-700 hover:underline">Ver todas</a>
+    <a href="{{ localized_route('site.explorar') }}" class="text-emerald-700 hover:underline">Ver todas</a>
   </div>
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
     @foreach($categorias as $c)
-      <a href="{{ route('site.explorar', ['categoria' => $c->slug]) }}"
+      <a href="{{ localized_route('site.explorar', ['categoria' => $c->slug]) }}"
          class="group p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow">
         <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
           @if($c->icone_path)

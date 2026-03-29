@@ -13,7 +13,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
 // =========================
-// SITE (web) – PÚBLICO
+// SITE (web) â€“ PÃšBLICO
 // =========================
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\MapaController;
@@ -52,8 +52,7 @@ use App\Models\RotaDoCacau;
 
 $redirectToLocalized = function (string $routeName, array $routeKeys = []) {
     return function (\Illuminate\Http\Request $request, ...$segments) use ($routeName, $routeKeys) {
-        $locale = session('locale', config('app.locale_prefix_fallback', 'pt'));
-        $params = ['locale' => $locale];
+        $params = ['locale' => route_locale(null, $request)];
 
         foreach ($routeKeys as $index => $key) {
             $params[$key] = $segments[$index] ?? null;
@@ -113,7 +112,7 @@ use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoVideoController as CoordRo
 use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoPatrocinadorController as CoordRotaDoCacauEdicaoPatrocinadorController;
 
 // =========================
-/* SITE – PÚBLICO (WEB) */
+/* SITE â€“ PÃšBLICO (WEB) */
 // =========================
 Route::get('/sitemap.xml', function () {
     $locales = array_keys(config('app.supported_locales', ['pt' => []]));
@@ -199,49 +198,15 @@ Route::get('/sitemap.xml', function () {
     return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
 })->name('sitemap');
 
-Route::get('/auth/google/redirect', fn() => Socialite::driver('google')->redirect())
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
     ->name('google.redirect');
 
-Route::get('/auth/google/callback', function () {
-    $g = Socialite::driver('google')->stateless()->user();
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+    ->name('google.callback');
 
-    $googleId = (string) $g->getId();
-    $email    = $g->getEmail() ? strtolower($g->getEmail()) : null;
-    $name     = $g->getName() ?: $g->getNickname() ?: ($email ? strtok($email, '@') : 'Usuário');
-
-    $user = User::where('google_id', $googleId)->first();
-    if (!$user && $email) {
-        $user = User::where('email', $email)->first();
-    }
-
-    if (!$user) {
-        $user = User::create([
-            'name'       => $name,
-            'email'      => $email,
-            'google_id'  => $googleId,
-            'avatar_url' => $g->getAvatar(),
-            'password'   => Hash::make(Str::random(40)),
-        ]);
-    } else {
-        $user->update([
-            'name'       => $name,
-            'google_id'  => $googleId,
-            'avatar_url' => $g->getAvatar(),
-        ]);
-    }
-
-    if (method_exists($user, 'roles') && method_exists($user, 'assignRole')) {
-        if (!$user->roles()->exists()) {
-            $user->assignRole('Cidadao');
-        }
-    }
-
-    Auth::login($user, remember: true);
-    $locale = session('locale', config('app.locale_prefix_fallback', 'pt'));
-    return redirect()->intended(route('site.home', ['locale' => $locale]));
-})->name('google.callback');
-
-Route::get('/', [HomeController::class, 'index']);
+Route::get('/', function (\Illuminate\Http\Request $request) {
+    return redirect()->route('site.home', ['locale' => route_locale(null, $request)]);
+});
 Route::get('/explorar', $redirectToLocalized('site.explorar'));
 Route::get('/mapa', $redirectToLocalized('site.mapa'));
 Route::get('/roteiros', $redirectToLocalized('site.roteiros'));
@@ -277,15 +242,57 @@ Route::get('/eventos/{slug}/{ano?}', $redirectToLocalized('eventos.show', ['slug
 Route::get('/conta', $redirectToLocalized('site.perfil.index'));
 Route::get('/conta/editar', $redirectToLocalized('site.perfil.editar'));
 Route::get('/conta/redes', $redirectToLocalized('site.perfil.redes'));
-Route::get('/login', [AuthenticatedSessionController::class, 'create']);
-Route::get('/register', [RegisteredUserController::class, 'create']);
-Route::get('/forgot-password', [PasswordResetLinkController::class, 'create']);
+Route::get('/login', $redirectToLocalized('login'));
+Route::get('/register', $redirectToLocalized('register'));
+Route::get('/forgot-password', $redirectToLocalized('password.request'));
 
-Route::middleware('setLocale')
+Route::middleware('app.setLocale')
     ->prefix('{locale}')
     ->where(['locale' => 'pt|en|es'])
     ->group(function () {
 Route::get('/',         [HomeController::class, 'index'])->name('site.home');
+Route::get('/manifest.webmanifest', function (string $locale) {
+    $supported = config('app.supported_locales', []);
+    $meta = $supported[$locale] ?? $supported[config('app.locale_prefix_fallback', 'pt')] ?? [];
+
+    $manifest = [
+        'name' => 'VisitAltamira',
+        'short_name' => 'VisitAltamira',
+        'description' => 'Guia oficial de Altamira e do Rio Xingu no Para: pontos turisticos, experiencias, gastronomia e servicos para planejar a visita com mais contexto.',
+        'lang' => data_get($meta, 'html_lang', $locale === 'pt' ? 'pt-BR' : $locale),
+        'start_url' => '/'.$locale,
+        'scope' => '/'.$locale.'/',
+        'display' => 'standalone',
+        'background_color' => '#0e1b12',
+        'theme_color' => '#0e1b12',
+        'icons' => [
+            [
+                'src' => '/icons/pwa-192.png',
+                'sizes' => '192x192',
+                'type' => 'image/png',
+            ],
+            [
+                'src' => '/icons/pwa-512.png',
+                'sizes' => '512x512',
+                'type' => 'image/png',
+            ],
+            [
+                'src' => '/icons/pwa-512-maskable.png',
+                'sizes' => '512x512',
+                'type' => 'image/png',
+                'purpose' => 'maskable',
+            ],
+            [
+                'src' => '/icons/apple-touch-icon.png',
+                'sizes' => '180x180',
+                'type' => 'image/png',
+                'purpose' => 'any',
+            ],
+        ],
+    ];
+
+    return response()->json($manifest)->header('Content-Type', 'application/manifest+json');
+})->name('site.manifest');
 Route::get('/explorar', [HomeController::class, 'explorar'])->name('site.explorar');
 Route::get('/mapa',     [MapaController::class, 'index'])->name('site.mapa');
 
@@ -337,17 +344,17 @@ Route::prefix('museus-e-teatros')->group(function () {
 Route::get('/banner-destaque-feed', [BannerDestaqueFeedController::class,'index'])
     ->name('site.banner_destaque.feed');
 
-// Detalhes (slug OU id) — **sem duplicações**
+// Detalhes (slug OU id) â€” **sem duplicaÃ§Ãµes**
 Route::get('/ponto/{ponto}',     [SitePontoController::class,   'show'])->name('site.ponto');     // {ponto} = slug|id
 Route::get('/empresa/{empresa}', [SiteEmpresaController::class, 'show'])->name('site.empresa');   // {empresa} = slug|id
 
-// Página de categoria
+// PÃ¡gina de categoria
 Route::get('/categoria/{slug}', [SiteCategoriaController::class, 'show'])->name('site.categoria');
 
-// Página offline (PWA)
+// PÃ¡gina offline (PWA)
 Route::view('/offline', 'offline')->name('offline');
 
-// Política/Privacidade
+// PolÃ­tica/Privacidade
 Route::view('/politica-privacidade', 'site.politicas')->name('site.politicas');
 
 
@@ -356,7 +363,7 @@ Route::get('/semtur', [SiteSecretariaController::class, 'show'])
     ->name('site.semtur');
 
 
-// Nova URL canônica (sem "semtur")
+// Nova URL canÃ´nica (sem "semtur")
 Route::get('/secretaria', [SiteSecretariaController::class, 'show'])
     ->name('site.secretaria');
 
@@ -365,57 +372,31 @@ Route::get('/secretaria', [SiteSecretariaController::class, 'show'])
 
 Route::get('/aviso/ativo', [AvisoFeedController::class, 'ativo'])->name('site.aviso.ativo');
 
-Route::get('/auth/google/redirect', fn() => Socialite::driver('google')->redirect())
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
     ->name('google.redirect.localized');
 
-Route::get('/auth/google/callback', function () {
-    $g = Socialite::driver('google')->stateless()->user();
-
-    $googleId = (string) $g->getId();
-    $email    = $g->getEmail() ? strtolower($g->getEmail()) : null;
-    $name     = $g->getName() ?: $g->getNickname() ?: ($email ? strtok($email, '@') : 'Usuário');
-
-    // 1) tenta por google_id; 2) se não achar e tiver email, tenta por email
-    $user = User::where('google_id', $googleId)->first();
-    if (!$user && $email) {
-        $user = User::where('email', $email)->first();
-    }
-
-    if (!$user) {
-        // CRIAR novo usuário — precisa senha (NOT NULL)
-        $user = User::create([
-            'name'       => $name,
-            'email'      => $email,            // pode ser null se o Google não retornar (raro)
-            'google_id'  => $googleId,
-            'avatar_url' => $g->getAvatar(),
-            'password'   => Hash::make(Str::random(40)), // senha aleatória apenas para satisfazer NOT NULL
-        ]);
-    } else {
-        // ATUALIZAR existente — NUNCA tocar na senha aqui
-        $user->update([
-            'name'       => $name,
-            'google_id'  => $googleId,         // amarra a conta ao Google para próximos logins
-            'avatar_url' => $g->getAvatar(),
-            // 'email' => $email ?? $user->email, // evite sobrescrever se o Google não trouxer
-        ]);
-    }
-
-    // Papel padrão: Cidadao apenas se ainda não tiver nenhum role
-    if (method_exists($user, 'roles') && method_exists($user, 'assignRole')) {
-        if (!$user->roles()->exists()) {
-            $user->assignRole('Cidadao');
-        }
-    }
-
-    Auth::login($user, remember: true);
-    $locale = session('locale', config('app.locale_prefix_fallback', 'pt'));
-    return redirect()->intended(route('site.home', ['locale' => $locale]));
-})->name('google.callback.localized');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
+    ->name('google.callback.localized');
 
 Route::get('/ig-img', function (\Illuminate\Http\Request $r) {
     $u = $r->query('u');
     if (!$u || !Str::startsWith($u, ['http://','https://'])) {
         abort(400,'bad url');
+    }
+
+    $host = strtolower((string) parse_url($u, PHP_URL_HOST));
+    $allowedHosts = [
+        'cdninstagram.com',
+        'fbcdn.net',
+        'instagram.com',
+    ];
+
+    $isAllowedHost = $host !== '' && collect($allowedHosts)->contains(function (string $allowed) use ($host) {
+        return $host === $allowed || Str::endsWith($host, '.'.$allowed);
+    });
+
+    if (! $isAllowedHost) {
+        abort(403, 'host not allowed');
     }
 
     try {
@@ -432,7 +413,11 @@ Route::get('/ig-img', function (\Illuminate\Http\Request $r) {
         }
 
         $ctype = $resp->header('Content-Type','image/jpeg');
-        // cache público por 6h
+        if (! Str::startsWith(strtolower($ctype), 'image/')) {
+            abort(415, 'unsupported content type');
+        }
+
+        // cache pÃºblico por 6h
         return response($resp->body(), 200)
             ->header('Content-Type', $ctype)
             ->header('Cache-Control', 'public, max-age=21600');
@@ -442,7 +427,9 @@ Route::get('/ig-img', function (\Illuminate\Http\Request $r) {
 })->name('proxy.ig');
 
 Route::get('/eventos', [EventoPublicController::class,'index'])->name('eventos.index');
-Route::get('/eventos/{slug}/{ano?}', [EventoPublicController::class,'show'])->name('eventos.show');
+Route::get('/eventos/{slug}/{ano?}', [EventoPublicController::class,'show'])
+    ->whereNumber('ano')
+    ->name('eventos.show');
 
 // =========================
 // PERFIL/CONTA (CIDADAO)
@@ -457,6 +444,16 @@ Route::middleware(['auth','role:Cidadao'])
         Route::get('/redes',   [PerfilController::class,'redes'])->name('redes');
         Route::put('/redes',   [PerfilController::class,'redesAtualizar'])->name('redes.atualizar');
     });
+
+Route::middleware('auth')->get('/profile', function () {
+    $user = auth()->user();
+
+    if ($user && method_exists($user, 'hasRole') && $user->hasRole('Cidadao')) {
+        return redirect()->to(localized_route('site.perfil.index'));
+    }
+
+    return redirect()->route('profile.edit');
+})->name('profile.localized');
     });
 
 
@@ -470,7 +467,7 @@ Route::middleware(['auth'])->group(function () {
         if ($u->hasRole('Admin'))       return redirect()->route('admin.dashboard');
         if ($u->hasRole('Coordenador')) return redirect()->route('coordenador.dashboard');
 
-        // Técnico: manda para o 1º módulo permitido
+        // TÃ©cnico: manda para o 1Âº mÃ³dulo permitido
         if ($u->hasRole('Tecnico')) {
             $preferencias = [
                 ['perm' => 'pontos.view',           'route' => 'coordenador.pontos.index'],
@@ -491,7 +488,7 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('coordenador.dashboard');
         }
 
-        if ($u->hasRole('Cidadao')) return redirect()->route('site.perfil.index');
+        if ($u->hasRole('Cidadao')) return redirect()->to(localized_route('site.perfil.index'));
 
         abort(403, 'Sem painel associado ao seu papel.');
     })->name('dashboard');
@@ -648,19 +645,19 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::patch('empresas/{empresa}/arquivar', [CoordEmpresaController::class,'arquivar'])->name('empresas.arquivar');
         Route::patch('empresas/{empresa}/rascunho', [CoordEmpresaController::class,'rascunho'])->name('empresas.rascunho');
 
-        // mídia (novo + aliases legados)
+        // mÃ­dia (novo + aliases legados)
         Route::delete('empresas/{empresa}/capa',   [CoordEmpresaController::class,'removerCapa'])->name('empresas.capa.remover');
         Route::delete('empresas/{empresa}/perfil', [CoordEmpresaController::class,'removerPerfil'])->name('empresas.perfil.remover');
         Route::delete('empresas/{empresa}/remover-capa',   [CoordEmpresaController::class,'removerCapa'])->name('empresas.removerCapa');
         Route::delete('empresas/{empresa}/remover-perfil', [CoordEmpresaController::class,'removerPerfil'])->name('empresas.removerPerfil');
 
-        // recomendações (empresas)
+        // recomendaÃ§Ãµes (empresas)
         Route::post('empresas/{empresa}/recomendar',         [CoordEmpresaController::class,'recomendar'])->name('empresas.recomendar');
         Route::delete('empresas/{empresa}/recomendar',       [CoordEmpresaController::class,'removerRecomendacao'])->name('empresas.recomendar.remover');
         Route::patch('empresas/recomendacoes/{rec}/ordem',   [CoordEmpresaController::class,'reordenarRecomendacao'])->name('empresas.recomendar.ordem');
         Route::patch('empresas/recomendacoes/{rec}/ordenar', [CoordEmpresaController::class,'reordenarRecomendacao'])->name('empresas.recomendar.ordenar');
 
-        // Pontos turísticos
+        // Pontos turÃ­sticos
         Route::resource('pontos', PontoTuristicoController::class)->except(['show']);
         Route::patch('pontos/{ponto}/publicar', [PontoTuristicoController::class,'publicar'])->name('pontos.publicar');
         Route::patch('pontos/{ponto}/arquivar', [PontoTuristicoController::class,'arquivar'])->name('pontos.arquivar');
@@ -671,13 +668,13 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::delete('pontos/{ponto}/remover-capa',   [PontoTuristicoController::class,'removerCapa'])->name('pontos.removerCapa');
 
 
-        // mídias do ponto
+        // mÃ­dias do ponto
         Route::post('pontos/{ponto}/midias/imagens',    [PontoTuristicoController::class,'adicionarImagens'])->name('pontos.midias.imagens.add');
         Route::post('pontos/{ponto}/midias/video-link', [PontoTuristicoController::class,'adicionarVideoLink'])->name('pontos.midias.video.link');
         Route::post('pontos/{ponto}/midias/video-file', [PontoTuristicoController::class,'adicionarVideoFile'])->name('pontos.midias.video.file');
         Route::delete('pontos/midias/{midia}',          [PontoTuristicoController::class,'removerMidia'])->name('pontos.midias.destroy');
 
-        // recomendações (pontos)
+        // recomendaÃ§Ãµes (pontos)
         Route::post('pontos/{ponto}/recomendar',          [PontoTuristicoController::class,'recomendar'])->name('pontos.recomendar');
         Route::delete('pontos/{ponto}/recomendar',        [PontoTuristicoController::class,'removerRecomendacao'])->name('pontos.recomendar.remover');
         Route::patch('pontos/recomendacoes/{rec}/ordem',  [PontoTuristicoController::class,'reordenarRecomendacao'])->name('pontos.recomendar.ordem');
@@ -718,7 +715,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::put('eventos/{evento}',       [EventoController::class,'update'])->name('eventos.update');
         Route::delete('eventos/{evento}',    [EventoController::class,'destroy'])->name('eventos.destroy');
 
-        // EDIÇÕES
+        // EDIÃ‡Ã•ES
         Route::get('eventos/{evento}/edicoes',         [EventoController::class,'edicoesIndex'])->name('eventos.edicoes.index');
         Route::get('eventos/{evento}/edicoes/create',  [EventoController::class,'edicoesCreate'])->name('eventos.edicoes.create');
         Route::post('eventos/{evento}/edicoes',        [EventoController::class,'edicoesStore'])->name('eventos.edicoes.store');
@@ -750,7 +747,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
                 Route::patch('/{agendamento}/observacao-interna', [EspacoCulturalAgendamentoController::class, 'observacaoInterna'])->name('observacao-interna');
             });
 
-        //ESPAÇO CULTURAL
+        //ESPAÃ‡O CULTURAL
         Route::resource('espacos-culturais', EspacoCulturalController::class)
             ->parameters(['espacos-culturais' => 'espaco'])
             ->except(['show']);
@@ -803,7 +800,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::patch('guias/{guia}/rascunho', [CoordGuiaRevistaController::class, 'rascunho'])
             ->name('guias.rascunho');
 
-        //VÍDEOS
+        //VÃDEOS
         Route::resource('videos', CoordVideoController::class)
             ->parameters(['videos' => 'video'])
             ->except(['show']);
@@ -817,7 +814,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::patch('videos/{video}/rascunho', [CoordVideoController::class, 'rascunho'])
             ->name('videos.rascunho');
 
-        // Jogos Indígenas
+        // Jogos IndÃ­genas
         Route::resource('jogos-indigenas', CoordJogosIndigenasController::class)
             ->parameters(['jogos-indigenas' => 'jogosIndigena'])
             ->except(['show']);
@@ -872,7 +869,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
             });
 
 
-        // Relatórios
+        // RelatÃ³rios
         Route::resource('rota-do-cacau', CoordRotaDoCacauController::class)
             ->parameters(['rota-do-cacau' => 'rotaDoCacau'])
             ->except(['show']);
@@ -956,12 +953,12 @@ Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
 
 
 
-    // TÉCNICO (compatibilidade de URL)
+    // TÃ‰CNICO (compatibilidade de URL)
     Route::middleware(['auth','role:Tecnico'])
         ->prefix('tecnico')->name('tecnico.')
         ->group(function () {
 
-            // /tecnico/dashboard -> para o módulo do coordenador que o técnico pode ver
+            // /tecnico/dashboard -> para o mÃ³dulo do coordenador que o tÃ©cnico pode ver
             Route::get('/dashboard', function () {
                 $u = auth()->user();
 
@@ -981,7 +978,7 @@ Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
                 return redirect()->route('dashboard');
             })->name('dashboard');
 
-            // (opcional) manter URL /tecnico/config/perfil funcionando, apontando para a tela única
+            // (opcional) manter URL /tecnico/config/perfil funcionando, apontando para a tela Ãºnica
             Route::get('config/perfil', function () {
                 return redirect()->route('coordenador.config.perfil.edit');
             })->name('config.perfil.edit');

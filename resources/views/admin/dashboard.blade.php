@@ -125,6 +125,72 @@
         @endforeach
     </div>
 
+    <div class="mt-5 grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
+        <x-dashboard.section-card id="admin-atividade" title="Atividade recente" subtitle="Últimos registros publicados ou atualizados nos módulos principais.">
+            @if(! empty($recentes))
+                <div class="space-y-3">
+                    @foreach($recentes as $item)
+                        <div class="flex items-start justify-between gap-4 rounded-2xl border border-[var(--ui-border-soft)] bg-[var(--ui-surface-subtle)] px-4 py-3">
+                            <div>
+                                <div class="text-sm font-semibold text-[var(--ui-text-title)]">{{ $item['title'] }}</div>
+                                <div class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $item['type'] }}</div>
+                            </div>
+                            <div class="text-right text-xs text-[var(--ui-text-soft)]">
+                                {{ \Illuminate\Support\Carbon::parse($item['created_at'])->format('d/m/Y H:i') }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-sm text-[var(--ui-text-soft)]">Nenhuma atividade recente disponível.</p>
+            @endif
+        </x-dashboard.section-card>
+
+        <div class="grid gap-5">
+            <x-dashboard.section-card title="Hierarquia atual" subtitle="Leitura rápida da composição operacional do console.">
+                <div class="space-y-3">
+                    @foreach($hierarquia as $item)
+                        <div class="rounded-2xl border border-[var(--ui-border-soft)] bg-[var(--ui-surface-subtle)] px-4 py-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="text-sm font-semibold text-[var(--ui-text-title)]">{{ $item['label'] }}</div>
+                                <span class="{{ $item['badge_class'] }}">{{ $item['value'] }}</span>
+                            </div>
+                            <p class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $item['helper'] }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </x-dashboard.section-card>
+
+            <x-dashboard.section-card id="admin-atalhos" title="Atalhos" subtitle="Acesso direto aos fluxos administrativos mais usados.">
+                <div class="grid gap-3">
+                    @foreach($atalhos as $atalho)
+                        @if(! empty($atalho['route']))
+                            <a href="{{ $atalho['route'] }}" class="flex items-center justify-between rounded-2xl border border-[var(--ui-border-soft)] bg-[var(--ui-surface-subtle)] px-4 py-3 text-sm font-medium text-[var(--ui-text-title)] transition hover:border-[var(--ui-border-strong)] hover:bg-[var(--ui-surface)]">
+                                <span>{{ $atalho['label'] }}</span>
+                                <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
+            </x-dashboard.section-card>
+        </div>
+    </div>
+
+    <x-dashboard.section-card class="mt-5" title="Módulos monitorados" subtitle="Volume por módulo editorial já reconhecido pelo painel.">
+        <div class="space-y-4">
+            @foreach($modulos as $modulo)
+                <div>
+                    <div class="flex items-center justify-between gap-3 text-sm">
+                        <div class="font-medium text-[var(--ui-text-title)]">{{ $modulo['nome'] }}</div>
+                        <div class="text-[var(--ui-text-soft)]">{{ number_format($modulo['total']) }} · {{ $modulo['status'] }}</div>
+                    </div>
+                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-[var(--ui-border-soft)]">
+                        <div class="h-full rounded-full bg-[var(--ui-primary)]" style="width: {{ $modulo['percent'] }}%"></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </x-dashboard.section-card>
 
 </div>
 @endsection

@@ -1,4 +1,4 @@
-﻿@extends('site.layouts.app')
+@extends('site.layouts.app')
 
 @php
   use Illuminate\Support\Facades\Route as R;
@@ -6,7 +6,7 @@
   $initItems = collect($initItems ?? [])->values();
   $currentQuery = trim((string) ($queryAtual ?? request('q', '')));
   $currentCategory = $categoriaAtual ?? null;
-  $mapCanonical = R::has('site.mapa') ? route('site.mapa') : url()->current();
+  $mapCanonical = R::has('site.mapa') ? localized_route('site.mapa') : url()->current();
   $mapTitle = $currentCategory?->nome ? __('ui.map_page.title_category', ['category' => $currentCategory->nome]) : __('ui.map_page.title_default');
   $mapDescription = $currentQuery !== ''
       ? __('ui.map_page.description_search', ['search' => $currentQuery])
@@ -19,9 +19,9 @@
           $href = '#';
 
           if (($item['type'] ?? null) === 'empresa' && R::has('site.empresa')) {
-              $href = route('site.empresa', $item['slug'] ?? $item['id'] ?? null);
+              $href = localized_route('site.empresa', ['empresa' => $item['slug'] ?? $item['id'] ?? null]);
           } elseif (R::has('site.ponto')) {
-              $href = route('site.ponto', $item['slug'] ?? $item['id'] ?? null);
+              $href = localized_route('site.ponto', ['ponto' => $item['slug'] ?? $item['id'] ?? null]);
           }
 
           return [
@@ -43,7 +43,7 @@
                   '@type' => 'ListItem',
                   'position' => 1,
                   'name' => __('ui.common.home'),
-                  'item' => R::has('site.home') ? route('site.home') : url('/'),
+                  'item' => localized_route('site.home'),
               ],
               [
                   '@type' => 'ListItem',
@@ -90,7 +90,7 @@
     $TOK = '__TOKEN__';
     $safeUrl = function (string $name, array $params = [], $fallback = null) {
         try {
-            return route($name, $params);
+            return localized_route($name, $params);
         } catch (\Throwable $e) {
             return $fallback;
         }
@@ -125,7 +125,7 @@
                 'categorias' => $categorias,
                 'currentCat' => $currentCategory,
                 'scrollId' => 'map-categories-track',
-                'href' => fn ($cat) => route('site.mapa', array_filter([
+                'href' => fn ($cat) => localized_route('site.mapa', array_filter([
                     'categoria' => $cat->slug,
                     'q' => $currentQuery !== '' ? $currentQuery : null,
                 ])),
@@ -187,6 +187,21 @@
           ],
           'emptyTitle' => __('ui.map_page.empty_title'),
           'emptyCopy' => __('ui.map_page.empty_copy'),
+          'i18n' => [
+              'altamira' => __('ui.common.altamira'),
+              'company' => __('ui.explore.company_badge'),
+              'point' => __('ui.explore.point_badge'),
+              'detail' => __('ui.common.detail'),
+              'route' => __('ui.common.route'),
+              'focus' => __('ui.common.focus'),
+              'all' => __('ui.common.all'),
+              'itemName' => __('ui.map_page.item_name'),
+              'helperWithRoute' => __('ui.map_page.helper_with_route'),
+              'helperWithoutRoute' => __('ui.map_page.helper_without_route'),
+              'emptyTitle' => __('ui.map_page.empty_title'),
+              'emptyCopy' => __('ui.map_page.empty_copy'),
+              'emptyStatus' => __('ui.map_page.empty_status'),
+          ],
       ],
   ])
 @endpush

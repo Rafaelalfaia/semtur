@@ -10,14 +10,14 @@
 
     $hero = $pagina->hero_url ?: asset('imagens/altamira.jpg');
     $empresas = collect($pagina->empresasSelecionadas ?? [])->filter(fn ($item) => $item && $item->empresa)->values();
-    $explorarUrl = Route::has('site.explorar') ? route('site.explorar') : '#';
+    $explorarUrl = localized_route('site.explorar');
 @endphp
 
 <div class="site-page site-page-shell">
     @include('site.partials._page_hero', [
         'backHref' => $explorarUrl,
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Inicio', 'href' => localized_route('site.home')],
             ['label' => 'Explorar', 'href' => $explorarUrl],
             ['label' => $pagina->titulo],
         ],
@@ -41,7 +41,7 @@
             <div class="site-editorial-main">
                 @if($pagina->texto_intro)
                     <section class="site-surface site-content-block">
-                        <x-section-head eyebrow="Introdução" title="Comer bem também é conhecer a cidade" />
+                        <x-section-head eyebrow="Introducao" title="Comer bem tambem e conhecer a cidade" />
                         <div class="site-prose">{!! nl2br(e($pagina->texto_intro)) !!}</div>
                     </section>
                 @endif
@@ -56,7 +56,7 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Resumo" title="Visão geral" />
+                    <x-section-head eyebrow="Resumo" title="Visao geral" />
                     <div class="site-stats-grid">
                         <div class="site-stat-card">
                             <span class="site-stat-label">Empresas</span>
@@ -76,13 +76,13 @@
         <x-section-head
             eyebrow="Curadoria"
             title="Onde comer em Altamira"
-            subtitle="Empresas publicadas e selecionadas para quem quer combinar boa experiência, contexto local e praticidade."
+            subtitle="Empresas publicadas e selecionadas para quem quer combinar boa experiencia, contexto local e praticidade."
         />
 
         @if($empresas->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-title">Curadoria em atualização</p>
-                <p class="site-empty-state-copy">A curadoria gastronômica de Altamira ainda está sendo preparada.</p>
+                <p class="site-empty-state-title">Curadoria em atualizacao</p>
+                <p class="site-empty-state-copy">A curadoria gastronomica de Altamira ainda esta sendo preparada.</p>
             </div>
         @else
             <div class="site-directory-grid">
@@ -110,8 +110,8 @@
                         <div class="site-directory-card-body">
                             <div>
                                 <h3 class="site-directory-card-title">{{ $empresa->nome }}</h3>
-                                <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' • ') ?: 'Altamira' }}</p>
-                                <p class="site-inline-meta">Seleção editorial para quem quer comer bem sem perder o contexto da viagem.</p>
+                                <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' � ') ?: 'Altamira' }}</p>
+                                <p class="site-inline-meta">Selecao editorial para quem quer comer bem sem perder o contexto da viagem.</p>
                             </div>
 
                             <p class="site-directory-card-summary">
@@ -119,7 +119,7 @@
                             </p>
 
                             <div class="site-directory-card-actions">
-                                <a href="{{ route('site.empresa', ['empresa' => $empresa->slug ?: $empresa->id]) }}" class="site-button-primary">Ver empresa</a>
+                                <a href="{{ localized_route('site.empresa', ['empresa' => $empresa->slug ?: $empresa->id]) }}" class="site-button-primary">Ver empresa</a>
                                 @if($empresa->maps_url)
                                     <a href="{{ $empresa->maps_url }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary">Ver rota</a>
                                 @endif
@@ -137,7 +137,7 @@
     @if($pagina->texto_dicas)
         <section class="site-section">
             <div class="site-surface site-content-block">
-                <x-section-head eyebrow="Dicas" title="Como aproveitar melhor a experiência" />
+                <x-section-head eyebrow="Dicas" title="Como aproveitar melhor a experiencia" />
                 <div class="site-prose">{!! nl2br(e($pagina->texto_dicas)) !!}</div>
             </div>
         </section>

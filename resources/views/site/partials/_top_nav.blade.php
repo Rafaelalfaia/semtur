@@ -3,10 +3,10 @@
     use Illuminate\Support\Facades\Route as R;
 
     $routeUrl = function (string $name, string $fallback = '#') {
-        return R::has($name) ? route($name) : $fallback;
+        return R::has($name) ? localized_route($name) : $fallback;
     };
 
-    $perfilHref = R::has('login') ? route('login') : url('/login');
+    $perfilHref = R::has('login') ? localized_route('login') : localized_route('site.home');
     $perfilLabel = __('ui.nav.login');
     $logoSources = site_image_sources(theme_asset('logo'), 'logo');
     $activeLocale = $currentLocale ?? request()->route('locale') ?? config('app.locale_prefix_fallback', 'pt');
@@ -31,7 +31,7 @@
                 'icon' => $iconMap[$prefix] ?? null,
                 'href' => $routeName && R::has($routeName)
                     ? route($routeName, array_merge($routeParams, ['locale' => $prefix]))
-                    : url('/'.$prefix),
+                    : localized_route('site.home', ['locale' => $prefix]),
                 'active' => $activeLocale === $prefix,
             ];
         })
@@ -47,7 +47,7 @@
             } elseif ($u->hasRole('Coordenador') && R::has('coordenador.dashboard')) {
                 $perfilHref = route('coordenador.dashboard');
             } elseif ($u->hasRole('Cidadao') && R::has('site.perfil.index')) {
-                $perfilHref = route('site.perfil.index');
+                $perfilHref = localized_route('site.perfil.index');
             } elseif (R::has('dashboard')) {
                 $perfilHref = route('dashboard');
             }
@@ -55,7 +55,7 @@
     }
 
     $sections = collect([
-        ['label' => __('ui.nav.home'),'href' => $routeUrl('site.home', url('/')),'match' => ['site.home']],
+        ['label' => __('ui.nav.home'),'href' => $routeUrl('site.home', localized_route('site.home')),'match' => ['site.home']],
         ['label' => __('ui.nav.explore'),'href' => $routeUrl('site.explorar'),'match' => ['site.explorar*']],
         ['label' => __('ui.nav.agenda'),'href' => $routeUrl('site.agenda'),'match' => ['site.agenda', 'eventos.*']],
         ['label' => __('ui.nav.map'),'href' => $routeUrl('site.mapa'),'match' => ['site.mapa*']],
@@ -67,7 +67,7 @@
 
 <header class="site-topbar">
     <div class="site-topbar-inner">
-        <a href="{{ $routeUrl('site.home', url('/')) }}" class="site-brand">
+        <a href="{{ $routeUrl('site.home', localized_route('site.home')) }}" class="site-brand">
             <x-picture
                 :jpg="$logoSources['jpg'] ?? theme_asset('logo')"
                 :webp="$logoSources['webp'] ?? null"

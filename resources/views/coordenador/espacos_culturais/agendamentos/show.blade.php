@@ -2,10 +2,10 @@
 
 @section('title', 'Detalhe do Agendamento')
 @section('page.title', 'Detalhe do Agendamento')
-@section('topbar.description', 'Visualize e opere um agendamento de espaco cultural dentro do shell global do console.')
+@section('topbar.description', 'Visualize e opere um agendamento de espaço cultural dentro do shell global do console.')
 
 @section('topbar.nav')
-  <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-console-topbar-tab">Espacos culturais</a>
+  <a href="{{ route('coordenador.espacos-culturais.index') }}" class="ui-console-topbar-tab">Espaços culturais</a>
   <a href="{{ route('coordenador.espacos-culturais.agendamentos.index') }}" class="ui-console-topbar-tab">Agendamentos</a>
   <span class="ui-console-topbar-tab is-active">Detalhe</span>
 @endsection
@@ -25,14 +25,14 @@
 
   <div class="ui-espaco-agendamento-grid mt-5">
     <div class="space-y-6 lg:col-span-2">
-      <x-dashboard.section-card title="Dados da solicitacao" subtitle="Dados do visitante e da visita" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Dados da solicitação" subtitle="Dados do visitante e da visita" class="ui-coord-dashboard-panel">
         <div class="ui-espaco-detail-grid">
           <div><div class="ui-espaco-detail-label">Nome</div><div class="ui-espaco-detail-value">{{ $agendamento->nome }}</div></div>
           <div><div class="ui-espaco-detail-label">Telefone</div><div class="ui-espaco-detail-value">{{ $agendamento->telefone }}</div></div>
-          <div><div class="ui-espaco-detail-label">E-mail</div><div class="ui-espaco-detail-value">{{ $agendamento->email ?: 'Nao informado' }}</div></div>
+          <div><div class="ui-espaco-detail-label">E-mail</div><div class="ui-espaco-detail-value">{{ $agendamento->email ?: 'Não informado' }}</div></div>
           <div><div class="ui-espaco-detail-label">Quantidade</div><div class="ui-espaco-detail-value">{{ $agendamento->qtd_visitantes }}</div></div>
           <div><div class="ui-espaco-detail-label">Data da visita</div><div class="ui-espaco-detail-value">{{ optional($agendamento->data_visita)->format('d/m/Y') }}</div></div>
-          <div><div class="ui-espaco-detail-label">Faixa</div><div class="ui-espaco-detail-value">{{ $agendamento->horario?->faixa_label ?: 'Nao informada' }}</div></div>
+          <div><div class="ui-espaco-detail-label">Faixa</div><div class="ui-espaco-detail-value">{{ $agendamento->horario?->faixa_label ?: 'Não informada' }}</div></div>
         </div>
 
         @if ($agendamento->observacao_visitante)
@@ -54,7 +54,7 @@
     </div>
 
     <div class="space-y-6">
-      <x-dashboard.section-card title="Status e operacao" subtitle="Atualize o andamento da solicitacao" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Status e operação" subtitle="Atualize o andamento da solicitação" class="ui-coord-dashboard-panel">
         <div class="space-y-3">
           <form action="{{ route('coordenador.espacos-culturais.agendamentos.confirmar', $agendamento) }}" method="POST">
             @csrf
@@ -100,7 +100,7 @@
           <div><div class="ui-espaco-detail-label">WhatsApp enviado</div><div class="ui-espaco-detail-value">{{ $agendamento->whatsapp_clicked_at ? $agendamento->whatsapp_clicked_at->format('d/m/Y H:i') : 'Ainda nao' }}</div></div>
 
           @if ($agendamento->whatsapp_link)
-            <a href="{{ route('site.museus.agendamentos.whatsapp', $agendamento->protocolo) }}" target="_blank" class="ui-btn-secondary mt-2">Abrir WhatsApp</a>
+            <a href="{{ localized_route('site.museus.agendamentos.whatsapp', ['protocolo' => $agendamento->protocolo]) }}" target="_blank" class="ui-btn-secondary mt-2">Abrir WhatsApp</a>
           @endif
         </div>
       </x-dashboard.section-card>

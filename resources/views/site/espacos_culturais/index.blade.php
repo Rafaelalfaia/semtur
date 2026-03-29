@@ -1,4 +1,4 @@
-﻿@extends('site.layouts.app')
+@extends('site.layouts.app')
 
 @section('title', 'Museus e teatros em Altamira')
 @section('meta.description', 'Agende visitas a museus e ao teatro municipal, consulte horários e veja informações públicas dos espaços culturais de Altamira.')
@@ -25,9 +25,9 @@
 
 <div class="site-page site-page-shell site-espacos-page">
     @include('site.partials._page_hero', [
-        'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
+        'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => 'Início', 'href' => localized_route('site.home')],
             ['label' => 'Museus e teatros'],
         ],
         'badge' => 'Agendamento cultural',
@@ -39,7 +39,7 @@
             filled($q) ? 'Busca ativa' : null,
         ],
         'primaryActionLabel' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? 'Solicitar visita' : null,
-        'primaryActionHref' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? route('site.museus.agendar', $cards->first()['model']->slug) : null,
+        'primaryActionHref' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? localized_route('site.museus.agendar', ['espaco' => $cards->first()['model']->slug]) : null,
         'secondaryActionLabel' => 'Ver espaços',
         'secondaryActionHref' => '#espacos-lista',
         'image' => $cards->first()['image'] ?? $fallback,
@@ -51,8 +51,8 @@
         <div class="site-surface site-espacos-filter-shell">
             <x-section-head
                 eyebrow="Agendamento"
-                title="Encontre o espaco certo"
-                subtitle="Filtre por tipo ou nome para chegar mais rapido ao museu ou ao teatro que faz sentido para sua visita."
+                title="Encontre o espaço certo"
+                subtitle="Filtre por tipo ou nome para chegar mais rápido ao museu ou ao teatro que faz sentido para sua visita."
             />
 
             <form method="GET" class="site-search-form site-espacos-search-form">
@@ -96,7 +96,7 @@
                     @php($espaco = $item['model'])
 
                     <article class="site-surface site-espacos-card">
-                        <a href="{{ route('site.museus.show', $espaco->slug) }}" class="site-espacos-card-media">
+                        <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" class="site-espacos-card-media">
                             <img src="{{ site_image_url($item['image'], 'card') }}" alt="{{ $espaco->nome }}" class="site-espacos-card-image" loading="lazy" decoding="async">
                         </a>
 
@@ -111,7 +111,7 @@
                                     </div>
 
                                     <h3 class="site-espacos-card-title">
-                                        <a href="{{ route('site.museus.show', $espaco->slug) }}">{{ $espaco->nome }}</a>
+                                        <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}">{{ $espaco->nome }}</a>
                                     </h3>
 
                                     <div class="site-card-list-meta">
@@ -139,9 +139,9 @@
                             @endif
 
                             <div class="site-inline-actions site-espacos-card-actions">
-                                <a href="{{ route('site.museus.show', $espaco->slug) }}" class="site-button-secondary">Ver espaço</a>
+                                <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" class="site-button-secondary">Ver espaço</a>
                                 @if($espaco->agendamento_disponivel)
-                                    <a href="{{ route('site.museus.agendar', $espaco->slug) }}" class="site-button-primary">Agendar visita</a>
+                                    <a href="{{ localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) }}" class="site-button-primary">Agendar visita</a>
                                 @endif
                             </div>
                         </div>
@@ -158,6 +158,4 @@
     </section>
 </div>
 @endsection
-
-
 

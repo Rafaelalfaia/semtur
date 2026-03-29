@@ -1,6 +1,6 @@
 @php
     $activeSlug = $activeSlug ?? request('categoria') ?? request('cat') ?? ($currentCat->slug ?? null);
-    $linkFor = $href ?? fn($cat) => route('site.explorar', ['categoria' => $cat->slug]);
+    $linkFor = $href ?? fn($cat) => localized_route('site.explorar', ['categoria' => $cat->slug]);
 @endphp
 
 <div class="site-chips-shell">

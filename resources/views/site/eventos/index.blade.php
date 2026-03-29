@@ -26,7 +26,7 @@
           'subtitle' => $evento->cidade ?? __('ui.common.altamira'),
           'summary' => \Illuminate\Support\Str::limit(strip_tags((string) ($evento->descricao ?? '')), 130),
           'image' => $image,
-          'href' => route('eventos.show', [$evento->slug ?? $evento->id, $ano ?: ($anoAtual ?? now()->year)]),
+          'href' => localized_route('eventos.show', ['slug' => $evento->slug ?? $evento->id, 'ano' => $ano ?: ($anoAtual ?? now()->year)]),
           'badge' => $periodo ?: ($ano ?: __('ui.events.event')),
           'cta' => __('ui.agenda.view_event'),
       ];
@@ -35,9 +35,9 @@
 
 <div class="site-page site-page-shell site-agenda-page">
     @include('site.partials._page_hero', [
-        'backHref' => Route::has('site.home') ? route('site.home') : url('/'),
+        'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => __('ui.nav.home'), 'href' => Route::has('site.home') ? route('site.home') : url('/')],
+            ['label' => __('ui.nav.home'), 'href' => localized_route('site.home')],
             ['label' => __('ui.agenda.title')],
         ],
         'badge' => __('ui.events.badge'),
@@ -48,9 +48,9 @@
             $anoAtual ? ('Ano '.$anoAtual) : __('ui.events.multiple_years'),
         ],
         'primaryActionLabel' => Route::has('site.explorar') ? __('ui.events.explore_city') : null,
-        'primaryActionHref' => Route::has('site.explorar') ? route('site.explorar') : null,
+        'primaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
         'secondaryActionLabel' => Route::has('site.mapa') ? __('ui.common.tourist_map') : null,
-        'secondaryActionHref' => Route::has('site.mapa') ? route('site.mapa') : null,
+        'secondaryActionHref' => Route::has('site.mapa') ? localized_route('site.mapa') : null,
         'image' => theme_asset('hero_image'),
         'imageAlt' => __('ui.events.title'),
         'compact' => true,
@@ -62,10 +62,10 @@
                 <x-section-head :eyebrow="__('ui.common.filters')" :title="__('ui.events.choose_year')" :subtitle="__('ui.events.choose_year_subtitle')" />
                 <div class="site-filter-row site-agenda-filter-row">
                     @foreach($anosDisponiveis as $ano)
-                        <a href="{{ route('eventos.index', array_filter(['ano' => $ano])) }}" class="{{ (string) $ano === (string) $anoAtual ? 'site-year-chip is-active' : 'site-year-chip' }}">{{ $ano }}</a>
+                        <a href="{{ localized_route('eventos.index', array_filter(['ano' => $ano])) }}" class="{{ (string) $ano === (string) $anoAtual ? 'site-year-chip is-active' : 'site-year-chip' }}">{{ $ano }}</a>
                     @endforeach
                     @if($anoAtual)
-                        <a href="{{ route('eventos.index') }}" class="site-link">{{ __('ui.events.clear_filter') }}</a>
+                        <a href="{{ localized_route('eventos.index') }}" class="site-link">{{ __('ui.events.clear_filter') }}</a>
                     @endif
                 </div>
             </div>

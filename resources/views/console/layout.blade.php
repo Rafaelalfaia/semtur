@@ -116,9 +116,9 @@
     };
 
     $profileUrl = match ($roleBase) {
-        'Admin' => $resolveRoute(['admin.config.perfil', 'admin.perfil.edit', 'admin.profile.edit']) ?: url('/admin/config/perfil'),
-        'Coordenador' => $resolveRoute(['coordenador.config.perfil', 'coordenador.perfil.edit', 'coordenador.profile.edit']) ?: url('/coordenador/config/perfil'),
-        'Tecnico' => $resolveRoute(['tecnico.config.perfil', 'tecnico.perfil.edit', 'tecnico.profile.edit']) ?: url('/tecnico/config/perfil'),
+        'Admin' => $resolveRoute(['admin.config.perfil.edit', 'admin.config.perfil', 'admin.perfil.edit', 'admin.profile.edit']) ?: url('/admin/config/perfil'),
+        'Coordenador' => $resolveRoute(['coordenador.config.perfil.edit', 'coordenador.config.perfil', 'coordenador.perfil.edit', 'coordenador.profile.edit']) ?: url('/coordenador/config/perfil'),
+        'Tecnico' => $resolveRoute(['tecnico.config.perfil.edit', 'tecnico.config.perfil', 'tecnico.perfil.edit', 'tecnico.profile.edit']) ?: url('/tecnico/config/perfil'),
         default => null,
     };
 
@@ -169,8 +169,8 @@
                         'label' => 'Meu perfil',
                         'permission' => null,
                         'roles' => ['Admin'],
-                        'routes' => ['admin.config.perfil', 'admin.perfil.edit', 'admin.profile.edit'],
-                        'patterns' => ['admin.config.perfil', 'admin.perfil.*', 'admin.profile.*'],
+                        'routes' => ['admin.config.perfil.edit', 'admin.config.perfil', 'admin.perfil.edit', 'admin.profile.edit'],
+                        'patterns' => ['admin.config.perfil.*', 'admin.perfil.*', 'admin.profile.*'],
                         'url_fallback' => url('/admin/config/perfil'),
                     ],
                 ],
@@ -264,6 +264,13 @@
                         'patterns' => ['coordenador.espacos-culturais.*', 'coordenador.espacos_culturais.*'],
                     ],
                     [
+                        'label' => 'Agendamentos',
+                        'permission' => 'espacos_culturais.view',
+                        'roles' => ['Coordenador'],
+                        'routes' => ['coordenador.espacos-culturais.agendamentos.index'],
+                        'patterns' => ['coordenador.espacos-culturais.agendamentos.*'],
+                    ],
+                    [
                         'label' => 'Onde comer',
                         'permission' => 'onde_comer.view',
                         'roles' => ['Coordenador'],
@@ -347,8 +354,8 @@
                         'label' => 'Meu perfil',
                         'permission' => null,
                         'roles' => ['Coordenador'],
-                        'routes' => ['coordenador.config.perfil', 'coordenador.perfil.edit', 'coordenador.profile.edit'],
-                        'patterns' => ['coordenador.config.perfil', 'coordenador.perfil.*', 'coordenador.profile.*'],
+                        'routes' => ['coordenador.config.perfil.edit', 'coordenador.config.perfil', 'coordenador.perfil.edit', 'coordenador.profile.edit'],
+                        'patterns' => ['coordenador.config.perfil.*', 'coordenador.perfil.*', 'coordenador.profile.*'],
                         'url_fallback' => url('/coordenador/config/perfil'),
                     ],
                 ],
@@ -435,6 +442,13 @@
                         'patterns' => ['coordenador.espacos-culturais.*', 'coordenador.espacos_culturais.*'],
                     ],
                     [
+                        'label' => 'Agendamentos',
+                        'permission' => 'espacos_culturais.view',
+                        'roles' => ['Tecnico'],
+                        'routes' => ['coordenador.espacos-culturais.agendamentos.index'],
+                        'patterns' => ['coordenador.espacos-culturais.agendamentos.*'],
+                    ],
+                    [
                         'label' => 'Onde comer',
                         'permission' => 'onde_comer.view',
                         'roles' => ['Tecnico'],
@@ -463,7 +477,7 @@
                         'patterns' => ['coordenador.eventos.*'],
                     ],
                     [
-                        'label' => 'Jogos IndÃ­genas',
+                        'label' => 'Jogos Indigenas',
                         'permission' => 'jogos_indigenas.view',
                         'roles' => ['Tecnico'],
                         'routes' => ['coordenador.jogos-indigenas.index'],
@@ -511,8 +525,8 @@
                         'label' => 'Meu perfil',
                         'permission' => null,
                         'roles' => ['Tecnico'],
-                        'routes' => ['tecnico.config.perfil', 'tecnico.perfil.edit', 'tecnico.profile.edit'],
-                        'patterns' => ['tecnico.config.perfil', 'tecnico.perfil.*', 'tecnico.profile.*'],
+                        'routes' => ['tecnico.config.perfil.edit', 'tecnico.config.perfil', 'tecnico.perfil.edit', 'tecnico.profile.edit'],
+                        'patterns' => ['tecnico.config.perfil.*', 'tecnico.perfil.*', 'tecnico.profile.*'],
                         'url_fallback' => url('/tecnico/config/perfil'),
                     ],
                 ],

@@ -9,8 +9,8 @@
     use Illuminate\Support\Facades\Route as R;
 
     $breadcrumbs = [
-        ['label' => __('ui.nav.home'), 'href' => R::has('site.home') ? route('site.home') : url('/')],
-        ['label' => __('ui.nav.explore'), 'href' => R::has('site.explorar') ? route('site.explorar') : '#'],
+        ['label' => __('ui.nav.home'), 'href' => localized_route('site.home')],
+        ['label' => __('ui.nav.explore'), 'href' => localized_route('site.explorar')],
         ['label' => $categoria->nome],
     ];
 
@@ -21,7 +21,7 @@
             'subtitle' => $ponto->cidade ?? __('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $ponto->descricao), 125),
             'image' => $image,
-            'href' => route('site.ponto', $ponto->id),
+            'href' => localized_route('site.ponto', ['ponto' => $ponto->id]),
             'badge' => __('ui.explore.point_badge'),
             'cta' => __('ui.explore.view_place'),
         ];
@@ -34,7 +34,7 @@
             'subtitle' => $empresa->cidade ?? __('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $empresa->descricao), 125),
             'image' => $image,
-            'href' => route('site.empresa', $empresa->slug ?? $empresa->id),
+            'href' => localized_route('site.empresa', ['empresa' => $empresa->slug ?? $empresa->id]),
             'badge' => __('ui.explore.company_badge'),
             'cta' => __('ui.explore.view_company'),
         ];
@@ -43,7 +43,7 @@
 
 <div class="site-page site-page-shell">
     @include('site.partials._page_hero', [
-        'backHref' => R::has('site.explorar') ? route('site.explorar') : url()->previous(),
+        'backHref' => R::has('site.explorar') ? localized_route('site.explorar') : url()->previous(),
         'breadcrumbs' => $breadcrumbs,
         'badge' => __('ui.category.badge'),
         'title' => $categoria->nome,
@@ -54,9 +54,9 @@
             filled($q) ? __('ui.category.search_meta', ['search' => $q]) : null,
         ],
         'primaryActionLabel' => __('ui.explore.explore_all'),
-        'primaryActionHref' => R::has('site.explorar') ? route('site.explorar', ['categoria' => $categoria->slug]) : '#',
+        'primaryActionHref' => R::has('site.explorar') ? localized_route('site.explorar', ['categoria' => $categoria->slug]) : '#',
         'secondaryActionLabel' => __('ui.common.tourist_map'),
-        'secondaryActionHref' => R::has('site.mapa') ? route('site.mapa') : '#',
+        'secondaryActionHref' => R::has('site.mapa') ? localized_route('site.mapa') : '#',
         'image' => theme_asset('hero_image'),
         'imageAlt' => $categoria->nome,
         'compact' => true,

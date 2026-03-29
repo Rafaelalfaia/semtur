@@ -23,7 +23,7 @@
                 </form>
             </x-dashboard.section-card>
 
-            <x-dashboard.section-card title="Importar pacote" subtitle="Adicione um .zip a biblioteca local sem restaurar nada no sistema.">
+            <x-dashboard.section-card title="Importar pacote" subtitle="Adicione um .zip à biblioteca local sem restaurar nada no sistema.">
                 <form method="POST" action="{{ route('admin.backups.import-package') }}" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <div>
@@ -76,7 +76,7 @@
                                 <div class="mt-2 text-xs text-[var(--ui-text-soft)]">Criado em {{ $selectedBackup['manifest']['created_at'] ?? 'Sem data' }}</div>
                                 <div class="mt-1 text-xs text-[var(--ui-text-soft)]">App {{ $selectedBackup['manifest']['app']['name'] ?? 'Não informado' }} · {{ $selectedBackup['manifest']['app']['env'] ?? 'env' }}</div>
                             @else
-                                <div class="mt-2 text-xs text-[var(--ui-text-soft)]">Manifesto nao encontrado no pacote.</div>
+                                <div class="mt-2 text-xs text-[var(--ui-text-soft)]">Manifesto não encontrado no pacote.</div>
                             @endif
                         </div>
                     </div>

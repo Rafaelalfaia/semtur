@@ -28,7 +28,7 @@
   >
     <x-slot:actions>
       @if(Route::has('site.empresa'))
-        <a href="{{ route('site.empresa', $empresa->slug ?? $empresa->id) }}" target="_blank" rel="noopener" class="ui-btn-secondary">
+        <a href="{{ localized_route('site.empresa', ['empresa' => $empresa->slug ?? $empresa->id]) }}" target="_blank" rel="noopener" class="ui-btn-secondary">
           Ver página
         </a>
       @endif

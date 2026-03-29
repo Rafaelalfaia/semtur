@@ -387,11 +387,11 @@ class ThemeController extends Controller
 
     public function preview(Theme $tema, ThemeManager $manager)
     {
-        abort_if($tema->normalizedStatus() === Theme::STATUS_ARQUIVADO, 422, 'Tema arquivado nÃ£o pode ser prÃ©-visualizado.');
+        abort_if($tema->normalizedStatus() === Theme::STATUS_ARQUIVADO, 422, 'Tema arquivado nao pode ser pre-visualizado.');
 
         $manager->setPreview($tema);
 
-        return back()->with('ok', 'Preview aplicado apenas na sua sessÃ£o de Admin.');
+        return back()->with('ok', 'Preview aplicado apenas na sua sessao de Admin.');
     }
 
     public function clearPreview(ThemeManager $manager)
@@ -403,7 +403,7 @@ class ThemeController extends Controller
 
     public function activate(Theme $tema, ThemeManager $manager)
     {
-        abort_if($tema->normalizedStatus() === Theme::STATUS_ARQUIVADO, 422, 'Tema arquivado nÃ£o pode ser ativado.');
+        abort_if($tema->normalizedStatus() === Theme::STATUS_ARQUIVADO, 422, 'Tema arquivado nao pode ser ativado.');
 
         if ($tema->normalizedStatus() === Theme::STATUS_RASCUNHO) {
             $updates = [
@@ -500,7 +500,7 @@ class ThemeController extends Controller
             ->count();
 
         if ($availableCount <= 1) {
-            return back()->with('erro', 'Mantenha pelo menos um tema disponÃ­vel no sistema.');
+            return back()->with('erro', 'Mantenha pelo menos um tema disponivel no sistema.');
         }
 
         $isActive = $resolver->activeTheme(Theme::SCOPE_CONSOLE)?->is($tema);
@@ -511,7 +511,7 @@ class ThemeController extends Controller
             ->contains(fn (Theme $theme) => $theme->isAvailableFor(Theme::SCOPE_GLOBAL) || $theme->appliesTo(Theme::SCOPE_GLOBAL));
 
         if ($isActive && ! $hasReplacement) {
-            return back()->with('erro', 'Ative outro tema disponÃ­vel antes de arquivar o tema global atual.');
+            return back()->with('erro', 'Ative outro tema disponivel antes de arquivar o tema global atual.');
         }
 
         $manager->archive($tema);
@@ -606,10 +606,10 @@ class ThemeController extends Controller
             'tokens' => ['nullable', 'array'],
         ], $tokenRules, $assetRules), [
             'name.required' => 'Informe o nome do tema.',
-            'slug.unique' => 'JÃ¡ existe um tema com este slug.',
+            'slug.unique' => 'Ja existe um tema com este slug.',
             'base_theme.required' => 'Selecione a base visual do tema.',
-            'application_scopes.*.in' => 'Selecione apenas escopos vÃ¡lidos para o tema.',
-            'ends_at.after_or_equal' => 'A data final deve ser igual ou posterior Ã  data inicial.',
+            'application_scopes.*.in' => 'Selecione apenas escopos validos para o tema.',
+            'ends_at.after_or_equal' => 'A data final deve ser igual ou posterior a data inicial.',
         ]);
 
         $configJson = trim((string) ($data['config_json'] ?? ''));
@@ -620,7 +620,7 @@ class ThemeController extends Controller
 
             if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
                 throw ValidationException::withMessages([
-                    'config_json' => 'Informe um JSON vÃ¡lido para a configuraÃ§Ã£o avanÃ§ada do tema.',
+                    'config_json' => 'Informe um JSON valido para a configuracao avancada do tema.',
                 ]);
             }
 
@@ -884,8 +884,8 @@ class ThemeController extends Controller
                 ], $definitions),
             ],
             [
-                'title' => 'SuperfÃ­cies',
-                'subtitle' => 'Fundo global, frame e superfÃ­cies estruturais.',
+                'title' => 'Superficies',
+                'subtitle' => 'Fundo global, frame e superficies estruturais.',
                 'fields' => $this->buildTokenFields([
                     'ui-app-bg',
                     'ui-app-bg-soft',
@@ -911,7 +911,7 @@ class ThemeController extends Controller
                 ], $definitions),
             ],
             [
-                'title' => 'NavegaÃ§Ã£o do console',
+                'title' => 'Navegacao do console',
                 'subtitle' => 'Sidebar, topbar e shell administrativo.',
                 'fields' => $this->buildTokenFields([
                     'ui-shell-shadow',
@@ -1050,7 +1050,7 @@ class ThemeController extends Controller
 
         if ($unknownKeys !== []) {
             throw ValidationException::withMessages([
-                'config_json' => 'O config_json contÃ©m chaves nÃ£o suportadas: ' . implode(', ', $unknownKeys) . '.',
+                'config_json' => 'O config_json contem chaves nao suportadas: ' . implode(', ', $unknownKeys) . '.',
             ]);
         }
 
@@ -1059,7 +1059,7 @@ class ThemeController extends Controller
         if (isset($decoded['shell'])) {
             if (! is_array($decoded['shell'])) {
                 throw ValidationException::withMessages([
-                    'config_json' => 'A seÃ§Ã£o shell do config_json deve ser um objeto JSON.',
+                    'config_json' => 'A secao shell do config_json deve ser um objeto JSON.',
                 ]);
             }
 
@@ -1072,7 +1072,7 @@ class ThemeController extends Controller
         if (isset($decoded['site'])) {
             if (! is_array($decoded['site'])) {
                 throw ValidationException::withMessages([
-                    'config_json' => 'A seÃ§Ã£o site do config_json deve ser um objeto JSON.',
+                    'config_json' => 'A secao site do config_json deve ser um objeto JSON.',
                 ]);
             }
 
@@ -1085,7 +1085,7 @@ class ThemeController extends Controller
         if (isset($decoded['auth'])) {
             if (! is_array($decoded['auth'])) {
                 throw ValidationException::withMessages([
-                    'config_json' => 'A seÃ§Ã£o auth do config_json deve ser um objeto JSON.',
+                    'config_json' => 'A secao auth do config_json deve ser um objeto JSON.',
                 ]);
             }
 
@@ -1098,7 +1098,7 @@ class ThemeController extends Controller
         if (isset($decoded['flags'])) {
             if (! is_array($decoded['flags'])) {
                 throw ValidationException::withMessages([
-                    'config_json' => 'A seÃ§Ã£o flags do config_json deve ser um objeto JSON.',
+                    'config_json' => 'A secao flags do config_json deve ser um objeto JSON.',
                 ]);
             }
 
@@ -1112,7 +1112,7 @@ class ThemeController extends Controller
         if (isset($decoded['notes'])) {
             if (! is_array($decoded['notes'])) {
                 throw ValidationException::withMessages([
-                    'config_json' => 'A seÃ§Ã£o notes do config_json deve ser um objeto JSON.',
+                    'config_json' => 'A secao notes do config_json deve ser um objeto JSON.',
                 ]);
             }
 
@@ -1124,4 +1124,3 @@ class ThemeController extends Controller
         return $sanitized !== [] ? $sanitized : null;
     }
 }
-

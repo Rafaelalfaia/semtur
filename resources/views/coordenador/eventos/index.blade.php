@@ -26,7 +26,7 @@
 
   <x-dashboard.page-header
     title="Eventos"
-    subtitle="Acompanhe os eventos principais, status editoriais e acesso aos fluxos de edicoes em uma estrutura unificada do console."
+    subtitle="Acompanhe os eventos principais, status editoriais e acesso aos fluxos de edições em uma estrutura unificada do console."
   >
     @can('eventos.manage')
       <a href="{{ route('coordenador.eventos.create') }}" class="ui-btn-primary">Novo evento</a>
@@ -52,7 +52,7 @@
     </form>
   </x-dashboard.section-card>
 
-  <x-dashboard.section-card title="Lista de eventos" subtitle="Acesse edicoes, acompanhe o status e mantenha a organizacao do modulo" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Lista de eventos" subtitle="Acesse edições, acompanhe o status e mantenha a organização do módulo" class="ui-coord-dashboard-panel mt-5">
     <div class="ui-table-shell">
       <table class="min-w-full text-sm">
         <thead class="ui-table-head">
