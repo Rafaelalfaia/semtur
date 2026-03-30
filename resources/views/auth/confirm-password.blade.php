@@ -1,13 +1,13 @@
 <x-guest-layout>
     <div class="mb-4 text-sm text-gray-600">
-        {{ __('ui.auth.secure_area') }}
+        {{ ui_text('ui.auth.secure_area') }}
     </div>
 
     <form method="POST" action="{{ route('password.confirm') }}">
         @csrf
 
         <div>
-            <x-input-label for="password" :value="__('ui.auth.password')" />
+            <x-input-label for="password" :value="ui_text('ui.auth.password')" />
 
             <x-text-input
                 id="password"
@@ -23,7 +23,7 @@
 
         <div class="flex justify-end mt-4">
             <x-primary-button>
-                {{ __('ui.auth.confirm') }}
+                {{ ui_text('ui.auth.confirm') }}
             </x-primary-button>
         </div>
     </form>

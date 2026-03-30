@@ -87,7 +87,7 @@
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Data</th>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Status</th>
             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">Técnico</th>
-            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Acao</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide">Ação</th>
           </tr>
         </thead>
         <tbody>

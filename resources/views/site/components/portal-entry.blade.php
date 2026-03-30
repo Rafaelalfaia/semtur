@@ -21,7 +21,7 @@
         </div>
 
         <div class="shrink-0 w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 grid place-items-center">
-            →
+            &rarr;
         </div>
     </div>
 

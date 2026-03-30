@@ -3,9 +3,9 @@
     'subtitle' => null,
     'href' => null,
     'items' => collect(),
-    'empty' => __('ui.common.view_more'),
+    'empty' => ui_text('ui.common.view_more'),
     'eyebrow' => null,
-    'emptyTitle' => __('ui.common.view_all'),
+    'emptyTitle' => ui_text('ui.common.view_all'),
     'gridClass' => null,
     'cardVariant' => null,
     'layout' => 'grid',
@@ -54,7 +54,7 @@
                                 :href="$item['href'] ?? '#'"
                                 :badge="$item['badge'] ?? null"
                                 :meta="$item['meta'] ?? null"
-                                :cta="$item['cta'] ?? __('ui.common.view_more')"
+                                :cta="$item['cta'] ?? ui_text('ui.common.view_more')"
                                 :variant="$cardVariant"
                             />
                         </div>
@@ -72,7 +72,7 @@
                         :href="$item['href'] ?? '#'"
                         :badge="$item['badge'] ?? null"
                         :meta="$item['meta'] ?? null"
-                        :cta="$item['cta'] ?? __('ui.common.view_more')"
+                        :cta="$item['cta'] ?? ui_text('ui.common.view_more')"
                         :variant="$cardVariant"
                     />
                 @endforeach
@@ -80,6 +80,5 @@
         @endif
     @endif
 </section>
-
 
 

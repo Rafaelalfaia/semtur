@@ -19,7 +19,7 @@
         }
     }" x-init="$nextTick(() => update())">
         <x-section-head
-            :eyebrow="__('ui.instagram.eyebrow')"
+            :eyebrow="ui_text('ui.instagram.eyebrow')"
             title="@visitaltamira"
             href="https://www.instagram.com/visitaltamira/"
         />
@@ -28,7 +28,7 @@
             <div class="site-instagram-headerline">
                 <div class="site-instagram-profile">
                     <span class="site-badge">VisitAltamira</span>
-                    <span class="site-instagram-profile-copy">{{ __('ui.instagram.profile_copy') }}</span>
+                    <span class="site-instagram-profile-copy">{{ ui_text('ui.instagram.profile_copy') }}</span>
                 </div>
 
                 <div class="site-instagram-controls" aria-hidden="true">
@@ -59,7 +59,7 @@
                             @if(!empty($resolvedImage))
                                 <img
                                     src="{{ $resolvedImage }}"
-                                    alt="{{ __('ui.instagram.post_alt') }}"
+                                    alt="{{ ui_text('ui.instagram.post_alt') }}"
                                     class="site-instagram-card-image"
                                     loading="lazy"
                                     decoding="async"
@@ -71,18 +71,18 @@
                         </div>
 
                         <div class="site-instagram-card-body">
-                            <span class="site-badge">{{ __('ui.instagram.badge') }}</span>
+                            <span class="site-badge">{{ ui_text('ui.instagram.badge') }}</span>
                             @if(!empty($post['caption']))
                                 <p class="site-instagram-card-caption">
                                     {{ \Illuminate\Support\Str::limit(trim($post['caption']), 108) }}
                                 </p>
                             @else
                                 <p class="site-instagram-card-caption">
-                                    {{ __('ui.instagram.fallback_caption') }}
+                                    {{ ui_text('ui.instagram.fallback_caption') }}
                                 </p>
                             @endif
 
-                            <span class="site-instagram-card-cta">{{ __('ui.instagram.open') }}</span>
+                            <span class="site-instagram-card-cta">{{ ui_text('ui.instagram.open') }}</span>
                         </div>
                     </a>
                 @endforeach

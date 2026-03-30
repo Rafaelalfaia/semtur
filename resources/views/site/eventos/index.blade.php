@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
-@section('title', __('ui.events.title'))
-@section('meta.description', __('ui.events.meta_description'))
+@section('title', ui_text('ui.events.title'))
+@section('meta.description', ui_text('ui.events.meta_description'))
 @section('meta.image', theme_asset('hero_image'))
 @section('meta.canonical', url()->full())
 
@@ -22,13 +22,13 @@
       $image = $evento->capa_url ?? $pub($evento->capa_path ?? null) ?? $evento->perfil_url ?? $pub($evento->perfil_path ?? null) ?? theme_asset('hero_image');
 
       return [
-          'title' => $evento->nome ?? __('ui.events.event'),
-          'subtitle' => $evento->cidade ?? __('ui.common.altamira'),
+          'title' => $evento->nome ?? ui_text('ui.events.event'),
+          'subtitle' => $evento->cidade ?? ui_text('ui.common.altamira'),
           'summary' => \Illuminate\Support\Str::limit(strip_tags((string) ($evento->descricao ?? '')), 130),
           'image' => $image,
           'href' => localized_route('eventos.show', ['slug' => $evento->slug ?? $evento->id, 'ano' => $ano ?: ($anoAtual ?? now()->year)]),
-          'badge' => $periodo ?: ($ano ?: __('ui.events.event')),
-          'cta' => __('ui.agenda.view_event'),
+          'badge' => $periodo ?: ($ano ?: ui_text('ui.events.event')),
+          'cta' => ui_text('ui.agenda.view_event'),
       ];
   });
 @endphp
@@ -37,35 +37,35 @@
     @include('site.partials._page_hero', [
         'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => __('ui.nav.home'), 'href' => localized_route('site.home')],
-            ['label' => __('ui.agenda.title')],
+            ['label' => ui_text('ui.nav.home'), 'href' => localized_route('site.home')],
+            ['label' => ui_text('ui.agenda.title')],
         ],
-        'badge' => __('ui.events.badge'),
-        'title' => __('ui.events.hero_title'),
-        'subtitle' => __('ui.events.hero_subtitle'),
+        'badge' => ui_text('ui.events.badge'),
+        'title' => ui_text('ui.events.hero_title'),
+        'subtitle' => ui_text('ui.events.hero_subtitle'),
         'meta' => [
-            __('ui.events.events_count', ['count' => $eventCards->count()]),
-            $anoAtual ? ('Ano '.$anoAtual) : __('ui.events.multiple_years'),
+            ui_text('ui.events.events_count', ['count' => $eventCards->count()]),
+            $anoAtual ? ('Ano '.$anoAtual) : ui_text('ui.events.multiple_years'),
         ],
-        'primaryActionLabel' => Route::has('site.explorar') ? __('ui.events.explore_city') : null,
+        'primaryActionLabel' => Route::has('site.explorar') ? ui_text('ui.events.explore_city') : null,
         'primaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
-        'secondaryActionLabel' => Route::has('site.mapa') ? __('ui.common.tourist_map') : null,
+        'secondaryActionLabel' => Route::has('site.mapa') ? ui_text('ui.common.tourist_map') : null,
         'secondaryActionHref' => Route::has('site.mapa') ? localized_route('site.mapa') : null,
         'image' => theme_asset('hero_image'),
-        'imageAlt' => __('ui.events.title'),
+        'imageAlt' => ui_text('ui.events.title'),
         'compact' => true,
     ])
 
     @if($anosDisponiveis->isNotEmpty())
         <section class="site-section">
             <div class="site-surface-soft site-agenda-filter-shell">
-                <x-section-head :eyebrow="__('ui.common.filters')" :title="__('ui.events.choose_year')" :subtitle="__('ui.events.choose_year_subtitle')" />
+                <x-section-head :eyebrow="ui_text('ui.common.filters')" :title="ui_text('ui.events.choose_year')" :subtitle="ui_text('ui.events.choose_year_subtitle')" />
                 <div class="site-filter-row site-agenda-filter-row">
                     @foreach($anosDisponiveis as $ano)
                         <a href="{{ localized_route('eventos.index', array_filter(['ano' => $ano])) }}" class="{{ (string) $ano === (string) $anoAtual ? 'site-year-chip is-active' : 'site-year-chip' }}">{{ $ano }}</a>
                     @endforeach
                     @if($anoAtual)
-                        <a href="{{ localized_route('eventos.index') }}" class="site-link">{{ __('ui.events.clear_filter') }}</a>
+                        <a href="{{ localized_route('eventos.index') }}" class="site-link">{{ ui_text('ui.events.clear_filter') }}</a>
                     @endif
                 </div>
             </div>
@@ -74,17 +74,17 @@
 
     <section class="site-section">
         @if($eventCards->isEmpty())
-            <div class="site-empty-state"><p class="site-empty-state-copy">{{ __('ui.events.empty_copy') }}</p></div>
+            <div class="site-empty-state"><p class="site-empty-state-copy">{{ ui_text('ui.events.empty_copy') }}</p></div>
         @else
             <div class="site-agenda-events-section">
                 @include('site.partials._category_section', [
-                    'eyebrow' => __('ui.events.programming'),
-                    'title' => __('ui.events.published_events'),
-                    'subtitle' => __('ui.events.published_events_subtitle'),
+                    'eyebrow' => ui_text('ui.events.programming'),
+                    'title' => ui_text('ui.events.published_events'),
+                    'subtitle' => ui_text('ui.events.published_events_subtitle'),
                     'items' => $eventCards,
                     'layout' => 'carousel',
                     'cardVariant' => 'compact',
-                    'empty' => __('ui.events.empty_copy'),
+                    'empty' => ui_text('ui.events.empty_copy'),
                 ])
             </div>
 

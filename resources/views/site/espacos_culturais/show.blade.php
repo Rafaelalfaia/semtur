@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', $espaco->nome . ' • ' . $espaco->tipo_label)
+@section('title', $espaco->nome . ' â€¢ ' . $espaco->tipo_label)
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($espaco->resumo ?: $espaco->descricao)), 160))
 @section('meta.image', $espaco->capa_url ?: (optional($espaco->midias->first())->url ?: asset('imagens/altamira.jpg')))
 
@@ -53,7 +53,7 @@
         ],
         'primaryActionLabel' => $agendamentoWhatsappHref ? 'Fazer agendamento' : ($espaco->agendamento_disponivel ? 'Agendar visita' : null),
         'primaryActionHref' => $agendamentoWhatsappHref ?: ($espaco->agendamento_disponivel ? localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) : null),
-        'secondaryActionLabel' => $espaco->maps_url ? __('ui.common.see_on_map') : __('ui.common.back_to_listing'),
+        'secondaryActionLabel' => $espaco->maps_url ? ui_text('ui.common.see_on_map') : ui_text('ui.common.back_to_listing'),
         'secondaryActionHref' => $espaco->maps_url ?: localized_route('site.museus'),
         'image' => $capa,
         'imageAlt' => $espaco->nome,

@@ -38,7 +38,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware('app.setLocale')
     ->prefix('{locale}')
-    ->where(['locale' => 'pt|en|es'])
+    ->where(['locale' => implode('|', array_keys(supported_locales()))])
     ->group(function () {
         Route::middleware('guest')->group(function () {
             Route::get('register', [RegisteredUserController::class, 'create'])

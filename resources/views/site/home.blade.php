@@ -1,11 +1,11 @@
-@extends('site.layouts.app')
+﻿@extends('site.layouts.app')
 
 @php
     use Illuminate\Support\Facades\Route as R;
 
     $homeCanonical = localized_route('site.home');
-    $homeTitle = __('ui.home.title');
-    $homeDescription = __('ui.home.description');
+    $homeTitle = ui_text('ui.home.title');
+    $homeDescription = ui_text('ui.home.description');
     $homeImage = theme_asset('hero_image');
     $homeSchema = [
         [
@@ -16,13 +16,13 @@
             'description' => $homeDescription,
             'image' => $homeImage,
             'touristType' => [
-                __('ui.home.tourist_nature'),
-                __('ui.home.tourist_cultural'),
-                __('ui.home.tourist_xingu'),
+                ui_text('ui.home.tourist_nature'),
+                ui_text('ui.home.tourist_cultural'),
+                ui_text('ui.home.tourist_xingu'),
             ],
             'containedInPlace' => [
                 '@type' => 'State',
-                'name' => 'Para',
+                'name' => 'Pará',
             ],
         ],
     ];
@@ -57,21 +57,21 @@
         ->take(8)
         ->map(fn ($item) => [
             'title' => $item->card_title ?? $item->nome ?? '',
-            'subtitle' => $item->cidade ?? __('ui.common.altamira'),
+            'subtitle' => $item->cidade ?? ui_text('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 92),
             'image' => $item->card_image_url ?? $item->capa_url ?? $item->foto_capa_url ?? null,
             'href' => R::has('site.ponto') ? localized_route('site.ponto', ['ponto' => ($item->slug ?? $item->id)]) : '#',
-            'badge' => __('ui.home.point_badge'),
-            'cta' => __('ui.common.discover'),
+            'badge' => ui_text('ui.home.point_badge'),
+            'cta' => ui_text('ui.common.discover'),
         ]);
 
     $recommendationCards = $recomendacoes->map(fn ($item) => [
         'title' => $item['title'] ?? '',
-        'subtitle' => $item['subtitle'] ?? __('ui.common.altamira'),
+        'subtitle' => $item['subtitle'] ?? ui_text('ui.common.altamira'),
         'image' => $item['image'] ?? null,
         'href' => $item['href'] ?? '#',
-        'badge' => $item['badge'] ?? __('ui.home.recommended_badge'),
-        'meta' => ($item['type'] ?? null) === 'empresa' ? __('ui.home.recommended_company_meta') : __('ui.home.recommended_point_meta'),
+        'badge' => $item['badge'] ?? ui_text('ui.home.recommended_badge'),
+        'meta' => ($item['type'] ?? null) === 'empresa' ? ui_text('ui.home.recommended_company_meta') : ui_text('ui.home.recommended_point_meta'),
     ]);
 
     $videoCards = $videosHome->map(function ($video) {
@@ -120,16 +120,16 @@
             'secondaryHref' => null,
             'overlayOnly' => true,
             'overlayImage' => asset('imagens/visitcapa.png'),
-            'overlayImageAlt' => __('ui.home.hero_overlay_alt'),
+            'overlayImageAlt' => ui_text('ui.home.hero_overlay_alt'),
             'heroClass' => 'site-hero-home-immersive',
         ])
 
         <div class="site-home-hero-panel">
             <div class="site-home-hero-panel-copy">
-                <span class="site-badge">{{ __('ui.common.official_destination') }}</span>
+                <span class="site-badge">{{ ui_text('ui.common.official_destination') }}</span>
                 <img
                     src="{{ $conhecaImage }}"
-                    alt="{{ __('ui.home.know_altamira') }}"
+                    alt="{{ ui_text('ui.home.know_altamira') }}"
                     class="site-home-hero-panel-brand"
                     loading="lazy"
                     decoding="async"
@@ -138,11 +138,11 @@
         </div>
     </div>
 
-    <section class="site-section site-home-conheca-section" aria-label="{{ __('ui.home.know_altamira') }}">
+    <section class="site-section site-home-conheca-section" aria-label="{{ ui_text('ui.home.know_altamira') }}">
         <div class="site-home-conheca-shell">
             <img
                 src="{{ $conhecaImage }}"
-                alt="{{ __('ui.home.know_altamira') }}"
+                alt="{{ ui_text('ui.home.know_altamira') }}"
                 class="site-home-conheca-image"
                 loading="lazy"
                 decoding="async"
@@ -155,7 +155,7 @@
 
         @if($recommendationCards->isNotEmpty())
             <section class="site-section site-home-recommendations-section">
-                <x-section-head :title="__('ui.home.recommended_title')" />
+                <x-section-head :title="ui_text('ui.home.recommended_title')" />
 
                 <div class="site-home-carousel-shell site-home-recommendations-shell" x-data="{
                     canPrev: false,
@@ -206,7 +206,7 @@
             @include('site.partials._banner', [
                 'banner' => $bannerIntermediario,
                 'title' => $bannerIntermediario->titulo ?? 'VisitAltamira',
-                'ctaLabel' => $bannerIntermediario->cta_label ?? __('ui.home.banner_cta'),
+                'ctaLabel' => $bannerIntermediario->cta_label ?? ui_text('ui.home.banner_cta'),
                 'href' => $bannerIntermediario->cta_url ?? $bannerIntermediario->href ?? (localized_route('site.explorar')),
                 'heroClass' => 'site-hero-home-editorial-banner',
             ])
@@ -214,15 +214,15 @@
     @endif
 
     @include('site.partials._category_section', [
-        'eyebrow' => __('ui.home.points_eyebrow'),
-        'title' => __('ui.home.points_title'),
-        'subtitle' => __('ui.home.points_subtitle'),
+        'eyebrow' => ui_text('ui.home.points_eyebrow'),
+        'title' => ui_text('ui.home.points_title'),
+        'subtitle' => ui_text('ui.home.points_subtitle'),
         'href' => localized_route('site.explorar'),
         'items' => $pointCards,
         'layout' => 'carousel',
         'cardVariant' => 'compact',
-        'empty' => __('ui.home.points_empty'),
-        'emptyTitle' => __('ui.home.points_empty_title'),
+        'empty' => ui_text('ui.home.points_empty'),
+        'emptyTitle' => ui_text('ui.home.points_empty_title'),
     ])
 
     @if($atalhosPremium->isNotEmpty() || $videoCards->isNotEmpty())
@@ -232,9 +232,9 @@
     @if($atalhosPremium->isNotEmpty())
         <section class="site-section site-home-utility-section">
             <x-section-head
-                :eyebrow="__('ui.home.planning_eyebrow')"
-                :title="__('ui.home.planning_title')"
-                :subtitle="__('ui.home.planning_subtitle')"
+                :eyebrow="ui_text('ui.home.planning_eyebrow')"
+                :title="ui_text('ui.home.planning_title')"
+                :subtitle="ui_text('ui.home.planning_subtitle')"
             />
 
             <div class="site-home-utility-grid">
@@ -265,7 +265,7 @@
 
     @if($videoCards->isNotEmpty())
         <section class="site-section site-home-videos-section">
-            <x-section-head :title="__('ui.home.videos_title')" />
+            <x-section-head :title="ui_text('ui.home.videos_title')" />
 
             <div class="site-home-carousel-shell site-home-video-shell" x-data="{
                 canPrev: false,
@@ -299,7 +299,7 @@
                                         type="button"
                                         class="site-home-video-play"
                                         @click="openVideo(@js($item['embed']), @js($item['title']))"
-                                        aria-label="{{ __('ui.home.play_video', ['title' => $item['title']]) }}"
+                                        aria-label="{{ ui_text('ui.home.play_video', ['title' => $item['title']]) }}"
                                     >
                                         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="site-home-video-play-icon">
                                             <path d="M8 6.8v10.4c0 .7.8 1.1 1.4.7l8.1-5.2a.85.85 0 0 0 0-1.4L9.4 6.1A.85.85 0 0 0 8 6.8Z"/>
@@ -310,7 +310,7 @@
 
                             <div class="site-home-video-rail-body">
                                 <div class="site-home-video-rail-top">
-                                    <span class="site-badge">{{ __('ui.home.video_badge') }}</span>
+                                    <span class="site-badge">{{ ui_text('ui.home.video_badge') }}</span>
                                     @if($item['meta'])
                                         <span class="site-home-video-meta">{{ $item['meta'] }}</span>
                                     @endif
@@ -319,14 +319,14 @@
                                 <h3 class="site-home-video-title">
                                     <a href="{{ $item['href'] }}" class="site-home-video-title-link">{{ $item['title'] }}</a>
                                 </h3>
-                                <a href="{{ $item['href'] }}" class="site-home-video-cta">{{ __('ui.home.watch_now') }}</a>
+                                <a href="{{ $item['href'] }}" class="site-home-video-cta">{{ ui_text('ui.home.watch_now') }}</a>
                             </div>
                         </article>
                     @endforeach
                 </div>
 
                 <div class="site-home-video-actions">
-                    <a href="{{ $videosIndexHref }}" class="site-button-primary">{{ __('ui.home.videos_all') }}</a>
+                    <a href="{{ $videosIndexHref }}" class="site-button-primary">{{ ui_text('ui.home.videos_all') }}</a>
                 </div>
             </div>
         </section>
@@ -359,18 +359,18 @@
 
     <div x-show="videoModalOpen" x-cloak class="site-lightbox site-home-video-modal" @click.self="closeVideo()" x-transition.opacity>
         <div class="site-lightbox-frame site-home-video-modal-frame">
-            <button type="button" class="site-lightbox-close" @click="closeVideo()" aria-label="{{ __('ui.home.close_video') }}">&times;</button>
+            <button type="button" class="site-lightbox-close" @click="closeVideo()" aria-label="{{ ui_text('ui.home.close_video') }}">&times;</button>
 
             <div class="site-home-video-modal-shell">
                 <div class="site-home-video-modal-head">
-                    <span class="site-badge">{{ __('ui.home.video_badge') }}</span>
+                    <span class="site-badge">{{ ui_text('ui.home.video_badge') }}</span>
                     <h2 class="site-home-video-modal-title" x-text="videoModalTitle"></h2>
                 </div>
 
                 <div class="site-home-video-modal-media">
                     <iframe
                         x-bind:src="videoModalOpen ? videoModalSrc : ''"
-                        x-bind:title="videoModalTitle || @js(__('ui.home.video_badge'))"
+                        x-bind:title="videoModalTitle || @js(ui_text('ui.home.video_badge'))"
                         class="site-home-video-modal-embed"
                         loading="lazy"
                         referrerpolicy="strict-origin-when-cross-origin"
@@ -383,3 +383,5 @@
     </div>
 </div>
 @endsection
+
+

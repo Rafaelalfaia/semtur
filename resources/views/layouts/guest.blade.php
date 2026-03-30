@@ -6,9 +6,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="robots" content="noindex,nofollow">
         <meta name="google" content="notranslate">
-        <meta http-equiv="content-language" content="pt-BR">
+        <meta http-equiv="content-language" content="{{ data_get(locale_meta(), 'html_lang', 'pt-BR') }}">
 
-        <title>{{ config('app.name', 'VisitAltamira') }}</title>
+        <title>@yield('title', ui_text('ui.brand'))</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -20,7 +20,7 @@
     <body class="font-sans text-gray-900 antialiased notranslate">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
-                <a href="/">
+                <a href="{{ localized_route('site.home') }}">
                     <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
                 </a>
             </div>

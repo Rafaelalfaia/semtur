@@ -5,8 +5,8 @@
 @section('topbar.description', 'Visão executiva do conteúdo coordenado, com saúde editorial, atividade recente e ações institucionais.')
 
 @section('topbar.nav')
-  <span class="ui-console-topbar-tab is-active">Visao geral</span>
-  <a href="#coord-graficos" class="ui-console-topbar-tab">Graficos</a>
+  <span class="ui-console-topbar-tab is-active">Visão geral</span>
+  <a href="#coord-graficos" class="ui-console-topbar-tab">Gráficos</a>
   <a href="#coord-recentes" class="ui-console-topbar-tab">Recentes</a>
 @endsection
 
@@ -23,12 +23,12 @@
 
 <div class="ui-console-page ui-coord-dashboard">
   <x-dashboard.page-header
-    title="Visao geral do coordenador"
+    title="Visão geral do coordenador"
     subtitle="Acompanhe volume, publicação e saúde do catálogo sem sair do shell principal do console."
   >
     <x-slot:actions>
       <a href="{{ request()->fullUrlWithQuery(['refresh'=>1]) }}" class="ui-btn-secondary">
-        Forcar refresh
+        Forçar refresh
       </a>
 
       <form method="POST" action="{{ route('console.cache.clear') }}" x-data @submit.prevent="if (confirm('Limpar caches do sistema agora?')) $el.submit()">
@@ -42,7 +42,7 @@
 
   <div class="mt-5 flex items-center gap-2">
     <span class="ui-badge ui-badge-success">Atualizado agora</span>
-    <span class="ui-badge ui-badge-neutral">Coordenacao ativa</span>
+    <span class="ui-badge ui-badge-neutral">Coordenação ativa</span>
   </div>
 
   <div class="ui-coord-dashboard-grid mt-5">
@@ -96,7 +96,7 @@
             </div>
             <div class="ui-coord-mini-stat">
               <div class="ui-coord-mini-value">{{ number_format((int)($hoje['publicados'] ?? 0)) }}</div>
-              <div class="ui-coord-mini-label">Publicacoes</div>
+              <div class="ui-coord-mini-label">Publicações</div>
             </div>
           </div>
         </x-dashboard.section-card>
@@ -132,7 +132,7 @@
             <div class="ui-coord-progress-track"><div class="ui-coord-progress-fill" style="width: {{ $capaPon }}%"></div></div>
           </div>
           <div class="text-xs text-[var(--ui-text-soft)]">
-            Media de midias por ponto: <span class="font-semibold text-[var(--ui-text-title)]">{{ $media }}</span>
+            Média de mídias por ponto: <span class="font-semibold text-[var(--ui-text-title)]">{{ $media }}</span>
           </div>
         </div>
       </x-dashboard.section-card>
@@ -165,7 +165,7 @@
   </div>
 
   <div id="coord-graficos" class="ui-coord-dashboard-charts mt-6">
-    <x-dashboard.section-card title="Distribuicao por status" subtitle="Comparativo visual" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Distribuição por status" subtitle="Comparativo visual" class="ui-coord-dashboard-panel">
       <div class="ui-coord-chart-wrap"><canvas id="chartStatusDistribuicao" height="220"></canvas></div>
     </x-dashboard.section-card>
     <x-dashboard.section-card title="Top categorias" subtitle="Itens publicados" class="ui-coord-dashboard-panel">

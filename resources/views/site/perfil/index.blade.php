@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', __('ui.profile.my_account').' • VisitAltamira')
+@section('title', ui_text('ui.profile.my_account').' • VisitAltamira')
 
 @section('site.content')
 <div class="min-h-dvh bg-white text-slate-900">
@@ -14,12 +14,12 @@
       @endphp
       <a href="{{ $safeBack }}"
          class="h-10 w-10 rounded-full bg-slate-100 grid place-items-center hover:bg-slate-200"
-         aria-label="{{ __('ui.common.back') }}">
+         aria-label="{{ ui_text('ui.common.back') }}">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
         </svg>
       </a>
-      <h1 class="text-lg sm:text-xl font-semibold">{{ __('ui.profile.my_account') }}</h1>
+      <h1 class="text-lg sm:text-xl font-semibold">{{ ui_text('ui.profile.my_account') }}</h1>
     </div>
   </header>
 
@@ -51,7 +51,7 @@
       <div class="mt-3 text-center">
         <div class="text-base sm:text-lg font-medium">{{ $u->name }}</div>
         <div class="text-sm text-slate-500">
-          {{ $u->email ?: __('ui.profile.no_email') }}
+          {{ $u->email ?: ui_text('ui.profile.no_email') }}
         </div>
         @if(!empty($u->cpf))
           <div class="mt-1 text-xs text-slate-400">
@@ -59,7 +59,7 @@
               $cpf = preg_replace('/\D+/','', (string)$u->cpf);
               $cpfMasked = strlen($cpf)===11 ? (substr($cpf,0,3).'.'.substr($cpf,3,3).'.'.substr($cpf,6,3).'-'.substr($cpf,9,2)) : $u->cpf;
             @endphp
-            {{ __('ui.profile.cpf') }}: {{ $cpfMasked }}
+            {{ ui_text('ui.profile.cpf') }}: {{ $cpfMasked }}
           </div>
         @endif
       </div>
@@ -77,7 +77,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16.862 3.487a2 2 0 0 1 2.828 2.828l-10.9 10.9-4.29 1.43 1.43-4.29 10.9-10.9z"/>
               </svg>
             </span>
-            <span class="flex-1 font-medium text-sm">{{ __('ui.profile.edit_profile') }}</span>
+            <span class="flex-1 font-medium text-sm">{{ ui_text('ui.profile.edit_profile') }}</span>
             <svg class="h-4 w-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none">
               <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -93,7 +93,7 @@
                 <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm1 17.93V18a1 1 0 0 0-2 0v1.93A8.009 8.009 0 0 1 4.07 13H6a1 1 0 0 0 0-2H4.07A8.009 8.009 0 0 1 11 4.07V6a1 1 0 0 0 2 0V4.07A8.009 8.009 0 0 1 19.93 11H18a1 1 0 0 0 0 2h1.93A8.009 8.009 0 0 1 13 19.93Z"/>
               </svg>
             </span>
-            <span class="flex-1 font-medium text-sm">{{ __('ui.profile.social_networks') }}</span>
+            <span class="flex-1 font-medium text-sm">{{ ui_text('ui.profile.social_networks') }}</span>
             <svg class="h-4 w-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none">
               <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -109,7 +109,7 @@
                 <path d="M17 8V7a5 5 0 0 0-10 0v1H5v13h14V8h-2Zm-8 0V7a3 3 0 0 1 6 0v1H9Z"/>
               </svg>
             </span>
-            <span class="flex-1 font-medium text-sm">{{ __('ui.profile.privacy_policy') }}</span>
+            <span class="flex-1 font-medium text-sm">{{ ui_text('ui.profile.privacy_policy') }}</span>
             <svg class="h-4 w-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none">
               <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -125,7 +125,7 @@
         <button type="submit"
           class="w-full h-12 rounded-2xl border border-teal-500 text-teal-700 font-medium
                  hover:bg-teal-50 active:bg-teal-100 transition">
-          {{ __('ui.profile.logout') }}
+          {{ ui_text('ui.profile.logout') }}
         </button>
       </form>
     </div>

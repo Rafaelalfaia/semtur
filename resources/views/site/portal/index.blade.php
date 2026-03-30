@@ -5,7 +5,7 @@
     use Illuminate\Support\Facades\Storage;
 
     $pageTitle = $page['title'] ?? 'VisitAltamira';
-    $pageDescription = $page['description'] ?? __('ui.home.description');
+    $pageDescription = $page['description'] ?? ui_text('ui.home.description');
     $isAgendaPage = request()->routeIs('site.agenda');
     $pageCards = collect($page['cards'] ?? []);
     $agendaEvents = collect($agendaEvents ?? []);
@@ -23,34 +23,34 @@
             ?? theme_asset('hero_image');
 
         return [
-            'title' => $evento->nome ?? __('ui.agenda.title'),
-            'subtitle' => $evento->cidade ?? __('ui.common.altamira'),
+            'title' => $evento->nome ?? ui_text('ui.agenda.title'),
+            'subtitle' => $evento->cidade ?? ui_text('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags((string) ($edicao->resumo ?? $evento->descricao ?? '')), 110),
             'image' => $image,
             'href' => Route::has('eventos.show')
                 ? localized_route('eventos.show', ['slug' => $evento->slug ?? $evento->id, 'ano' => $ano ?: now()->year])
                 : ($evento->slug ?? '#'),
-            'badge' => $periodo ?: ($ano ?: __('ui.agenda.title')),
-            'meta' => filled($edicao->local ?? null) ? $edicao->local : __('ui.agenda.published_programming'),
-            'cta' => __('ui.agenda.view_event'),
+            'badge' => $periodo ?: ($ano ?: ui_text('ui.agenda.title')),
+            'meta' => filled($edicao->local ?? null) ? $edicao->local : ui_text('ui.agenda.published_programming'),
+            'cta' => ui_text('ui.agenda.view_event'),
         ];
     })->values();
 
     $agendaHeroImage = optional($agendaEventCards->shuffle()->first())['image'] ?? theme_asset('hero_image');
 
     $agendaCards = $pageCards->values()->map(function ($card, $index) {
-        $label = trim((string) ($card['label'] ?? __('ui.common.view_more')));
+        $label = trim((string) ($card['label'] ?? ui_text('ui.common.view_more')));
         $href = $card['href'] ?? '#';
         $isSoon = str_contains(\Illuminate\Support\Str::lower($label), 'breve') || $href === '#';
 
         return [
-            'title' => $card['title'] ?? __('ui.agenda.title'),
-            'subtitle' => __('ui.common.altamira'),
+            'title' => $card['title'] ?? ui_text('ui.agenda.title'),
+            'subtitle' => ui_text('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit((string) ($card['text'] ?? ''), 108),
             'image' => theme_asset('hero_image'),
             'href' => $href,
-            'badge' => $isSoon ? __('ui.agenda.soon') : ($index === 0 ? __('ui.agenda.available_now') : __('ui.agenda.title')),
-            'meta' => $isSoon ? __('ui.agenda.planning') : __('ui.agenda.available'),
+            'badge' => $isSoon ? ui_text('ui.agenda.soon') : ($index === 0 ? ui_text('ui.agenda.available_now') : ui_text('ui.agenda.title')),
+            'meta' => $isSoon ? ui_text('ui.agenda.planning') : ui_text('ui.agenda.available'),
             'cta' => $label,
         ];
     });
@@ -82,36 +82,36 @@
             @include('site.partials._page_hero', [
                 'backHref' => localized_route('site.home'),
                 'breadcrumbs' => [
-                    ['label' => __('ui.common.home'), 'href' => localized_route('site.home')],
-                    ['label' => $page['title'] ?? __('ui.agenda.title')],
+                    ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
+                    ['label' => $page['title'] ?? ui_text('ui.agenda.title')],
                 ],
-                'badge' => $page['eyebrow'] ?? __('ui.agenda.city_programming'),
-                'title' => $page['title'] ?? __('ui.agenda.title'),
-                'subtitle' => __('ui.agenda.subtitle'),
+                'badge' => $page['eyebrow'] ?? ui_text('ui.agenda.city_programming'),
+                'title' => $page['title'] ?? ui_text('ui.agenda.title'),
+                'subtitle' => ui_text('ui.agenda.subtitle'),
                 'meta' => [
-                    $agendaEventCards->isNotEmpty() ? __('ui.agenda.events_published', ['count' => $agendaEventCards->count()]) : null,
-                    __('ui.common.altamira'),
+                    $agendaEventCards->isNotEmpty() ? ui_text('ui.agenda.events_published', ['count' => $agendaEventCards->count()]) : null,
+                    ui_text('ui.common.altamira'),
                 ],
                 'primaryActionLabel' => $page['cta_label'] ?? null,
                 'primaryActionHref' => $page['cta_href'] ?? null,
-                'secondaryActionLabel' => Route::has('site.explorar') ? __('ui.agenda.explore_city') : null,
+                'secondaryActionLabel' => Route::has('site.explorar') ? ui_text('ui.agenda.explore_city') : null,
                 'secondaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
                 'image' => $agendaHeroImage,
-                'imageAlt' => $page['title'] ?? __('ui.agenda.title'),
+                'imageAlt' => $page['title'] ?? ui_text('ui.agenda.title'),
                 'compact' => true,
             ])
 
             <section class="site-section">
                 <div class="site-surface-soft site-agenda-portal-shortcuts">
-                    <div class="site-agenda-portal-shortcuts-row" role="navigation" aria-label="{{ __('ui.agenda.shortcuts_aria') }}">
+                    <div class="site-agenda-portal-shortcuts-row" role="navigation" aria-label="{{ ui_text('ui.agenda.shortcuts_aria') }}">
                         @if($hasAgendaHighlight)
-                            <a href="#agenda-destaques" class="site-year-chip is-active">{{ __('ui.agenda.highlights') }}</a>
+                            <a href="#agenda-destaques" class="site-year-chip is-active">{{ ui_text('ui.agenda.highlights') }}</a>
                         @endif
                         @if($hasAgendaCarousel)
-                            <a href="#agenda-atalhos" class="site-year-chip">{{ __('ui.agenda.shortcuts') }}</a>
+                            <a href="#agenda-atalhos" class="site-year-chip">{{ ui_text('ui.agenda.shortcuts') }}</a>
                         @endif
                         @if($hasAgendaCta)
-                            <a href="#agenda-completa" class="site-year-chip">{{ __('ui.agenda.full_agenda') }}</a>
+                            <a href="#agenda-completa" class="site-year-chip">{{ ui_text('ui.agenda.full_agenda') }}</a>
                         @endif
                     </div>
                 </div>
@@ -121,9 +121,9 @@
                 <section class="site-section" id="agenda-destaques">
                     <div class="site-surface-soft site-agenda-portal-highlight">
                         <x-section-head
-                            :eyebrow="__('ui.agenda.now')"
-                            :title="__('ui.agenda.highlight_title')"
-                            :subtitle="__('ui.agenda.highlight_subtitle')"
+                            :eyebrow="ui_text('ui.agenda.now')"
+                            :title="ui_text('ui.agenda.highlight_title')"
+                            :subtitle="ui_text('ui.agenda.highlight_subtitle')"
                         />
 
                         <div
@@ -174,7 +174,7 @@
                                         x-transition.opacity.duration.350ms
                                         @if($index > 0) x-cloak @endif
                                     >
-                                        <span class="site-badge">{{ __('ui.agenda.published_event') }}</span>
+                                        <span class="site-badge">{{ ui_text('ui.agenda.published_event') }}</span>
                                         <div class="site-card-list-meta">
                                             <span>{{ $eventCard['badge'] }}</span>
                                             <span>{{ $eventCard['subtitle'] }}</span>
@@ -185,7 +185,7 @@
                                             <p class="site-section-head-subtitle">{{ $eventCard['summary'] }}</p>
                                         @endif
                                         <div class="site-agenda-portal-highlight-actions">
-                                            <a href="{{ $eventCard['href'] }}" class="site-button-secondary">{{ __('ui.agenda.view_event') }}</a>
+                                            <a href="{{ $eventCard['href'] }}" class="site-button-secondary">{{ ui_text('ui.agenda.view_event') }}</a>
                                         </div>
                                     </div>
                                 @endforeach
@@ -198,13 +198,13 @@
             @if($hasAgendaCarousel)
                 <div id="agenda-atalhos">
                     @include('site.partials._category_section', [
-                        'eyebrow' => __('ui.agenda.upcoming_eyebrow'),
-                        'title' => __('ui.agenda.continue_title'),
-                        'subtitle' => __('ui.agenda.continue_subtitle'),
+                        'eyebrow' => ui_text('ui.agenda.upcoming_eyebrow'),
+                        'title' => ui_text('ui.agenda.continue_title'),
+                        'subtitle' => ui_text('ui.agenda.continue_subtitle'),
                         'items' => $agendaSecondaryCards,
                         'layout' => 'carousel',
                         'cardVariant' => 'compact',
-                        'empty' => __('ui.agenda.empty_copy'),
+                        'empty' => ui_text('ui.agenda.empty_copy'),
                     ])
                 </div>
             @endif
@@ -213,15 +213,15 @@
                 <section class="site-section" id="agenda-completa">
                     <div class="site-surface-soft site-agenda-portal-cta">
                         <div class="site-agenda-portal-cta-copy">
-                            <span class="site-badge">{{ __('ui.agenda.cta_badge') }}</span>
-                            <h2 class="site-section-head-title">{{ __('ui.agenda.cta_title') }}</h2>
-                            <p class="site-section-head-subtitle">{{ __('ui.agenda.cta_subtitle') }}</p>
+                            <span class="site-badge">{{ ui_text('ui.agenda.cta_badge') }}</span>
+                            <h2 class="site-section-head-title">{{ ui_text('ui.agenda.cta_title') }}</h2>
+                            <p class="site-section-head-subtitle">{{ ui_text('ui.agenda.cta_subtitle') }}</p>
                         </div>
 
                         <div class="site-agenda-portal-cta-actions">
                             <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ $page['cta_label'] }}</a>
                             @if(Route::has('site.mapa'))
-                                <a href="{{ localized_route('site.mapa') }}" class="site-button-secondary">{{ __('ui.common.map') }}</a>
+                                <a href="{{ localized_route('site.mapa') }}" class="site-button-secondary">{{ ui_text('ui.common.map') }}</a>
                             @endif
                         </div>
                     </div>
@@ -231,10 +231,10 @@
             @if(!$hasAgendaContent)
                 <section class="site-section">
                     <div class="site-empty-state">
-                        <p class="site-empty-state-title">{{ __('ui.agenda.empty_title') }}</p>
-                        <p class="site-empty-state-copy">{{ __('ui.agenda.empty_copy') }}</p>
+                        <p class="site-empty-state-title">{{ ui_text('ui.agenda.empty_title') }}</p>
+                        <p class="site-empty-state-copy">{{ ui_text('ui.agenda.empty_copy') }}</p>
                         @if($hasAgendaCta)
-                            <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ __('ui.agenda.view_full_agenda') }}</a>
+                            <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ ui_text('ui.agenda.view_full_agenda') }}</a>
                         @endif
                     </div>
                 </section>
@@ -247,8 +247,8 @@
             <div class="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 md:py-12">
                 @include('site.partials._breadcrumbs', [
                     'items' => [
-                        ['label' => __('ui.common.home'), 'href' => localized_route('site.home')],
-                        ['label' => $page['title'] ?? __('ui.common.view_more')],
+                        ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
+                        ['label' => $page['title'] ?? ui_text('ui.common.view_more')],
                     ],
                 ])
 
@@ -260,7 +260,7 @@
                     @endif
 
                     <h1 class="mt-4 text-3xl md:text-5xl font-bold tracking-tight text-slate-900">
-                        {{ $page['title'] ?? __('ui.common.view_more') }}
+                        {{ $page['title'] ?? ui_text('ui.common.view_more') }}
                     </h1>
 
                     @if(!empty($page['lead']))
@@ -286,7 +286,7 @@
                 <div class="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 md:py-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     @foreach($pageCards as $card)
                         <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                            <div class="text-sm font-semibold text-emerald-700">{{ $card['title'] ?? __('ui.common.view_more') }}</div>
+                            <div class="text-sm font-semibold text-emerald-700">{{ $card['title'] ?? ui_text('ui.common.view_more') }}</div>
                             @if(!empty($card['text']))
                                 <p class="mt-3 text-slate-600 leading-7">{{ $card['text'] }}</p>
                             @endif

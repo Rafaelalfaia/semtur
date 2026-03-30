@@ -7,11 +7,11 @@
     };
 
     $perfilHref = R::has('login') ? localized_route('login') : localized_route('site.home');
-    $perfilLabel = __('ui.nav.login');
+    $perfilLabel = ui_text('ui.nav.login');
 
     $u = Auth::user();
     if ($u) {
-        $perfilLabel = __('ui.nav.profile');
+        $perfilLabel = ui_text('ui.nav.profile');
 
         if (method_exists($u, 'hasRole')) {
             if ($u->hasRole('Admin') && R::has('admin.dashboard')) {
@@ -40,25 +40,25 @@
     $tabs = collect([
         [
             'key' => 'home',
-            'label' => __('ui.nav.home'),
+            'label' => ui_text('ui.nav.home'),
             'href' => $routeUrl('site.home', localized_route('site.home')),
             'match' => ['site.home'],
         ],
         [
             'key' => 'explorar',
-            'label' => __('ui.nav.explore'),
+            'label' => ui_text('ui.nav.explore'),
             'href' => $routeUrl('site.explorar'),
             'match' => ['site.explorar*'],
         ],
         [
             'key' => 'agenda',
-            'label' => __('ui.nav.agenda'),
+            'label' => ui_text('ui.nav.agenda'),
             'href' => $routeUrl('site.agenda'),
             'match' => ['site.agenda', 'eventos.*'],
         ],
         [
             'key' => 'mapa',
-            'label' => __('ui.nav.map'),
+            'label' => ui_text('ui.nav.map'),
             'href' => $routeUrl('site.mapa'),
             'match' => ['site.mapa*'],
         ],
@@ -70,7 +70,7 @@
         ],
     ])->filter(fn ($item) => filled($item['href']) && $item['href'] !== '#')->values();
 
-    $navLabel = __('ui.nav.bottom');
+    $navLabel = ui_text('ui.nav.bottom');
 @endphp
 
 <div class="site-bottom-nav-shell lg:hidden">

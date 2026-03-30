@@ -3,7 +3,7 @@
 @php
     $semturCanonical = localized_route('site.semtur');
     $semturTitle = ($sec->nome ?? 'SEMTUR').' de Altamira';
-    $semturDescription = \Illuminate\Support\Str::limit(strip_tags($sec->descricao ?? __('ui.semtur.default_short')), 160);
+    $semturDescription = \Illuminate\Support\Str::limit(strip_tags($sec->descricao ?? ui_text('ui.semtur.default_short')), 160);
     $semturImage = $sec->foto_capa_url ?: $sec->foto_url ?: theme_asset('hero_image');
     $semturRedes = is_array($sec->redes ?? null) ? array_filter($sec->redes) : [];
     $semturSchema = [
@@ -14,13 +14,13 @@
                 [
                     '@type' => 'ListItem',
                     'position' => 1,
-                    'name' => 'InÃ­cio',
-                    'item' => \Illuminate\Support\Facades\localized_route('site.home'),
+                    'name' => ui_text('ui.common.home'),
+                    'item' => localized_route('site.home'),
                 ],
                 [
                     '@type' => 'ListItem',
                     'position' => 2,
-                    'name' => __('ui.semtur.name'),
+                    'name' => ui_text('ui.semtur.name'),
                     'item' => $semturCanonical,
                 ],
             ],
@@ -74,11 +74,11 @@
 
     $membroCards = collect($membros ?? [])->map(fn ($membro) => [
         'title' => $membro->nome,
-        'subtitle' => $membro->cargo ?: __('ui.semtur.team_role'),
+        'subtitle' => $membro->cargo ?: ui_text('ui.semtur.team_role'),
         'summary' => \Illuminate\Support\Str::limit(strip_tags((string) $membro->resumo), 96),
         'image' => $membro->foto_url ?: asset('imagens/avatar.png'),
         'href' => null,
-        'badge' => __('ui.semtur.team_badge'),
+        'badge' => ui_text('ui.semtur.team_badge'),
     ]);
 @endphp
 
@@ -86,16 +86,16 @@
     @include('site.partials._page_hero', [
         'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => 'InÃ­cio', 'href' => localized_route('site.home')],
-            ['label' => __('ui.semtur.name')],
+            ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
+            ['label' => ui_text('ui.semtur.name')],
         ],
-        'badge' => __('ui.semtur.name'),
+        'badge' => ui_text('ui.semtur.name'),
         'title' => $sec->nome ?? 'SEMTUR',
-        'subtitle' => __('ui.semtur.subtitle'),
+        'subtitle' => ui_text('ui.semtur.subtitle'),
         'meta' => [],
-        'primaryActionLabel' => Route::has('site.mapa') ? __('ui.semtur.view_map') : null,
+        'primaryActionLabel' => Route::has('site.mapa') ? ui_text('ui.semtur.view_map') : null,
         'primaryActionHref' => Route::has('site.mapa') ? localized_route('site.mapa') : null,
-        'secondaryActionLabel' => Route::has('site.contato') ? __('ui.portal_pages.contato.title') : null,
+        'secondaryActionLabel' => Route::has('site.contato') ? ui_text('ui.portal_pages.contato.title') : null,
         'secondaryActionHref' => Route::has('site.contato') ? localized_route('site.contato') : null,
         'image' => $heroUrl,
         'imageAlt' => $sec->nome ?? 'SEMTUR',
@@ -109,23 +109,23 @@
                     <div class="site-detail-profile">
                         <img src="{{ site_image_url($logoUrl, "avatar") }}" alt="{{ $sec->nome ?? 'SEMTUR' }}" class="site-detail-avatar" loading="lazy" decoding="async">
                         <div>
-                            <x-section-head :eyebrow="__('ui.semtur.about_eyebrow')" :title="__('ui.semtur.about_title')" :subtitle="__('ui.semtur.about_subtitle')" />
+                            <x-section-head :eyebrow="ui_text('ui.semtur.about_eyebrow')" :title="ui_text('ui.semtur.about_title')" :subtitle="ui_text('ui.semtur.about_subtitle')" />
                         </div>
                     </div>
 
                     <div class="site-prose">
-                        {!! nl2br(e($sec->descricao ?: __('ui.semtur.default_long'))) !!}
+                        {!! nl2br(e($sec->descricao ?: ui_text('ui.semtur.default_long'))) !!}
                     </div>
                 </section>
             </div>
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head :eyebrow="__('ui.semtur.channels_eyebrow')" :title="__('ui.semtur.channels_title')" />
+                    <x-section-head :eyebrow="ui_text('ui.semtur.channels_eyebrow')" :title="ui_text('ui.semtur.channels_title')" />
 
                     @if($redeItems->isEmpty())
                         <div class="site-empty-state">
-                            <p class="site-empty-state-copy">{{ __('ui.semtur.channels_empty') }}</p>
+                            <p class="site-empty-state-copy">{{ ui_text('ui.semtur.channels_empty') }}</p>
                         </div>
                     @else
                         <div class="site-detail-links">
@@ -141,14 +141,14 @@
 
     <section class="site-section">
         <x-section-head
-            :eyebrow="__('ui.semtur.team_eyebrow')"
-            :title="__('ui.semtur.team_title')"
-            :subtitle="__('ui.semtur.team_subtitle')"
+            :eyebrow="ui_text('ui.semtur.team_eyebrow')"
+            :title="ui_text('ui.semtur.team_title')"
+            :subtitle="ui_text('ui.semtur.team_subtitle')"
         />
 
         @if($membroCards->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-copy">{{ __('ui.semtur.team_empty') }}</p>
+                <p class="site-empty-state-copy">{{ ui_text('ui.semtur.team_empty') }}</p>
             </div>
         @else
             <div class="site-card-list-grid">
@@ -172,3 +172,4 @@
     </section>
 </div>
 @endsection
+

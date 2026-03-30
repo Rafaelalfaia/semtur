@@ -6,24 +6,24 @@
 
     $pub = fn($path) => $path ? Storage::disk('public')->url($path) : null;
 
-    $nome = $empresa->nome ?? __('ui.company.name');
-    $cidade = $empresa->cidade ?? __('ui.common.altamira');
+    $nome = $empresa->nome ?? ui_text('ui.company.name');
+    $cidade = $empresa->cidade ?? ui_text('ui.common.altamira');
     $descricao = $empresa->descricao ?? null;
     $categorias = collect($empresa->categorias ?? []);
     $categoriaPrincipal = $categorias->first();
     $capaUrl = $empresa->capa_url ?? $empresa->foto_capa_url ?? $pub($empresa->capa_path ?? null) ?? theme_asset('hero_image');
     $perfilUrl = $empresa->perfil_url ?? $empresa->foto_perfil_url ?? $pub($empresa->perfil_path ?? null) ?? theme_asset('logo');
     $empresaCanonical = Route::has('site.empresa') ? localized_route('site.empresa', ['empresa' => $empresa->slug ?? $empresa->id]) : url()->current();
-    $empresaTitle = $nome.' '.__('ui.category.title_suffix');
-    $empresaDescription = \Illuminate\Support\Str::limit(strip_tags($descricao ?: __('ui.company.meta_description')), 160);
+    $empresaTitle = $nome.' '.ui_text('ui.category.title_suffix');
+    $empresaDescription = \Illuminate\Support\Str::limit(strip_tags($descricao ?: ui_text('ui.company.meta_description')), 160);
     $lat = $empresa->lat ?? $empresa->latitude ?? null;
     $lng = $empresa->lng ?? $empresa->longitude ?? null;
     $socialLinks = array_filter((array) ($empresa->social_links ?? []));
     $sameAs = collect([$socialLinks['instagram'] ?? null,$socialLinks['facebook'] ?? null,$socialLinks['youtube'] ?? null,$socialLinks['site'] ?? null,$socialLinks['whatsapp'] ?? null,$socialLinks['maps'] ?? null])->filter()->values()->all();
     $empresaSchema = [[
         '@type' => 'BreadcrumbList','@id' => $empresaCanonical.'#breadcrumbs','itemListElement' => array_values(array_filter([
-            ['@type' => 'ListItem','position' => 1,'name' => __('ui.nav.home'),'item' => localized_route('site.home')],
-            Route::has('site.explorar') ? ['@type' => 'ListItem','position' => 2,'name' => __('ui.nav.explore'),'item' => localized_route('site.explorar')] : null,
+            ['@type' => 'ListItem','position' => 1,'name' => ui_text('ui.nav.home'),'item' => localized_route('site.home')],
+            Route::has('site.explorar') ? ['@type' => 'ListItem','position' => 2,'name' => ui_text('ui.nav.explore'),'item' => localized_route('site.explorar')] : null,
             ['@type' => 'ListItem','position' => 3,'name' => $nome,'item' => $empresaCanonical],
         ])),
     ], array_filter([
@@ -50,7 +50,7 @@
     $galeria = collect($empresa->galeriaFotos ?? [])->sortBy('ordem')->values();
     $galeriaItems = $galeria->map(fn($foto) => [
         'src' => site_image_url($foto->url ?? (!empty($foto->path) ? Storage::disk('public')->url($foto->path) : null), 'gallery'),
-        'alt' => $foto->alt ?: __('ui.company.gallery_image_alt', ['name' => $nome]),
+        'alt' => $foto->alt ?: ui_text('ui.company.gallery_image_alt', ['name' => $nome]),
     ])->filter(fn ($item) => filled($item['src']))->values();
     $pacotes = collect($pontosRelacionados ?? []);
     $mapsUrl = $empresa->maps_url ?: ((is_numeric($lat) && is_numeric($lng)) ? 'https://www.google.com/maps?q='.(float) $lat.','.(float) $lng : null);
@@ -63,22 +63,22 @@
         ['type' => 'instagram', 'label' => 'Instagram', 'href' => $socialLinks['instagram'] ?? null],
         ['type' => 'facebook', 'label' => 'Facebook', 'href' => $socialLinks['facebook'] ?? null],
         ['type' => 'youtube', 'label' => 'YouTube', 'href' => $socialLinks['youtube'] ?? null],
-        ['type' => 'maps', 'label' => __('ui.common.map'), 'href' => $socialLinks['maps'] ?? $mapsUrl],
+        ['type' => 'maps', 'label' => ui_text('ui.common.map'), 'href' => $socialLinks['maps'] ?? $mapsUrl],
     ])->filter(fn($item) => filled($item['href']))->values();
 
     $packageItems = $pacotes->map(fn($item) => [
-        'title' => $item->nome ?? __('ui.company.experience'),
-        'subtitle' => $item->cidade ?? __('ui.common.altamira'),
+        'title' => $item->nome ?? ui_text('ui.company.experience'),
+        'subtitle' => $item->cidade ?? ui_text('ui.common.altamira'),
         'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 72),
         'image' => $item->capa_url ?? $item->foto_capa_url ?? null,
         'href' => Route::has('site.ponto') ? localized_route('site.ponto', ['ponto' => $item->slug ?? $item->id]) : '#',
     ]);
 
     $localizacao = collect([
-        ['label' => __('ui.common.city'), 'value' => $cidade],
-        ['label' => __('ui.common.address'), 'value' => $empresa->endereco ?? null],
-        ['label' => __('ui.common.district'), 'value' => $empresa->bairro ?? null],
-        ['label' => __('ui.common.category'), 'value' => $categoriaPrincipal?->nome],
+        ['label' => ui_text('ui.common.city'), 'value' => $cidade],
+        ['label' => ui_text('ui.common.address'), 'value' => $empresa->endereco ?? null],
+        ['label' => ui_text('ui.common.district'), 'value' => $empresa->bairro ?? null],
+        ['label' => ui_text('ui.common.category'), 'value' => $categoriaPrincipal?->nome],
     ])->filter(fn ($item) => filled($item['value']))->values();
 @endphp
 
@@ -86,20 +86,20 @@
     @include('site.partials._page_hero', [
         'backHref' => $explorarHref !== '#' ? $explorarHref : (localized_route('site.home')),
         'breadcrumbs' => [
-            ['label' => __('ui.nav.home'), 'href' => localized_route('site.home')],
-            ['label' => __('ui.nav.explore'), 'href' => $explorarHref !== '#' ? $explorarHref : null],
+            ['label' => ui_text('ui.nav.home'), 'href' => localized_route('site.home')],
+            ['label' => ui_text('ui.nav.explore'), 'href' => $explorarHref !== '#' ? $explorarHref : null],
             ['label' => $nome],
         ],
-        'badge' => __('ui.company.name'),
+        'badge' => ui_text('ui.company.name'),
         'title' => $nome,
         'subtitle' => null,
         'meta' => [$cidade, $categoriaPrincipal?->nome],
-        'primaryActionLabel' => __('ui.common.open_map'),
+        'primaryActionLabel' => ui_text('ui.common.open_map'),
         'primaryActionHref' => $mapHref,
-        'secondaryActionLabel' => $mapsUrl ? __('ui.common.open_route') : (!empty($socialLinks['site']) ? __('ui.common.open_site') : null),
+        'secondaryActionLabel' => $mapsUrl ? ui_text('ui.common.open_route') : (!empty($socialLinks['site']) ? ui_text('ui.common.open_site') : null),
         'secondaryActionHref' => $mapsUrl ?: (!empty($socialLinks['site']) ? $socialLinks['site'] : null),
         'image' => $capaUrl,
-        'imageAlt' => __('ui.company.cover_alt', ['name' => $nome]),
+        'imageAlt' => ui_text('ui.company.cover_alt', ['name' => $nome]),
     ])
 
     <section class="site-section">
@@ -108,12 +108,12 @@
                 <div class="site-detail-profile">
                     <img src="{{ site_image_url($perfilUrl, 'avatar') }}" alt="{{ $nome }}" class="site-detail-avatar" loading="lazy" decoding="async">
                     <div>
-                        <x-section-head :eyebrow="__('ui.common.about')" :title="__('ui.company.about_title')" :subtitle="__('ui.company.about_subtitle')" />
+                        <x-section-head :eyebrow="ui_text('ui.common.about')" :title="ui_text('ui.company.about_title')" :subtitle="ui_text('ui.company.about_subtitle')" />
                     </div>
                 </div>
 
                 <div class="site-detail-copy site-prose">
-                    {!! $descricao ?: '<p>'.__('ui.company.empty_description').'</p>' !!}
+                    {!! $descricao ?: '<p>'.ui_text('ui.company.empty_description').'</p>' !!}
                 </div>
 
                 @if($categorias->isNotEmpty())
@@ -129,8 +129,8 @@
                 <section class="site-surface-soft site-content-block">
                     @if($localizacao->isEmpty())
                         <div class="site-empty-state">
-                            <p class="site-empty-state-title">{{ __('ui.company.location_updating') }}</p>
-                            <p class="site-empty-state-copy">{{ __('ui.company.location_empty') }}</p>
+                            <p class="site-empty-state-title">{{ ui_text('ui.company.location_updating') }}</p>
+                            <p class="site-empty-state-copy">{{ ui_text('ui.company.location_empty') }}</p>
                         </div>
                     @else
                         <div class="site-location-card-list">
@@ -144,23 +144,23 @@
                     @endif
 
                     <div class="site-inline-actions">
-                        <a href="{{ $mapHref }}" class="site-button-primary">{{ __('ui.common.open_map') }}</a>
+                        <a href="{{ $mapHref }}" class="site-button-primary">{{ ui_text('ui.common.open_map') }}</a>
                         @if($mapsUrl)
-                            <a href="{{ $mapsUrl }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary">{{ __('ui.common.open_route') }}</a>
+                            <a href="{{ $mapsUrl }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary">{{ ui_text('ui.common.open_route') }}</a>
                         @endif
                         @if($explorarHref !== '#')
-                            <a href="{{ $explorarHref }}" class="site-button-secondary">{{ __('ui.common.back_to_explore') }}</a>
+                            <a href="{{ $explorarHref }}" class="site-button-secondary">{{ ui_text('ui.common.back_to_explore') }}</a>
                         @endif
                     </div>
                 </section>
 
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head :eyebrow="__('ui.common.contacts')" :title="__('ui.company.talk_to_company')" />
+                    <x-section-head :eyebrow="ui_text('ui.common.contacts')" :title="ui_text('ui.company.talk_to_company')" />
 
                     @if($socialItems->isEmpty())
                         <div class="site-empty-state">
-                            <p class="site-empty-state-title">{{ __('ui.company.channels_updating') }}</p>
-                            <p class="site-empty-state-copy">{{ __('ui.company.channels_empty') }}</p>
+                            <p class="site-empty-state-title">{{ ui_text('ui.company.channels_updating') }}</p>
+                            <p class="site-empty-state-copy">{{ ui_text('ui.company.channels_empty') }}</p>
                         </div>
                     @else
                         <div class="site-company-contact-list">
@@ -199,7 +199,7 @@
 
     @if($galeriaItems->isNotEmpty())
         <section class="site-section" x-data="{ canPrev:false, canNext:true, open:false, index:0, images:@js($galeriaItems), update(){ const el=this.$refs.viewport; if(!el) return; this.canPrev=el.scrollLeft>12; this.canNext=(el.scrollWidth-el.clientWidth-el.scrollLeft)>12; }, move(direction){ const el=this.$refs.viewport; if(!el) return; const step=Math.max(el.clientWidth*0.76,240); el.scrollBy({ left: step * direction, behavior: 'smooth' }); window.setTimeout(() => this.update(), 220); }, show(i){ this.index=i; this.open=true; document.body.style.overflow='hidden'; }, close(){ this.open=false; document.body.style.overflow=''; }, next(){ this.index=(this.index+1)%this.images.length; }, prev(){ this.index=(this.index-1+this.images.length)%this.images.length; } }" x-init="$nextTick(() => update())">
-            <x-section-head :eyebrow="__('ui.common.images')" :title="__('ui.common.gallery')" :subtitle="__('ui.company.gallery_subtitle')" />
+            <x-section-head :eyebrow="ui_text('ui.common.images')" :title="ui_text('ui.common.gallery')" :subtitle="ui_text('ui.company.gallery_subtitle')" />
             <div class="site-home-carousel-shell site-detail-gallery-shell">
                 <div class="site-home-carousel-controls" aria-hidden="true">
                     <button type="button" class="site-home-carousel-control" @click="move(-1)" :disabled="!canPrev" :aria-disabled="!canPrev">&larr;</button>
@@ -213,10 +213,10 @@
             </div>
             <div x-show="open" x-cloak class="site-lightbox" @click.self="close()" x-transition.opacity>
                 <div class="site-lightbox-frame site-jogos-lightbox-frame">
-                    <button type="button" class="site-lightbox-close" @click="close()" aria-label="{{ __('ui.common.gallery') }}">&times;</button>
-                    <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="{{ __('ui.common.photos') }}">&#8249;</button>
+                    <button type="button" class="site-lightbox-close" @click="close()" aria-label="{{ ui_text('ui.common.gallery') }}">&times;</button>
+                    <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="{{ ui_text('ui.common.photos') }}">&#8249;</button>
                     <img :src="images[index]?.src" :alt="images[index]?.alt || ''" class="site-lightbox-image">
-                    <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="{{ __('ui.common.photos') }}">&#8250;</button>
+                    <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="{{ ui_text('ui.common.photos') }}">&#8250;</button>
                 </div>
             </div>
         </section>
@@ -224,7 +224,7 @@
 
     @if($packageItems->isNotEmpty())
         <section class="site-section" x-data="{ canPrev:false, canNext:true, update(){ const el=this.$refs.viewport; if(!el) return; this.canPrev=el.scrollLeft>12; this.canNext=(el.scrollWidth-el.clientWidth-el.scrollLeft)>12; }, move(direction){ const el=this.$refs.viewport; if(!el) return; const step=Math.max(el.clientWidth*0.82,260); el.scrollBy({ left: step * direction, behavior: 'smooth' }); window.setTimeout(() => this.update(), 220); } }" x-init="$nextTick(() => update())">
-            <x-section-head :eyebrow="__('ui.common.connections')" :title="__('ui.company.related_points')" :subtitle="__('ui.company.related_points_subtitle')" />
+            <x-section-head :eyebrow="ui_text('ui.common.connections')" :title="ui_text('ui.company.related_points')" :subtitle="ui_text('ui.company.related_points_subtitle')" />
             <div class="site-home-carousel-shell site-detail-related-shell">
                 <div class="site-home-carousel-controls" aria-hidden="true">
                     <button type="button" class="site-home-carousel-control" @click="move(-1)" :disabled="!canPrev" :aria-disabled="!canPrev">&larr;</button>
@@ -238,16 +238,16 @@
                                     @if($item['image'])
                                         <img src="{{ site_image_url($item['image'], 'card') }}" alt="{{ $item['title'] }}" class="site-detail-related-image" loading="lazy" decoding="async">
                                     @else
-                                        <div class="site-detail-related-placeholder">{{ __('ui.common.empty_image') }}</div>
+                                        <div class="site-detail-related-placeholder">{{ ui_text('ui.common.empty_image') }}</div>
                                     @endif
                                 </div>
                                 <div class="site-detail-related-copy">
-                                    <span class="site-badge">{{ __('ui.point.badge') }}</span>
+                                    <span class="site-badge">{{ ui_text('ui.point.badge') }}</span>
                                     <h3 class="site-detail-related-title">{{ $item['title'] }}</h3>
                                     <div class="site-detail-related-meta">{{ $item['subtitle'] }}</div>
                                     <p class="site-detail-related-summary">{{ $item['summary'] }}</p>
                                 </div>
-                                <span class="site-button-secondary site-detail-related-cta">{{ __('ui.explore.view_point') }}</span>
+                                <span class="site-button-secondary site-detail-related-cta">{{ ui_text('ui.explore.view_point') }}</span>
                             </a>
                         </div>
                     @endforeach

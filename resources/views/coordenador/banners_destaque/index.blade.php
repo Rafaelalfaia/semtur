@@ -1,7 +1,7 @@
 @extends('console.layout')
 @section('title','Banners em Destaque')
 @section('page.title','Banners em Destaque')
-@section('topbar.description', 'Gerencie os banners principais da home com filtros, ordenacao e a mesma base visual do console.')
+@section('topbar.description', 'Gerencie os banners principais da home com filtros, ordenação e a mesma base visual do console.')
 
 @section('topbar.nav')
   <span class="ui-console-topbar-tab is-active">Banners destaque</span>
@@ -31,20 +31,20 @@
 
   <x-dashboard.page-header
     title="Banners em destaque"
-    subtitle="Controle a vitrine principal da home com ordem, status e janelas de publicacao em um painel mais limpo e consistente."
+    subtitle="Controle a vitrine principal da home com ordem, status e janelas de publicação em um painel mais limpo e consistente."
   >
     @can('banners_destaque.manage')
       <a href="{{ route('coordenador.banners-destaque.create') }}" class="ui-btn-primary">Novo banner</a>
     @endcan
   </x-dashboard.page-header>
 
-  <x-dashboard.section-card title="Filtros" subtitle="Busque por titulo, subtitulo, link e status" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Filtros" subtitle="Busque por título, subtítulo, link e status" class="ui-coord-dashboard-panel mt-5">
     <form method="get" class="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto]">
       <input
         type="text"
         name="busca"
         value="{{ $busca ?? '' }}"
-        placeholder="Buscar por titulo, subtitulo ou link..."
+        placeholder="Buscar por título, subtítulo ou link..."
         class="ui-form-control"
       >
       <select name="status" class="ui-form-select">
@@ -56,19 +56,19 @@
     </form>
   </x-dashboard.section-card>
 
-  <x-dashboard.section-card title="Lista de banners" subtitle="Ordene por arraste quando permitido e acompanhe o status de publicacao" class="ui-coord-dashboard-panel mt-5">
+  <x-dashboard.section-card title="Lista de banners" subtitle="Ordene por arraste quando permitido e acompanhe o status de publicação" class="ui-coord-dashboard-panel mt-5">
     <div class="ui-table-shell">
       <table class="min-w-full text-sm">
         <thead class="ui-table-head">
           <tr>
             <th class="px-3 py-3 text-left w-10">{{ $canReorder ? '#' : '' }}</th>
-            <th class="px-3 py-3 text-left w-32">Midia</th>
-            <th class="px-3 py-3 text-left">Titulo</th>
+            <th class="px-3 py-3 text-left w-32">Mídia</th>
+            <th class="px-3 py-3 text-left">Título</th>
             <th class="px-3 py-3 text-left">Janela</th>
             <th class="px-3 py-3 text-left">Status</th>
             <th class="px-3 py-3 text-left">Ordem</th>
             @if($showActions)
-              <th class="px-3 py-3 text-left w-[320px]">Acoes</th>
+              <th class="px-3 py-3 text-left w-[320px]">Ações</th>
             @endif
           </tr>
         </thead>
@@ -102,17 +102,17 @@
                       class="ui-banner-highlight-thumb"
                       onerror="this.closest('td').querySelector('[data-thumb-fallback]').classList.remove('hidden'); this.remove();"
                     >
-                    <div data-thumb-fallback class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty hidden">sem midia</div>
+                    <div data-thumb-fallback class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty hidden">sem mídia</div>
                   @else
-                    <div class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty">sem midia</div>
+                    <div class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty">sem mídia</div>
                   @endif
 
                   <div class="flex flex-wrap gap-2">
                     <span class="ui-badge {{ $isVideo ? 'ui-badge-neutral' : 'ui-badge-success' }}">
-                      {{ $isVideo ? 'Video' : 'Imagem' }}
+                      {{ $isVideo ? 'Vídeo' : 'Imagem' }}
                     </span>
                     @if($isVideo && $b->video_valido)
-                      <span class="ui-badge ui-badge-neutral">Hero em video</span>
+                      <span class="ui-badge ui-badge-neutral">Hero em vídeo</span>
                     @endif
                   </div>
                 </div>
@@ -129,7 +129,7 @@
               </td>
 
               <td class="px-3 py-3 align-middle text-xs text-[var(--ui-text-soft)]">
-                <div>Inicio: {{ optional($b->inicio_publicacao)->format('d/m/Y H:i') ?? '—' }}</div>
+                <div>Início: {{ optional($b->inicio_publicacao)->format('d/m/Y H:i') ?? '—' }}</div>
                 <div>Fim: {{ optional($b->fim_publicacao)->format('d/m/Y H:i') ?? '—' }}</div>
               </td>
 

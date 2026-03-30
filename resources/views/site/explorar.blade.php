@@ -1,4 +1,4 @@
-@extends('site.layouts.app')
+﻿@extends('site.layouts.app')
 
 @php
     use Illuminate\Support\Facades\Route as R;
@@ -12,12 +12,12 @@
     $companySource = collect(method_exists($empresas, 'items') ? $empresas->items() : $empresas);
     $categoriaSlugAtual = $currentCat?->slug ?? request('categoria') ?? request('cat');
     $explorarCanonical = R::has('site.explorar') ? localized_route('site.explorar') : url()->current();
-    $explorarTitle = $currentCat?->nome ? __('ui.explore.title_category', ['category' => $currentCat->nome]) : __('ui.explore.title_default');
+    $explorarTitle = $currentCat?->nome ? ui_text('ui.explore.title_category', ['category' => $currentCat->nome]) : ui_text('ui.explore.title_default');
     $explorarDescription = $buscaAtual !== ''
-        ? __('ui.explore.description_search', ['search' => $buscaAtual])
+        ? ui_text('ui.explore.description_search', ['search' => $buscaAtual])
         : ($currentCat?->nome
-            ? __('ui.explore.description_category', ['category' => $currentCat->nome])
-            : __('ui.explore.description_default'));
+            ? ui_text('ui.explore.description_category', ['category' => $currentCat->nome])
+            : ui_text('ui.explore.description_default'));
 
     $explorarItems = $pointSource
         ->take(3)
@@ -25,7 +25,7 @@
             '@type' => 'ListItem',
             'position' => null,
             'url' => R::has('site.ponto') ? localized_route('site.ponto', ['ponto' => $item->slug ?? $item->id]) : null,
-            'name' => $item->nome ?? __('ui.explore.point_name'),
+            'name' => $item->nome ?? ui_text('ui.explore.point_name'),
         ])
         ->values()
         ->concat(
@@ -33,7 +33,7 @@
                 '@type' => 'ListItem',
                 'position' => null,
                 'url' => R::has('site.empresa') ? localized_route('site.empresa', ['empresa' => $item->slug ?? $item->id]) : null,
-                'name' => $item->nome ?? __('ui.explore.company_name'),
+                'name' => $item->nome ?? ui_text('ui.explore.company_name'),
             ])->values()
         )
         ->values()
@@ -53,7 +53,7 @@
                 [
                     '@type' => 'ListItem',
                     'position' => 1,
-                    'name' => __('ui.common.home'),
+                    'name' => ui_text('ui.common.home'),
                     'item' => localized_route('site.home'),
                 ],
                 [
@@ -72,7 +72,7 @@
             'description' => $explorarDescription,
             'about' => [
                 '@type' => 'TouristDestination',
-                'name' => __('ui.common.altamira'),
+                'name' => ui_text('ui.common.altamira'),
             ],
             'mainEntity' => $explorarItems ? [
                 '@type' => 'ItemList',
@@ -120,13 +120,13 @@
 
         return [
             'title' => $item->nome,
-            'subtitle' => $item->cidade ?? __('ui.common.altamira'),
+            'subtitle' => $item->cidade ?? ui_text('ui.common.altamira'),
             'summary' => \Illuminate\Support\Str::limit(strip_tags($item->descricao ?? ''), 96),
             'image' => $item->capa_url ?? $item->foto_capa_url ?? $item->perfil_url ?? null,
             'href' => $href,
-            'badge' => $type === 'empresa' ? __('ui.explore.company_badge') : __('ui.explore.point_badge'),
+            'badge' => $type === 'empresa' ? ui_text('ui.explore.company_badge') : ui_text('ui.explore.point_badge'),
             'meta' => null,
-            'cta' => $type === 'empresa' ? __('ui.explore.view_company') : __('ui.explore.view_point'),
+            'cta' => $type === 'empresa' ? ui_text('ui.explore.view_company') : ui_text('ui.explore.view_point'),
             'map_href' => $mapHref,
         ];
     };
@@ -139,35 +139,35 @@
     @include('site.partials._page_hero', [
         'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => __('ui.common.home'), 'href' => localized_route('site.home')],
-            ['label' => __('ui.common.explore')],
+            ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
+            ['label' => ui_text('ui.common.explore')],
         ],
-        'badge' => __('ui.common.explore'),
-        'title' => $currentCat?->nome ? __('ui.explore.title_category', ['category' => $currentCat->nome]) : __('ui.explore.title_default'),
+        'badge' => ui_text('ui.common.explore'),
+        'title' => $currentCat?->nome ? ui_text('ui.explore.title_category', ['category' => $currentCat->nome]) : ui_text('ui.explore.title_default'),
         'subtitle' => $buscaAtual !== ''
-            ? __('ui.explore.hero_subtitle_results')
-            : __('ui.explore.hero_subtitle_default'),
+            ? ui_text('ui.explore.hero_subtitle_results')
+            : ui_text('ui.explore.hero_subtitle_default'),
         'meta' => [
             $currentCat?->nome,
-            $buscaAtual !== '' ? __('ui.explore.search_label', ['search' => $buscaAtual]) : null,
+            $buscaAtual !== '' ? ui_text('ui.explore.search_label', ['search' => $buscaAtual]) : null,
         ],
-        'primaryActionLabel' => R::has('site.mapa') ? __('ui.common.see_on_map') : null,
+        'primaryActionLabel' => R::has('site.mapa') ? ui_text('ui.common.see_on_map') : null,
         'primaryActionHref' => R::has('site.mapa') ? $mapHref : null,
-        'secondaryActionLabel' => $buscaAtual !== '' || $categoriaSlugAtual ? __('ui.common.clear') : (R::has('site.home') ? __('ui.common.home') : null),
+        'secondaryActionLabel' => $buscaAtual !== '' || $categoriaSlugAtual ? ui_text('ui.common.clear') : (R::has('site.home') ? ui_text('ui.common.home') : null),
         'secondaryActionHref' => ($buscaAtual !== '' || $categoriaSlugAtual)
             ? localized_route('site.explorar')
             : (R::has('site.home') ? localized_route('site.home') : null),
         'image' => asset('imagens/altamira.jpg'),
-        'imageAlt' => __('ui.explore.image_alt'),
+        'imageAlt' => ui_text('ui.explore.image_alt'),
         'compact' => true,
     ])
 
     <section class="site-section site-explore-discovery-section">
         <div class="site-surface site-search-shell site-explore-discovery-shell">
             <x-section-head
-                :eyebrow="__('ui.explore.discovery_eyebrow')"
-                :title="__('ui.explore.discovery_title')"
-                :subtitle="__('ui.explore.discovery_subtitle')"
+                :eyebrow="ui_text('ui.explore.discovery_eyebrow')"
+                :title="ui_text('ui.explore.discovery_title')"
+                :subtitle="ui_text('ui.explore.discovery_subtitle')"
             />
 
             <form method="get" class="site-search-form site-explore-search-form">
@@ -175,7 +175,7 @@
                     type="search"
                     name="busca"
                     value="{{ $buscaAtual }}"
-                    placeholder="{{ __('ui.explore.search_placeholder') }}"
+                    placeholder="{{ ui_text('ui.explore.search_placeholder') }}"
                     class="ui-input"
                 >
 
@@ -185,7 +185,7 @@
                     <input type="hidden" name="categoria" value="{{ $categoriaSlugAtual }}">
                 @endif
 
-                <button class="site-button-primary" type="submit">{{ __('ui.common.search') }}</button>
+                <button class="site-button-primary" type="submit">{{ ui_text('ui.common.search') }}</button>
             </form>
 
             <div class="site-explore-categories-shell site-home-carousel-shell" x-data="{
@@ -210,7 +210,7 @@
                     <button type="button" class="site-home-carousel-control" @click="move(1)" :disabled="!canNext" :aria-disabled="!canNext">&rarr;</button>
                 </div>
 
-                <div class="site-explore-categories-rail site-home-carousel-track" x-ref="viewport" role="list" aria-label="{{ __('ui.explore.categories_aria') }}" @scroll.debounce.50ms="update()" x-on:resize.window.debounce.120ms="update()">
+                <div class="site-explore-categories-rail site-home-carousel-track" x-ref="viewport" role="list" aria-label="{{ ui_text('ui.explore.categories_aria') }}" @scroll.debounce.50ms="update()" x-on:resize.window.debounce.120ms="update()">
                     <div class="site-home-carousel-slide">
                         <a
                             href="{{ localized_route('site.explorar') }}"
@@ -219,8 +219,8 @@
                         >
                             <span class="site-explore-category-icon site-explore-category-icon--all" aria-hidden="true">A</span>
                             <span class="site-explore-category-copy">
-                                <span class="site-explore-category-title">{{ __('ui.explore.all_categories') }}</span>
-                                <span class="site-explore-category-meta">{{ __('ui.explore.all_categories_meta') }}</span>
+                                <span class="site-explore-category-title">{{ ui_text('ui.explore.all_categories') }}</span>
+                                <span class="site-explore-category-meta">{{ ui_text('ui.explore.all_categories_meta') }}</span>
                             </span>
                         </a>
                     </div>
@@ -241,7 +241,7 @@
                             <a
                                 href="{{ localized_route('site.explorar', ['categoria' => $categoria->slug]) }}"
                                 class="{{ $isActive ? 'site-explore-category-card is-active' : 'site-explore-category-card' }}"
-                                aria-label="{{ __('ui.explore.category_aria', ['name' => $categoria->nome]) }}"
+                                aria-label="{{ ui_text('ui.explore.category_aria', ['name' => $categoria->nome]) }}"
                                 @if($isActive) aria-current="page" @endif
                             >
                                 @if($categoriaIcon)
@@ -260,7 +260,7 @@
 
                                 <span class="site-explore-category-copy">
                                     <span class="site-explore-category-title">{{ $categoria->nome }}</span>
-                                    <span class="site-explore-category-meta">{{ $isActive ? __('ui.explore.category_meta_selected') : __('ui.explore.category_meta_default') }}</span>
+                                    <span class="site-explore-category-meta">{{ $isActive ? ui_text('ui.explore.category_meta_selected') : ui_text('ui.explore.category_meta_default') }}</span>
                                 </span>
                             </a>
                         </div>
@@ -273,14 +273,14 @@
     <section class="site-section">
         <div class="site-surface-soft site-context-strip site-explore-context-strip">
             <div class="site-context-strip-copy">
-                <span class="site-badge">{{ __('ui.common.list_plus_map') }}</span>
-                <h2 class="site-section-head-title">{{ __('ui.explore.context_title') }}</h2>
-                <p class="site-section-head-subtitle">{{ __('ui.explore.context_subtitle') }}</p>
+                <span class="site-badge">{{ ui_text('ui.common.list_plus_map') }}</span>
+                <h2 class="site-section-head-title">{{ ui_text('ui.explore.context_title') }}</h2>
+                <p class="site-section-head-subtitle">{{ ui_text('ui.explore.context_subtitle') }}</p>
             </div>
             <div class="site-context-strip-actions">
-                <a href="{{ $mapHref }}" class="site-button-primary">{{ __('ui.common.open_map') }}</a>
+                <a href="{{ $mapHref }}" class="site-button-primary">{{ ui_text('ui.common.open_map') }}</a>
                 @if($currentCat && R::has('site.categoria'))
-                    <a href="{{ localized_route('site.categoria', ['slug' => $currentCat->slug]) }}" class="site-button-secondary">{{ __('ui.common.view_category') }}</a>
+                    <a href="{{ localized_route('site.categoria', ['slug' => $currentCat->slug]) }}" class="site-button-secondary">{{ ui_text('ui.common.view_category') }}</a>
                 @endif
             </div>
         </div>
@@ -288,27 +288,28 @@
 
     @if($pointItems->isNotEmpty())
         @include('site.partials._category_section', [
-            'eyebrow' => __('ui.explore.points_eyebrow'),
-            'title' => __('ui.explore.points_title'),
-            'subtitle' => __('ui.explore.points_subtitle'),
+            'eyebrow' => ui_text('ui.explore.points_eyebrow'),
+            'title' => ui_text('ui.explore.points_title'),
+            'subtitle' => ui_text('ui.explore.points_subtitle'),
             'items' => $pointItems,
             'layout' => 'carousel',
             'cardVariant' => 'compact',
-            'empty' => __('ui.explore.points_empty'),
+            'empty' => ui_text('ui.explore.points_empty'),
         ])
     @endif
 
     @if($companyItems->isNotEmpty())
         @include('site.partials._category_section', [
-            'eyebrow' => __('ui.explore.companies_eyebrow'),
-            'title' => __('ui.explore.companies_title'),
-            'subtitle' => __('ui.explore.companies_subtitle'),
+            'eyebrow' => ui_text('ui.explore.companies_eyebrow'),
+            'title' => ui_text('ui.explore.companies_title'),
+            'subtitle' => ui_text('ui.explore.companies_subtitle'),
             'items' => $companyItems,
             'layout' => 'carousel',
             'cardVariant' => 'compact',
-            'empty' => __('ui.explore.companies_empty'),
+            'empty' => ui_text('ui.explore.companies_empty'),
         ])
     @endif
 
 </div>
 @endsection
+

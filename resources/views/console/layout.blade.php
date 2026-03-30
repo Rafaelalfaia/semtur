@@ -147,6 +147,20 @@
                         'patterns' => ['admin.usuarios.*'],
                     ],
                     [
+                        'label' => 'Idiomas',
+                        'permission' => null,
+                        'roles' => ['Admin'],
+                        'routes' => ['admin.idiomas.index'],
+                        'patterns' => ['admin.idiomas.*'],
+                    ],
+                    [
+                        'label' => 'Traduções',
+                        'permission' => null,
+                        'roles' => ['Admin'],
+                        'routes' => ['admin.traducoes.index'],
+                        'patterns' => ['admin.traducoes.*'],
+                    ],
+                    [
                         'label' => 'Temas',
                         'permission' => 'themes.view',
                         'roles' => ['Admin'],

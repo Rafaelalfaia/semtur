@@ -2,7 +2,7 @@
 
 @section('title', 'Editar: '.$empresa->nome)
 @section('page.title', 'Editar empresa')
-@section('topbar.description', 'Atualize dados, midias e status editoriais da empresa mantendo compatibilidade total com o shell do console.')
+@section('topbar.description', 'Atualize dados, mídias e status editoriais da empresa mantendo compatibilidade total com o shell do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.empresas.index') }}" class="ui-console-topbar-tab">Empresas</a>
@@ -24,7 +24,7 @@
 
   <x-dashboard.page-header
     title="Editar empresa"
-    subtitle="Painel editorial com status, midias e dados institucionais em um padrao consistente com o console."
+    subtitle="Painel editorial com status, mídias e dados institucionais em um padrão consistente com o console."
   >
     <x-slot:actions>
       @if(Route::has('site.empresa'))
@@ -48,7 +48,7 @@
   </div>
 
   <div class="ui-coord-edit-media-grid mt-5">
-    <x-dashboard.section-card title="Capa" subtitle="Imagem principal da apresentacao" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Capa" subtitle="Imagem principal da apresentação" class="ui-coord-dashboard-panel">
       <div class="ui-coord-media-stage">
         @if(!empty($empresa->capa_url))
           <img src="{{ $empresa->capa_url }}" alt="Capa de {{ $empresa->nome }}" class="h-full w-full object-cover">
@@ -58,7 +58,7 @@
       </div>
 
       <div class="mt-3 flex items-center justify-between gap-3">
-        <span class="text-xs text-[var(--ui-text-soft)]">Sugestao: 1600x600px (JPG/WEBP)</span>
+        <span class="text-xs text-[var(--ui-text-soft)]">Sugestão: 1600x600px (JPG/WEBP)</span>
         @if(!empty($empresa->capa_url))
           <form method="POST" action="{{ route('coordenador.empresas.capa.remover', $empresa) }}" onsubmit="return confirm('Remover capa?');">
             @csrf @method('DELETE')
@@ -68,7 +68,7 @@
       </div>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Perfil / logo" subtitle="Imagem de identificacao" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Perfil / logo" subtitle="Imagem de identificação" class="ui-coord-dashboard-panel">
       <div class="ui-coord-media-stage ui-coord-media-stage--avatar">
         @if(!empty($empresa->perfil_url))
           <img src="{{ $empresa->perfil_url }}" alt="Perfil de {{ $empresa->nome }}" class="h-28 w-28 rounded-full object-cover">
@@ -78,7 +78,7 @@
       </div>
 
       <div class="mt-3 flex items-center justify-between gap-3">
-        <span class="text-xs text-[var(--ui-text-soft)]">Sugestao: 512x512px (PNG/JPG/WEBP)</span>
+        <span class="text-xs text-[var(--ui-text-soft)]">Sugestão: 512x512px (PNG/JPG/WEBP)</span>
         @if(!empty($empresa->perfil_url))
           <form method="POST" action="{{ route('coordenador.empresas.perfil.remover', $empresa) }}" onsubmit="return confirm('Remover perfil/logo?');">
             @csrf @method('DELETE')

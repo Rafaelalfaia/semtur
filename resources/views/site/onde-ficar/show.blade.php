@@ -1,7 +1,7 @@
 @extends('site.layouts.app')
 
-@section('title', ($pagina->seo_title ?: $pagina->titulo) . ' - Visit Altamira')
-@section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($pagina->seo_description ?: $pagina->resumo ?: $pagina->titulo)), 160))
+@section('title', ($pagina->seo_title ?: $pagina->titulo ?: ui_text('ui.where_stay.title')) . ' - Visit Altamira')
+@section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($pagina->seo_description ?: $pagina->resumo ?: ui_text('ui.where_stay.subtitle') ?: $pagina->titulo)), 160))
 @section('meta.image', $pagina->hero_url ?: asset('imagens/altamira.jpg'))
 
 @section('site.content')
@@ -17,23 +17,23 @@
     @include('site.partials._page_hero', [
         'backHref' => $explorarUrl,
         'breadcrumbs' => [
-            ['label' => 'InÃ­cio', 'href' => localized_route('site.home')],
-            ['label' => 'Explorar', 'href' => $explorarUrl],
-            ['label' => $pagina->titulo ?: 'Onde ficar'],
+            ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
+            ['label' => ui_text('ui.nav.explore'), 'href' => $explorarUrl],
+            ['label' => $pagina->titulo ?: ui_text('ui.where_stay.title')],
         ],
-        'badge' => $pagina->subtitulo ?: 'Hospedagem e conforto',
-        'title' => $pagina->titulo ?: 'Onde ficar em Altamira',
-        'subtitle' => $pagina->resumo ?: 'Curadoria editorial para estadias com mais conforto, contexto e boa experiÃªncia na viagem.',
+        'badge' => $pagina->subtitulo ?: ui_text('ui.where_stay.badge'),
+        'title' => $pagina->titulo ?: ui_text('ui.where_stay.title'),
+        'subtitle' => $pagina->resumo ?: ui_text('ui.where_stay.subtitle'),
         'meta' => [
-            $empresas->count().' hospedagens',
-            'Curadoria oficial',
+            $empresas->count().' '.ui_text('ui.where_stay.accommodations_label'),
+            ui_text('ui.where_stay.official_curation'),
         ],
-        'primaryActionLabel' => 'Ver hospedagens',
+        'primaryActionLabel' => ui_text('ui.where_stay.view_accommodations'),
         'primaryActionHref' => '#hospedagens',
-        'secondaryActionLabel' => 'Ver mais lugares',
+        'secondaryActionLabel' => ui_text('ui.common.view_more'),
         'secondaryActionHref' => $explorarUrl,
         'image' => $hero,
-        'imageAlt' => $pagina->titulo ?: 'Onde ficar em Altamira',
+        'imageAlt' => $pagina->titulo ?: ui_text('ui.where_stay.title'),
     ])
 
     <section class="site-section">
@@ -41,14 +41,14 @@
             <div class="site-editorial-main">
                 @if(filled($pagina->texto_intro))
                     <section class="site-surface site-content-block">
-                        <x-section-head eyebrow="IntroduÃ§Ã£o" title="Estadia para diferentes perfis de viagem" />
+                        <x-section-head :eyebrow="ui_text('ui.common.about')" :title="ui_text('ui.where_stay.intro_title')" />
                         <div class="site-prose">{!! nl2br(e($pagina->texto_intro)) !!}</div>
                     </section>
                 @endif
 
                 @if(filled($pagina->texto_hospedagem_local))
                     <section class="site-surface-soft site-content-block">
-                        <x-section-head eyebrow="Hospedagem local" title="Onde ficar em Altamira com mais praticidade" />
+                        <x-section-head :eyebrow="ui_text('ui.where_stay.local_stay_eyebrow')" :title="ui_text('ui.where_stay.local_stay_title')" />
                         <div class="site-prose">{!! nl2br(e($pagina->texto_hospedagem_local)) !!}</div>
                     </section>
                 @endif
@@ -56,7 +56,7 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Resumo" title="VisÃ£o geral" />
+                    <x-section-head :eyebrow="ui_text('ui.common.summary')" :title="ui_text('ui.common.general_overview')" />
                     <div class="site-stats-grid">
                         <div class="site-stat-card">
                             <span class="site-stat-label">Hospedagens</span>
@@ -74,15 +74,15 @@
 
     <section id="hospedagens" class="site-section">
         <x-section-head
-            eyebrow="SeleÃ§Ã£o editorial"
-            title="Hospedagens recomendadas"
-            subtitle="Lugares publicados para quem busca localizaÃ§Ã£o, conforto e experiÃªncia de estadia mais consistente."
+            :eyebrow="ui_text('ui.where_stay.selection_eyebrow')"
+            :title="ui_text('ui.where_stay.selection_title')"
+            :subtitle="ui_text('ui.where_stay.subtitle')"
         />
 
         @if($empresas->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-title">SeleÃ§Ã£o em preparaÃ§Ã£o</p>
-                <p class="site-empty-state-copy">A seleÃ§Ã£o de hospedagens ainda estÃ¡ sendo preparada.</p>
+                <p class="site-empty-state-title">{{ ui_text('ui.where_stay.empty_title') }}</p>
+                <p class="site-empty-state-copy">{{ ui_text('ui.where_stay.empty_copy') }}</p>
             </div>
         @else
             <div class="site-directory-grid">
@@ -104,7 +104,7 @@
                             <img src="{{ $imagem }}" alt="{{ $empresa->nome }}" class="site-directory-card-image" loading="lazy" decoding="async">
                             <div class="site-directory-card-overlay">
                                 @if($item->destaque)
-                                    <span class="site-badge">Destaque</span>
+                                    <span class="site-badge">{{ ui_text('ui.where_stay.featured_badge') }}</span>
                                 @endif
                                 @foreach(collect($empresa->categorias ?? [])->take(3) as $categoria)
                                     <span class="site-badge">{{ $categoria->nome }}</span>
@@ -115,8 +115,8 @@
                         <div class="site-directory-card-body">
                             <div>
                                 <h3 class="site-directory-card-title">{{ $empresa->nome }}</h3>
-                                <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' â€¢ ') ?: 'Altamira' }}</p>
-                                <p class="site-inline-meta">Uma base segura para comparar localizaÃ§Ã£o, conforto e acesso durante a viagem.</p>
+                                <p class="site-directory-card-subtitle">{{ collect([$empresa->bairro, $empresa->cidade])->filter()->implode(' - ') ?: ui_text('ui.common.altamira') }}</p>
+                                <p class="site-inline-meta">{{ ui_text('ui.where_stay.official_curation') }}</p>
                             </div>
 
                             @if($descricao)
@@ -124,9 +124,9 @@
                             @endif
 
                             <div class="site-directory-card-actions">
-                                <a href="{{ $urlEmpresa }}" class="site-button-primary">Ver empresa</a>
+                                <a href="{{ $urlEmpresa }}" class="site-button-primary">{{ ui_text('ui.explore.view_company') }}</a>
                                 @if($maps)
-                                    <a href="{{ $maps }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary">Ver rota</a>
+                                    <a href="{{ $maps }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary">{{ ui_text('ui.common.open_map') }}</a>
                                 @endif
                                 @if($whatsapp)
                                     <a href="{{ $whatsapp }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary">WhatsApp</a>
@@ -153,7 +153,7 @@
     @if(filled($pagina->texto_dicas))
         <section class="site-section">
             <div class="site-surface site-content-block">
-                <x-section-head eyebrow="Dicas" title="Como escolher sua estadia" />
+                <x-section-head eyebrow="Dicas" :title="ui_text('ui.where_stay.tips_title')" />
                 <div class="site-prose">{!! nl2br(e($pagina->texto_dicas)) !!}</div>
             </div>
         </section>

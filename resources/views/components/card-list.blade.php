@@ -5,7 +5,7 @@
     'image' => null,
     'href' => '#',
     'badge' => null,
-    'cta' => __('ui.common.view_more'),
+    'cta' => ui_text('ui.common.view_more'),
     'meta' => null,
     'variant' => null,
 ])
@@ -27,7 +27,7 @@
                 :height="$imageSources['height'] ?? null"
             />
         @else
-            <div class="site-card-list-placeholder" aria-hidden="true">Sem imagem</div>
+            <div class="site-card-list-placeholder" aria-hidden="true">{{ ui_text('ui.common.empty_image') }}</div>
         @endif
     </div>
 

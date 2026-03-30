@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', $roteiro->titulo . ' • ' . __('ui.itineraries.title_suffix'))
+@section('title', $roteiro->titulo . ' • ' . ui_text('ui.itineraries.title_suffix'))
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($roteiro->seo_description ?: $roteiro->resumo ?: $roteiro->descricao)), 160))
 @section('meta.image', $roteiro->capa_url ?: asset('imagens/altamira.jpg'))
 
@@ -69,7 +69,7 @@
 
     $empresasAgrupadas = collect($roteiro->empresasSugestao ?? [])
         ->filter(fn ($item) => $item && $item->empresa)
-        ->groupBy(fn ($item) => $item->tipo_sugestao_label ?: __('ui.itineraries.suggestions'));
+        ->groupBy(fn ($item) => $item->tipo_sugestao_label ?: ui_text('ui.itineraries.suggestions'));
 
     $temMapa = $pontosUnicos->contains(fn ($p) => filled($p->lat) && filled($p->lng));
 @endphp
@@ -91,7 +91,7 @@
             href="{{ localized_route('site.roteiros') }}"
             class="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-200 transition hover:bg-white/10"
         >
-            ← {{ __('ui.common.back_to_itineraries') }}
+            ← {{ ui_text('ui.common.back_to_itineraries') }}
         </a>
 
         <div class="mt-6 grid gap-8 lg:grid-cols-[1.2fr_.8fr] lg:items-end">
@@ -125,7 +125,7 @@
                         href="#percurso"
                         class="inline-flex items-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-500"
                     >
-                        {{ __('ui.explore.view_place') }}
+                        {{ ui_text('ui.explore.view_place') }}
                     </a>
 
                     @if($temMapa)
@@ -133,7 +133,7 @@
                             href="#locais"
                             class="inline-flex items-center rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15"
                         >
-                            {{ __('ui.itineraries.route_places') }}
+                            {{ ui_text('ui.itineraries.route_places') }}
                         </a>
                     @endif
                 </div>
@@ -141,27 +141,27 @@
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-2">
                 <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ __('ui.itineraries.stages') }}</div>
+                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ ui_text('ui.itineraries.stages') }}</div>
                     <div class="mt-2 text-2xl font-semibold">{{ collect($roteiro->etapas ?? [])->count() }}</div>
-                    <p class="mt-1 text-sm text-slate-200/90">{{ __('ui.itineraries.stages_copy') }}</p>
+                    <p class="mt-1 text-sm text-slate-200/90">{{ ui_text('ui.itineraries.stages_copy') }}</p>
                 </div>
 
                 <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ __('ui.itineraries.points') }}</div>
+                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ ui_text('ui.itineraries.points') }}</div>
                     <div class="mt-2 text-2xl font-semibold">{{ $pontosUnicos->count() }}</div>
-                    <p class="mt-1 text-sm text-slate-200/90">{{ __('ui.itineraries.points_copy') }}</p>
+                    <p class="mt-1 text-sm text-slate-200/90">{{ ui_text('ui.itineraries.points_copy') }}</p>
                 </div>
 
                 <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ __('ui.itineraries.companies') }}</div>
+                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ ui_text('ui.itineraries.companies') }}</div>
                     <div class="mt-2 text-2xl font-semibold">{{ collect($roteiro->empresasSugestao ?? [])->count() }}</div>
-                    <p class="mt-1 text-sm text-slate-200/90">{{ __('ui.itineraries.companies_copy') }}</p>
+                    <p class="mt-1 text-sm text-slate-200/90">{{ ui_text('ui.itineraries.companies_copy') }}</p>
                 </div>
 
                 <div class="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
-                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ __('ui.itineraries.best_for') }}</div>
+                    <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/80">{{ ui_text('ui.itineraries.best_for') }}</div>
                     <div class="mt-2 text-base font-semibold leading-6">
-                        {{ $roteiro->publico_label ?: __('ui.itineraries.general_visitors') }}
+                        {{ $roteiro->publico_label ?: ui_text('ui.itineraries.general_visitors') }}
                     </div>
                 </div>
             </div>
@@ -175,10 +175,10 @@
             <div class="space-y-6">
                 <section class="rounded-[28px] border border-white/10 bg-white/[0.03] p-6 sm:p-7">
                     <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                        {{ __('ui.itineraries.about_itinerary') }}
+                        {{ ui_text('ui.itineraries.about_itinerary') }}
                     </div>
                     <h2 class="mt-2 text-2xl font-semibold text-slate-100">
-                        {{ __('ui.itineraries.what_to_expect') }}
+                        {{ ui_text('ui.itineraries.what_to_expect') }}
                     </h2>
 
                     @if($roteiro->descricao)
@@ -197,10 +197,10 @@
                     <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                                {{ __('ui.itineraries.your_route') }}
+                                {{ ui_text('ui.itineraries.your_route') }}
                             </div>
                             <h2 class="mt-2 text-2xl font-semibold text-slate-100">
-                                {{ __('ui.itineraries.route_stages') }}
+                                {{ ui_text('ui.itineraries.route_stages') }}
                             </h2>
                         </div>
 
@@ -275,7 +275,7 @@
 
                                                                     @if($item->destaque)
                                                                         <span class="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-200">
-                                                                            {{ __('ui.itineraries.highlight') }}
+                                                                            {{ ui_text('ui.itineraries.highlight') }}
                                                                         </span>
                                                                     @endif
                                                                 </div>
@@ -298,7 +298,7 @@
                                                                         @if(Str::startsWith($pontoHref, ['http://', 'https://'])) target="_blank" rel="noopener noreferrer" @endif
                                                                         class="inline-flex items-center rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500"
                                                                     >
-                                                                        {{ __('ui.itineraries.view_point') }}
+                                                                        {{ ui_text('ui.itineraries.view_point') }}
                                                                     </a>
                                                                 @endif
 
@@ -309,7 +309,7 @@
                                                                         rel="noopener noreferrer"
                                                                         class="inline-flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/10"
                                                                     >
-                                                                        {{ __('ui.itineraries.how_to_get') }}
+                                                                        {{ ui_text('ui.itineraries.how_to_get') }}
                                                                     </a>
                                                                 @endif
                                                             </div>
@@ -328,10 +328,10 @@
                 @if($empresasAgrupadas->count())
                     <section class="rounded-[28px] border border-white/10 bg-white/[0.03] p-6 sm:p-7">
                         <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                            {{ __('ui.itineraries.suggested_companies') }}
+                            {{ ui_text('ui.itineraries.suggested_companies') }}
                         </div>
                         <h2 class="mt-2 text-2xl font-semibold text-slate-100">
-                            {{ __('ui.itineraries.supports_and_experiences') }}
+                            {{ ui_text('ui.itineraries.supports_and_experiences') }}
                         </h2>
                         <p class="mt-3 text-sm leading-7 text-slate-400">
                             Aqui entram somente empresas selecionadas para combinar com esse percurso e ajudar o visitante a montar melhor a experiência.
@@ -345,7 +345,7 @@
                                             {{ $grupo }}
                                         </h3>
                                         <div class="text-sm text-slate-500">
-                                            {{ $itens->count() }} {{ $itens->count() === 1 ? __('ui.itineraries.suggestion_single') : __('ui.itineraries.suggestion_plural') }}
+                                            {{ $itens->count() }} {{ $itens->count() === 1 ? ui_text('ui.itineraries.suggestion_single') : ui_text('ui.itineraries.suggestion_plural') }}
                                         </div>
                                     </div>
 
@@ -375,7 +375,7 @@
 
                                                             @if($item->destaque)
                                                                 <span class="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] text-emerald-200">
-                                                                    {{ __('ui.itineraries.highlight') }}
+                                                                    {{ ui_text('ui.itineraries.highlight') }}
                                                                 </span>
                                                             @endif
                                                         </div>
@@ -404,7 +404,7 @@
                                                                 @if(Str::startsWith($empresaHref, ['http://', 'https://'])) target="_blank" rel="noopener noreferrer" @endif
                                                                 class="inline-flex items-center rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500"
                                                             >
-                                                                {{ __('ui.itineraries.view_company') }}
+                                                                {{ ui_text('ui.itineraries.view_company') }}
                                                             </a>
                                                         @endif
 
@@ -415,7 +415,7 @@
                                                                 rel="noopener noreferrer"
                                                                 class="inline-flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/10"
                                                             >
-                                                                {{ __('ui.common.open_map') }}
+                                                                {{ ui_text('ui.common.open_map') }}
                                                             </a>
                                                         @endif
                                                     </div>
@@ -431,10 +431,10 @@
 
                 <section id="locais" class="rounded-[28px] border border-white/10 bg-white/[0.03] p-6 sm:p-7">
                     <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                        {{ __('ui.itineraries.route_places') }}
+                        {{ ui_text('ui.itineraries.route_places') }}
                     </div>
                     <h2 class="mt-2 text-2xl font-semibold text-slate-100">
-                        {{ __('ui.itineraries.places_in_route') }}
+                        {{ ui_text('ui.itineraries.places_in_route') }}
                     </h2>
 
                     <div class="mt-6 grid gap-4 md:grid-cols-2">
@@ -471,7 +471,7 @@
                                             @if(Str::startsWith($pontoHref, ['http://', 'https://'])) target="_blank" rel="noopener noreferrer" @endif
                                             class="inline-flex items-center rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500"
                                         >
-                                            {{ __('ui.itineraries.view_details') }}
+                                            {{ ui_text('ui.itineraries.view_details') }}
                                         </a>
                                     @endif
 
@@ -482,7 +482,7 @@
                                             rel="noopener noreferrer"
                                             class="inline-flex items-center rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-white/10"
                                         >
-                                            {{ __('ui.itineraries.how_to_get') }}
+                                            {{ ui_text('ui.itineraries.how_to_get') }}
                                         </a>
                                     @endif
                                 </div>
@@ -496,10 +496,10 @@
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                             <div>
                                 <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                                    {{ __('ui.itineraries.continue_exploring') }}
+                                    {{ ui_text('ui.itineraries.continue_exploring') }}
                                 </div>
                                 <h2 class="mt-2 text-2xl font-semibold text-slate-100">
-                                    {{ __('ui.itineraries.other_itineraries') }}
+                                    {{ ui_text('ui.itineraries.other_itineraries') }}
                                 </h2>
                             </div>
 
@@ -507,7 +507,7 @@
                                 href="{{ localized_route('site.roteiros') }}"
                                 class="text-sm text-emerald-300 transition hover:text-emerald-200"
                             >
-                                {{ __('ui.itineraries.view_all') }}
+                                {{ ui_text('ui.itineraries.view_all') }}
                             </a>
                         </div>
 
@@ -548,7 +548,7 @@
                                                 href="{{ localized_route('site.roteiros.show', ['slug' => $item->slug]) }}"
                                                 class="inline-flex items-center rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-500"
                                             >
-                                                {{ __('ui.itineraries.view_itinerary') }}
+                                                {{ ui_text('ui.itineraries.view_itinerary') }}
                                             </a>
                                         </div>
                                     </div>
@@ -562,7 +562,7 @@
             <aside class="space-y-6 lg:sticky lg:top-6 lg:self-start">
                 <section class="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
                     <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                        {{ __('ui.itineraries.useful_information') }}
+                        {{ ui_text('ui.itineraries.useful_information') }}
                     </div>
                     <h2 class="mt-2 text-lg font-semibold text-slate-100">
                         Antes de sair
@@ -570,30 +570,30 @@
 
                     <div class="mt-5 space-y-3">
                         <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ __('ui.itineraries.best_time') }}</div>
+                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ ui_text('ui.itineraries.best_time') }}</div>
                             <div class="mt-1 text-sm font-medium text-slate-100">
-                                {{ $roteiro->melhor_epoca ?: __('ui.itineraries.local_conditions') }}
+                                {{ $roteiro->melhor_epoca ?: ui_text('ui.itineraries.local_conditions') }}
                             </div>
                         </div>
 
                         <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ __('ui.itineraries.transport') }}</div>
+                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ ui_text('ui.itineraries.transport') }}</div>
                             <div class="mt-1 text-sm font-medium text-slate-100">
-                                {{ $roteiro->deslocamento ?: __('ui.itineraries.transport_copy') }}
+                                {{ $roteiro->deslocamento ?: ui_text('ui.itineraries.transport_copy') }}
                             </div>
                         </div>
 
                         <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ __('ui.itineraries.ideal_profile') }}</div>
+                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ ui_text('ui.itineraries.ideal_profile') }}</div>
                             <div class="mt-1 text-sm font-medium text-slate-100">
-                                {{ $roteiro->publico_label ?: __('ui.itineraries.general_visitors') }}
+                                {{ $roteiro->publico_label ?: ui_text('ui.itineraries.general_visitors') }}
                             </div>
                         </div>
 
                         <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ __('ui.itineraries.intensity') }}</div>
+                            <div class="text-[11px] uppercase tracking-[0.16em] text-slate-500">{{ ui_text('ui.itineraries.intensity') }}</div>
                             <div class="mt-1 text-sm font-medium text-slate-100">
-                                {{ $roteiro->intensidade_label ?: __('ui.itineraries.not_informed') }}
+                                {{ $roteiro->intensidade_label ?: ui_text('ui.itineraries.not_informed') }}
                             </div>
                         </div>
                     </div>
@@ -601,10 +601,10 @@
 
                 <section class="rounded-[28px] border border-white/10 bg-white/[0.03] p-5">
                     <div class="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">
-                        {{ __('ui.itineraries.quick_summary') }}
+                        {{ ui_text('ui.itineraries.quick_summary') }}
                     </div>
                     <h2 class="mt-2 text-lg font-semibold text-slate-100">
-                        {{ __('ui.itineraries.route_overview') }}
+                        {{ ui_text('ui.itineraries.route_overview') }}
                     </h2>
 
                     <div class="mt-5 space-y-3">
@@ -633,7 +633,7 @@
                             href="{{ localized_route('site.roteiros') }}"
                             class="inline-flex w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/10"
                         >
-                            {{ __('ui.itineraries.view_more_itineraries') }}
+                            {{ ui_text('ui.itineraries.view_more_itineraries') }}
                         </a>
                     </div>
                 </section>

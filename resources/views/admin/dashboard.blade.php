@@ -132,8 +132,8 @@
                     @foreach($recentes as $item)
                         <div class="flex items-start justify-between gap-4 rounded-2xl border border-[var(--ui-border-soft)] bg-[var(--ui-surface-subtle)] px-4 py-3">
                             <div>
-                                <div class="text-sm font-semibold text-[var(--ui-text-title)]">{{ $item['title'] }}</div>
-                                <div class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $item['type'] }}</div>
+                                <div class="text-sm font-semibold text-[var(--ui-text-title)]">{{ $item['title'] ?? $item['titulo'] ?? 'Sem título' }}</div>
+                                <div class="mt-1 text-xs text-[var(--ui-text-soft)]">{{ $item['type'] ?? $item['tipo'] ?? 'Registro' }}</div>
                             </div>
                             <div class="text-right text-xs text-[var(--ui-text-soft)]">
                                 {{ \Illuminate\Support\Carbon::parse($item['created_at'])->format('d/m/Y H:i') }}

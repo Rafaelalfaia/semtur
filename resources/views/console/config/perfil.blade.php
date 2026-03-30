@@ -26,8 +26,8 @@
 
 @extends('console.layout')
 
-@section('title', 'Configuracoes - Perfil')
-@section('page.title', 'Configuracoes - Perfil')
+@section('title', 'Configurações - Perfil')
+@section('page.title', 'Configurações - Perfil')
 @section('topbar.description', 'Atualize os dados essenciais da conta sem recriar viewport, sidebar ou estrutura do shell.')
 
 @section('topbar.nav')
@@ -38,7 +38,7 @@
   <div class="ui-console-page ui-profile-page">
     <x-dashboard.page-header
       title="Meu perfil"
-      subtitle="Visao compacta para ajustar foto, dados principais e credenciais com a mesma linguagem visual do console."
+      subtitle="Visão compacta para ajustar foto, dados principais e credenciais com a mesma linguagem visual do console."
     />
 
     <div class="ui-profile-layout mt-5">
@@ -56,7 +56,7 @@
             <p class="ui-profile-eyebrow">Imagem de perfil</p>
             <h3 class="ui-profile-name">{{ $u->name }}</h3>
             <p class="ui-profile-copy">
-              Essa foto aparece como referencia visual da sua conta nas areas administrativas do console.
+              Essa foto aparece como referência visual da sua conta nas áreas administrativas do console.
             </p>
 
             <div class="ui-profile-avatar-actions">
@@ -83,7 +83,7 @@
 
       <x-dashboard.section-card
         title="Dados principais"
-        subtitle="Dados pessoais e seguranca da conta"
+        subtitle="Dados pessoais e segurança da conta"
         class="ui-profile-form-card"
       >
         <form id="perfil-form" method="POST" action="{{ route($updateName) }}" enctype="multipart/form-data" class="space-y-5">
@@ -138,7 +138,7 @@
 
           <div class="flex flex-wrap items-center justify-end gap-3 pt-1">
             <button class="ui-btn-primary">
-              Salvar alteracoes
+              Salvar alterações
             </button>
           </div>
         </form>

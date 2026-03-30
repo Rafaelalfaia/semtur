@@ -44,27 +44,27 @@
   class="ui-banner-highlight-form-grid"
 >
   <div class="space-y-5">
-    <x-dashboard.section-card title="Conteudo do destaque" subtitle="Texto, CTA e configuracao principal do hero" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Conteúdo do destaque" subtitle="Texto, CTA e configuração principal do hero" class="ui-coord-dashboard-panel">
       <div class="grid gap-4">
         <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
           <div>
-            <label for="titulo" class="ui-form-label">Titulo</label>
+            <label for="titulo" class="ui-form-label">Título</label>
             <input id="titulo" type="text" name="titulo" value="{{ old('titulo', $banner->titulo) }}" class="ui-form-control">
             @error('titulo')<p class="ui-form-error">{{ $message }}</p>@enderror
           </div>
 
           <div>
-            <label for="media_type" class="ui-form-label">Tipo de midia</label>
+            <label for="media_type" class="ui-form-label">Tipo de mídia</label>
             <select id="media_type" name="media_type" x-model="mediaType" class="ui-form-select">
               <option value="image">Imagem</option>
-              <option value="video">Video</option>
+              <option value="video">Vídeo</option>
             </select>
             @error('media_type')<p class="ui-form-error">{{ $message }}</p>@enderror
           </div>
         </div>
 
         <div>
-          <label for="subtitulo" class="ui-form-label">Subtitulo (opcional)</label>
+          <label for="subtitulo" class="ui-form-label">Subtítulo (opcional)</label>
           <input id="subtitulo" type="text" name="subtitulo" value="{{ old('subtitulo', $banner->subtitulo) }}" class="ui-form-control">
           @error('subtitulo')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
@@ -87,7 +87,7 @@
           <div>
             <label for="hero_variant" class="ui-form-label">Variante do hero</label>
             <select id="hero_variant" name="hero_variant" class="ui-form-select">
-              <option value="">Padrao</option>
+              <option value="">Padrão</option>
               <option value="hero" @selected(old('hero_variant', $banner->hero_variant) === 'hero')>Hero</option>
               <option value="hero_short" @selected(old('hero_variant', $banner->hero_variant) === 'hero_short')>Hero curto</option>
             </select>
@@ -95,9 +95,9 @@
           </div>
 
           <div>
-            <label for="preload_mode" class="ui-form-label">Preload do video</label>
+            <label for="preload_mode" class="ui-form-label">Preload do vídeo</label>
             <select id="preload_mode" name="preload_mode" class="ui-form-select">
-              <option value="">Padrao</option>
+              <option value="">Padrão</option>
               <option value="none" @selected(old('preload_mode', $banner->preload_mode) === 'none')>none</option>
               <option value="metadata" @selected(old('preload_mode', $banner->preload_mode ?? 'metadata') === 'metadata')>metadata</option>
               <option value="auto" @selected(old('preload_mode', $banner->preload_mode) === 'auto')>auto</option>
@@ -114,7 +114,7 @@
       </div>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Publicacao" subtitle="Status, vigencia e comportamento visual do destaque" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Publicação" subtitle="Status, vigência e comportamento visual do destaque" class="ui-coord-dashboard-panel">
       <div class="grid gap-4 md:grid-cols-2">
         <div>
           <label for="cor_fundo" class="ui-form-label">Cor de fundo</label>
@@ -122,7 +122,7 @@
           @error('cor_fundo')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
         <div>
-          <label for="overlay_opacity" class="ui-form-label">Opacidade da sobreposicao</label>
+          <label for="overlay_opacity" class="ui-form-label">Opacidade da sobreposição</label>
           <input id="overlay_opacity" type="number" name="overlay_opacity" min="0" max="100" value="{{ old('overlay_opacity', $banner->overlay_opacity ?? 0) }}" class="ui-form-control">
           @error('overlay_opacity')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
@@ -141,7 +141,7 @@
           @error('status')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
         <div>
-          <label for="inicio_publicacao" class="ui-form-label">Inicio (opcional)</label>
+          <label for="inicio_publicacao" class="ui-form-label">Início (opcional)</label>
           <input id="inicio_publicacao" type="datetime-local" name="inicio_publicacao" value="{{ old('inicio_publicacao', optional($banner->inicio_publicacao)->format('Y-m-d\TH:i')) }}" class="ui-form-control">
           @error('inicio_publicacao')<p class="ui-form-error">{{ $message }}</p>@enderror
         </div>
@@ -181,7 +181,7 @@
 
         <div class="ui-banner-highlight-media-meta">
           <span class="ui-badge ui-badge-neutral">JPG, PNG ou WebP</span>
-          <span class="text-xs text-[var(--ui-text-soft)]">Ate 6MB</span>
+          <span class="text-xs text-[var(--ui-text-soft)]">Até 6MB</span>
         </div>
 
         <input id="imagem_desktop" type="file" name="imagem_desktop" accept="image/*" class="ui-banner-highlight-file mt-3">
@@ -193,7 +193,7 @@
             src="{{ $desktopImageUrl }}"
             data-src-processed="{{ $banner->imagem_desktop_url ?? '' }}"
             data-src-original="{{ $banner->imagem_desktop_original_url ?? ($banner->imagem_desktop_url ?? '') }}"
-            alt="Previa desktop"
+            alt="Prévia desktop"
             style="object-position: {{ $dx }}% {{ $dy }}%;"
             class="w-full h-full object-cover {{ $desktopImageUrl ? '' : 'hidden' }}"
           >
@@ -209,7 +209,7 @@
 
         <div class="ui-banner-highlight-media-meta">
           <span class="ui-badge ui-badge-neutral">JPG, PNG ou WebP</span>
-          <span class="text-xs text-[var(--ui-text-soft)]">Ate 6MB</span>
+          <span class="text-xs text-[var(--ui-text-soft)]">Até 6MB</span>
         </div>
 
         <input id="imagem_mobile" type="file" name="imagem_mobile" accept="image/*" class="ui-banner-highlight-file mt-3">
@@ -221,7 +221,7 @@
             src="{{ $mobileImageUrl }}"
             data-src-processed="{{ $banner->imagem_mobile_url ?? '' }}"
             data-src-original="{{ $banner->imagem_mobile_original_url ?? ($banner->imagem_mobile_url ?? '') }}"
-            alt="Previa mobile"
+            alt="Prévia mobile"
             style="object-position: {{ $mx }}% {{ $my }}%;"
             class="w-full h-full object-cover {{ $mobileImageUrl ? '' : 'hidden' }}"
           >
@@ -232,11 +232,11 @@
     </div>
 
     <div x-show="mediaType === 'video'" x-cloak class="space-y-5">
-      <x-dashboard.section-card title="Videos de abertura" subtitle="Use MP4 leve, mutado e com poster para carregamento seguro" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Vídeos de abertura" subtitle="Use MP4 leve, mutado e com poster para carregamento seguro" class="ui-coord-dashboard-panel">
         <div class="grid gap-5 lg:grid-cols-2">
           <div class="space-y-4">
             <div>
-              <label for="video_desktop" class="ui-form-label">Video desktop</label>
+              <label for="video_desktop" class="ui-form-label">Vídeo desktop</label>
               <input id="video_desktop" type="file" name="video_desktop" accept="video/mp4,video/quicktime" class="ui-banner-highlight-file mt-2" @change="updatePreview($event, 'desktopVideoPreview')">
               @error('video_desktop')<p class="ui-form-error">{{ $message }}</p>@enderror
             </div>
@@ -246,14 +246,14 @@
                 <video :src="desktopVideoPreview" :poster="desktopPosterPreview || desktopFallbackPreview" muted playsinline controls class="h-full w-full object-cover"></video>
               </template>
               <template x-if="!desktopVideoPreview">
-                <div class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty h-full">Sem video desktop</div>
+                <div class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty h-full">Sem vídeo desktop</div>
               </template>
             </div>
           </div>
 
           <div class="space-y-4">
             <div>
-              <label for="video_mobile" class="ui-form-label">Video mobile</label>
+              <label for="video_mobile" class="ui-form-label">Vídeo mobile</label>
               <input id="video_mobile" type="file" name="video_mobile" accept="video/mp4,video/quicktime" class="ui-banner-highlight-file mt-2" @change="updatePreview($event, 'mobileVideoPreview')">
               @error('video_mobile')<p class="ui-form-error">{{ $message }}</p>@enderror
             </div>
@@ -263,14 +263,14 @@
                 <video :src="mobileVideoPreview" :poster="mobilePosterPreview || mobileFallbackPreview || desktopPosterPreview" muted playsinline controls class="h-full w-full object-cover"></video>
               </template>
               <template x-if="!mobileVideoPreview">
-                <div class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty h-full">Sem video mobile</div>
+                <div class="ui-banner-highlight-thumb ui-banner-highlight-thumb-empty h-full">Sem vídeo mobile</div>
               </template>
             </div>
           </div>
         </div>
       </x-dashboard.section-card>
 
-      <x-dashboard.section-card title="Poster e fallback" subtitle="Poster aparece antes do autoplay. Fallback cobre navegadores e conexoes mais restritas." class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Poster e fallback" subtitle="Poster aparece antes do autoplay. Fallback cobre navegadores e conexões mais restritas." class="ui-coord-dashboard-panel">
         <div class="grid gap-5 xl:grid-cols-2">
           <div class="grid gap-5">
             <div>
@@ -346,4 +346,3 @@
 @push('scripts')
   @vite('resources/js/simple-previews.js')
 @endpush
-

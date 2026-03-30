@@ -27,7 +27,7 @@ class PublicSiteSmokeTest extends TestCase
         $response = $this->get(route('site.home'));
 
         $response->assertOk();
-        $response->assertSee('Pontos tur');
+        $response->assertSee('Pontos turísticos');
     }
 
     public function test_explore_page_can_be_rendered_with_empty_data(): void

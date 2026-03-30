@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', 'Agendar visita • ' . $espaco->nome)
+@section('title', 'Agendar visita â€¢ ' . $espaco->nome)
 @section('meta.description', 'Solicite o agendamento de visita para ' . $espaco->nome . '.')
 
 @section('site.content')
@@ -127,7 +127,7 @@
                             <select name="espaco_cultural_horario_id" x-model="horarioSelecionado" class="site-espacos-input" required>
                                 <option value="">Selecione</option>
                                 <template x-for="horario in horariosFiltrados()" :key="horario.id">
-                                    <option :value="horario.id" x-text="`${horario.dia_label} • ${horario.faixa_label}`"></option>
+                                    <option :value="horario.id" x-text="`${horario.dia_label} â€¢ ${horario.faixa_label}`"></option>
                                 </template>
                             </select>
 
@@ -142,7 +142,7 @@
                         </div>
 
                         <div class="site-inline-actions site-espacos-form-actions site-espacos-form-span">
-                            <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" class="site-button-secondary">{{ __('ui.common.back') }}</a>
+                            <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" class="site-button-secondary">{{ ui_text('ui.common.back') }}</a>
                             @if($agendamentoWhatsappHref)
                                 <a href="{{ $agendamentoWhatsappHref }}" target="_blank" rel="noopener noreferrer" class="site-button-secondary site-whatsapp-button site-whatsapp-button--secondary">
                                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" class="site-whatsapp-button-icon">

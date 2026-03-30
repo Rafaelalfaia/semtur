@@ -31,19 +31,19 @@
     <div id="home-map-root" class="site-home-map-shell site-home-map-shell--compact">
         <div class="site-home-map-heading site-home-map-heading--compact">
             <div class="site-home-map-heading-copy">
-                <p class="site-badge">{{ __('ui.home.map_badge') }}</p>
-                <h2 class="site-section-head-title">{{ __('ui.home.map_title') }}</h2>
+                <p class="site-badge">{{ ui_text('ui.home.map_badge') }}</p>
+                <h2 class="site-section-head-title">{{ ui_text('ui.home.map_title') }}</h2>
             </div>
 
-            <a href="{{ $mapHref }}" class="site-button-secondary">{{ __('ui.home.map_open_full') }}</a>
+            <a href="{{ $mapHref }}" class="site-button-secondary">{{ ui_text('ui.home.map_open_full') }}</a>
         </div>
 
         @if($homeMapCategories->isNotEmpty())
             <div class="site-home-map-filters site-home-map-filters--compact">
                 <div class="site-chips-shell">
-                    <div class="site-chips-scroll" role="group" aria-label="{{ __('ui.home.map_categories_aria') }}">
-                        <button type="button" class="site-chip site-chip-active" data-home-map-filter data-category="" data-label="{{ __('ui.home.map_all') }}" aria-pressed="true">
-                            {{ __('ui.home.map_all') }}
+                    <div class="site-chips-scroll" role="group" aria-label="{{ ui_text('ui.home.map_categories_aria') }}">
+                        <button type="button" class="site-chip site-chip-active" data-home-map-filter data-category="" data-label="{{ ui_text('ui.home.map_all') }}" aria-pressed="true">
+                            {{ ui_text('ui.home.map_all') }}
                         </button>
 
                         @foreach($homeMapCategories as $category)
@@ -78,16 +78,16 @@
                     class="site-home-map-canvas site-home-map-canvas--compact"
                     id="home-map"
                     role="img"
-                    aria-label="{{ __('ui.home.map_canvas_aria') }}"
+                    aria-label="{{ ui_text('ui.home.map_canvas_aria') }}"
                 ></div>
             </div>
 
             <div class="site-home-map-summary site-home-map-summary--compact">
-                <p id="home-map-status" class="site-home-map-status">{{ __('ui.home.map_loading') }}</p>
-                <a href="{{ $mapHref }}" class="site-link">{{ __('ui.home.map_open_full') }}</a>
+                <p id="home-map-status" class="site-home-map-status">{{ ui_text('ui.home.map_loading') }}</p>
+                <a href="{{ $mapHref }}" class="site-link">{{ ui_text('ui.home.map_open_full') }}</a>
             </div>
 
-            <div id="home-map-cards" class="site-home-map-results site-home-map-results--compact" aria-label="{{ __('ui.home.map_results_aria') }}"></div>
+            <div id="home-map-cards" class="site-home-map-results site-home-map-results--compact" aria-label="{{ ui_text('ui.home.map_results_aria') }}"></div>
         </div>
     </div>
 </section>
@@ -127,22 +127,22 @@
                 'desktop' => 7,
             ],
             'filterButtonSelector' => '[data-home-map-filter]',
-            'emptyTitle' => __('ui.home.map_empty_title'),
-            'emptyCopy' => __('ui.home.map_empty_copy'),
+            'emptyTitle' => ui_text('ui.home.map_empty_title'),
+            'emptyCopy' => ui_text('ui.home.map_empty_copy'),
             'i18n' => [
-                'altamira' => __('ui.common.altamira'),
-                'company' => __('ui.explore.company_badge'),
-                'point' => __('ui.explore.point_badge'),
-                'detail' => __('ui.common.detail'),
-                'route' => __('ui.common.route'),
-                'focus' => __('ui.common.focus'),
-                'all' => __('ui.common.all'),
-                'itemName' => __('ui.map_page.item_name'),
-                'helperWithRoute' => __('ui.map_page.helper_with_route'),
-                'helperWithoutRoute' => __('ui.map_page.helper_without_route'),
-                'emptyTitle' => __('ui.home.map_empty_title'),
-                'emptyCopy' => __('ui.home.map_empty_copy'),
-                'emptyStatus' => __('ui.map_page.empty_status'),
+                'altamira' => ui_text('ui.common.altamira'),
+                'company' => ui_text('ui.explore.company_badge'),
+                'point' => ui_text('ui.explore.point_badge'),
+                'detail' => ui_text('ui.common.detail'),
+                'route' => ui_text('ui.common.route'),
+                'focus' => ui_text('ui.common.focus'),
+                'all' => ui_text('ui.common.all'),
+                'itemName' => ui_text('ui.map_page.item_name'),
+                'helperWithRoute' => ui_text('ui.map_page.helper_with_route'),
+                'helperWithoutRoute' => ui_text('ui.map_page.helper_without_route'),
+                'emptyTitle' => ui_text('ui.home.map_empty_title'),
+                'emptyCopy' => ui_text('ui.home.map_empty_copy'),
+                'emptyStatus' => ui_text('ui.map_page.empty_status'),
             ],
         ],
     ])

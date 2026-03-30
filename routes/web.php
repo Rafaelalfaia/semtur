@@ -13,7 +13,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
 // =========================
-// SITE (web) â€“ PÃšBLICO
+// SITE (web) Ã¢â‚¬â€œ PÃƒÅ¡BLICO
 // =========================
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\MapaController;
@@ -73,6 +73,8 @@ use App\Http\Controllers\Admin\DashboardController as AdminDash;
 use App\Http\Controllers\Admin\ThemeController as AdminThemeController;
 use App\Http\Controllers\Admin\BackupController as AdminBackupController;
 use App\Http\Controllers\Admin\UsuarioController as AdminUsuario;
+use App\Http\Controllers\Admin\IdiomaController as AdminIdiomaController;
+use App\Http\Controllers\Admin\TranslationController as AdminTranslationController;
 
 
 
@@ -112,10 +114,10 @@ use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoVideoController as CoordRo
 use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoPatrocinadorController as CoordRotaDoCacauEdicaoPatrocinadorController;
 
 // =========================
-/* SITE â€“ PÃšBLICO (WEB) */
+/* SITE Ã¢â‚¬â€œ PÃƒÅ¡BLICO (WEB) */
 // =========================
 Route::get('/sitemap.xml', function () {
-    $locales = array_keys(config('app.supported_locales', ['pt' => []]));
+    $locales = array_keys(supported_locales());
     $staticDefinitions = [
         ['name' => 'site.home', 'changefreq' => 'daily', 'priority' => '1.0'],
         ['name' => 'site.explorar', 'changefreq' => 'daily', 'priority' => '0.95'],
@@ -248,11 +250,11 @@ Route::get('/forgot-password', $redirectToLocalized('password.request'));
 
 Route::middleware('app.setLocale')
     ->prefix('{locale}')
-    ->where(['locale' => 'pt|en|es'])
+    ->where(['locale' => implode('|', array_keys(supported_locales()))])
     ->group(function () {
 Route::get('/',         [HomeController::class, 'index'])->name('site.home');
 Route::get('/manifest.webmanifest', function (string $locale) {
-    $supported = config('app.supported_locales', []);
+    $supported = supported_locales();
     $meta = $supported[$locale] ?? $supported[config('app.locale_prefix_fallback', 'pt')] ?? [];
 
     $manifest = [
@@ -344,17 +346,17 @@ Route::prefix('museus-e-teatros')->group(function () {
 Route::get('/banner-destaque-feed', [BannerDestaqueFeedController::class,'index'])
     ->name('site.banner_destaque.feed');
 
-// Detalhes (slug OU id) â€” **sem duplicaÃ§Ãµes**
+// Detalhes (slug OU id) Ã¢â‚¬â€ **sem duplicaÃƒÂ§ÃƒÂµes**
 Route::get('/ponto/{ponto}',     [SitePontoController::class,   'show'])->name('site.ponto');     // {ponto} = slug|id
 Route::get('/empresa/{empresa}', [SiteEmpresaController::class, 'show'])->name('site.empresa');   // {empresa} = slug|id
 
-// PÃ¡gina de categoria
+// PÃƒÂ¡gina de categoria
 Route::get('/categoria/{slug}', [SiteCategoriaController::class, 'show'])->name('site.categoria');
 
-// PÃ¡gina offline (PWA)
+// PÃƒÂ¡gina offline (PWA)
 Route::view('/offline', 'offline')->name('offline');
 
-// PolÃ­tica/Privacidade
+// PolÃƒÂ­tica/Privacidade
 Route::view('/politica-privacidade', 'site.politicas')->name('site.politicas');
 
 
@@ -363,7 +365,7 @@ Route::get('/semtur', [SiteSecretariaController::class, 'show'])
     ->name('site.semtur');
 
 
-// Nova URL canÃ´nica (sem "semtur")
+// Nova URL canÃƒÂ´nica (sem "semtur")
 Route::get('/secretaria', [SiteSecretariaController::class, 'show'])
     ->name('site.secretaria');
 
@@ -417,7 +419,7 @@ Route::get('/ig-img', function (\Illuminate\Http\Request $r) {
             abort(415, 'unsupported content type');
         }
 
-        // cache pÃºblico por 6h
+        // cache pÃƒÂºblico por 6h
         return response($resp->body(), 200)
             ->header('Content-Type', $ctype)
             ->header('Cache-Control', 'public, max-age=21600');
@@ -467,7 +469,7 @@ Route::middleware(['auth'])->group(function () {
         if ($u->hasRole('Admin'))       return redirect()->route('admin.dashboard');
         if ($u->hasRole('Coordenador')) return redirect()->route('coordenador.dashboard');
 
-        // TÃ©cnico: manda para o 1Âº mÃ³dulo permitido
+        // TÃƒÂ©cnico: manda para o 1Ã‚Âº mÃƒÂ³dulo permitido
         if ($u->hasRole('Tecnico')) {
             $preferencias = [
                 ['perm' => 'pontos.view',           'route' => 'coordenador.pontos.index'],
@@ -519,6 +521,13 @@ Route::middleware(['auth','role:Admin'])
     });
 
     Route::resource('usuarios', \App\Http\Controllers\Admin\UsuarioController::class)->except(['show']);
+    Route::resource('idiomas', AdminIdiomaController::class)->except(['show']);
+    Route::get('traducoes/export/csv', [AdminTranslationController::class, 'export'])->name('traducoes.export');
+    Route::post('traducoes/import/csv', [AdminTranslationController::class, 'import'])->name('traducoes.import');
+    Route::post('traducoes/sync/lang', [AdminTranslationController::class, 'sync'])->name('traducoes.sync');
+    Route::resource('traducoes', AdminTranslationController::class)
+        ->parameters(['traducoes' => 'translation'])
+        ->except(['show']);
 
     Route::prefix('temas')->name('temas.')->group(function () {
         Route::get('/', [AdminThemeController::class, 'index'])
@@ -645,19 +654,19 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::patch('empresas/{empresa}/arquivar', [CoordEmpresaController::class,'arquivar'])->name('empresas.arquivar');
         Route::patch('empresas/{empresa}/rascunho', [CoordEmpresaController::class,'rascunho'])->name('empresas.rascunho');
 
-        // mÃ­dia (novo + aliases legados)
+        // mÃƒÂ­dia (novo + aliases legados)
         Route::delete('empresas/{empresa}/capa',   [CoordEmpresaController::class,'removerCapa'])->name('empresas.capa.remover');
         Route::delete('empresas/{empresa}/perfil', [CoordEmpresaController::class,'removerPerfil'])->name('empresas.perfil.remover');
         Route::delete('empresas/{empresa}/remover-capa',   [CoordEmpresaController::class,'removerCapa'])->name('empresas.removerCapa');
         Route::delete('empresas/{empresa}/remover-perfil', [CoordEmpresaController::class,'removerPerfil'])->name('empresas.removerPerfil');
 
-        // recomendaÃ§Ãµes (empresas)
+        // recomendaÃƒÂ§ÃƒÂµes (empresas)
         Route::post('empresas/{empresa}/recomendar',         [CoordEmpresaController::class,'recomendar'])->name('empresas.recomendar');
         Route::delete('empresas/{empresa}/recomendar',       [CoordEmpresaController::class,'removerRecomendacao'])->name('empresas.recomendar.remover');
         Route::patch('empresas/recomendacoes/{rec}/ordem',   [CoordEmpresaController::class,'reordenarRecomendacao'])->name('empresas.recomendar.ordem');
         Route::patch('empresas/recomendacoes/{rec}/ordenar', [CoordEmpresaController::class,'reordenarRecomendacao'])->name('empresas.recomendar.ordenar');
 
-        // Pontos turÃ­sticos
+        // Pontos turÃƒÂ­sticos
         Route::resource('pontos', PontoTuristicoController::class)->except(['show']);
         Route::patch('pontos/{ponto}/publicar', [PontoTuristicoController::class,'publicar'])->name('pontos.publicar');
         Route::patch('pontos/{ponto}/arquivar', [PontoTuristicoController::class,'arquivar'])->name('pontos.arquivar');
@@ -668,13 +677,13 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::delete('pontos/{ponto}/remover-capa',   [PontoTuristicoController::class,'removerCapa'])->name('pontos.removerCapa');
 
 
-        // mÃ­dias do ponto
+        // mÃƒÂ­dias do ponto
         Route::post('pontos/{ponto}/midias/imagens',    [PontoTuristicoController::class,'adicionarImagens'])->name('pontos.midias.imagens.add');
         Route::post('pontos/{ponto}/midias/video-link', [PontoTuristicoController::class,'adicionarVideoLink'])->name('pontos.midias.video.link');
         Route::post('pontos/{ponto}/midias/video-file', [PontoTuristicoController::class,'adicionarVideoFile'])->name('pontos.midias.video.file');
         Route::delete('pontos/midias/{midia}',          [PontoTuristicoController::class,'removerMidia'])->name('pontos.midias.destroy');
 
-        // recomendaÃ§Ãµes (pontos)
+        // recomendaÃƒÂ§ÃƒÂµes (pontos)
         Route::post('pontos/{ponto}/recomendar',          [PontoTuristicoController::class,'recomendar'])->name('pontos.recomendar');
         Route::delete('pontos/{ponto}/recomendar',        [PontoTuristicoController::class,'removerRecomendacao'])->name('pontos.recomendar.remover');
         Route::patch('pontos/recomendacoes/{rec}/ordem',  [PontoTuristicoController::class,'reordenarRecomendacao'])->name('pontos.recomendar.ordem');
@@ -715,7 +724,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::put('eventos/{evento}',       [EventoController::class,'update'])->name('eventos.update');
         Route::delete('eventos/{evento}',    [EventoController::class,'destroy'])->name('eventos.destroy');
 
-        // EDIÃ‡Ã•ES
+        // EDIÃƒâ€¡Ãƒâ€¢ES
         Route::get('eventos/{evento}/edicoes',         [EventoController::class,'edicoesIndex'])->name('eventos.edicoes.index');
         Route::get('eventos/{evento}/edicoes/create',  [EventoController::class,'edicoesCreate'])->name('eventos.edicoes.create');
         Route::post('eventos/{evento}/edicoes',        [EventoController::class,'edicoesStore'])->name('eventos.edicoes.store');
@@ -747,7 +756,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
                 Route::patch('/{agendamento}/observacao-interna', [EspacoCulturalAgendamentoController::class, 'observacaoInterna'])->name('observacao-interna');
             });
 
-        //ESPAÃ‡O CULTURAL
+        //ESPAÃƒâ€¡O CULTURAL
         Route::resource('espacos-culturais', EspacoCulturalController::class)
             ->parameters(['espacos-culturais' => 'espaco'])
             ->except(['show']);
@@ -800,7 +809,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::patch('guias/{guia}/rascunho', [CoordGuiaRevistaController::class, 'rascunho'])
             ->name('guias.rascunho');
 
-        //VÃDEOS
+        //VÃƒÂDEOS
         Route::resource('videos', CoordVideoController::class)
             ->parameters(['videos' => 'video'])
             ->except(['show']);
@@ -814,7 +823,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::patch('videos/{video}/rascunho', [CoordVideoController::class, 'rascunho'])
             ->name('videos.rascunho');
 
-        // Jogos IndÃ­genas
+        // Jogos IndÃƒÂ­genas
         Route::resource('jogos-indigenas', CoordJogosIndigenasController::class)
             ->parameters(['jogos-indigenas' => 'jogosIndigena'])
             ->except(['show']);
@@ -869,7 +878,7 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
             });
 
 
-        // RelatÃ³rios
+        // RelatÃƒÂ³rios
         Route::resource('rota-do-cacau', CoordRotaDoCacauController::class)
             ->parameters(['rota-do-cacau' => 'rotaDoCacau'])
             ->except(['show']);
@@ -953,12 +962,12 @@ Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
 
 
 
-    // TÃ‰CNICO (compatibilidade de URL)
+    // TÃƒâ€°CNICO (compatibilidade de URL)
     Route::middleware(['auth','role:Tecnico'])
         ->prefix('tecnico')->name('tecnico.')
         ->group(function () {
 
-            // /tecnico/dashboard -> para o mÃ³dulo do coordenador que o tÃ©cnico pode ver
+            // /tecnico/dashboard -> para o mÃƒÂ³dulo do coordenador que o tÃƒÂ©cnico pode ver
             Route::get('/dashboard', function () {
                 $u = auth()->user();
 
@@ -978,7 +987,7 @@ Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
                 return redirect()->route('dashboard');
             })->name('dashboard');
 
-            // (opcional) manter URL /tecnico/config/perfil funcionando, apontando para a tela Ãºnica
+            // (opcional) manter URL /tecnico/config/perfil funcionando, apontando para a tela ÃƒÂºnica
             Route::get('config/perfil', function () {
                 return redirect()->route('coordenador.config.perfil.edit');
             })->name('config.perfil.edit');
@@ -987,3 +996,5 @@ Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
 
 
 require __DIR__.'/auth.php';
+
+

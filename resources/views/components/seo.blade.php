@@ -16,8 +16,8 @@
     $baseUrl = rtrim(config('app.url') ?: url('/'), '/');
     $fallbackImage = theme_asset('hero_image');
     $activePrefix = request()->route('locale') ?? config('app.locale_prefix_fallback', 'pt');
-    $supportedLocales = config('app.supported_locales', []);
-    $activeLocaleMeta = $supportedLocales[$activePrefix] ?? [];
+    $supportedLocales = supported_locales();
+    $activeLocaleMeta = $supportedLocales[$activePrefix] ?? locale_meta($activePrefix);
     $resolvedLocale = $locale ?: data_get($activeLocaleMeta, 'og_locale', 'pt_BR');
     $htmlLocale = data_get($activeLocaleMeta, 'html_lang', $activePrefix === 'pt' ? 'pt-BR' : $activePrefix);
 
@@ -152,3 +152,7 @@
 <script type="application/ld+json">@json(['@context' => 'https://schema.org', '@graph' => $graph], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
 
 {{ $slot }}
+
+
+
+

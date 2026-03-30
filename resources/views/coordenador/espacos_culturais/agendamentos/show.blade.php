@@ -37,18 +37,18 @@
 
         @if ($agendamento->observacao_visitante)
           <div class="ui-espaco-note-card mt-6">
-            <div class="ui-espaco-detail-label">Observacao do visitante</div>
+            <div class="ui-espaco-detail-label">Observação do visitante</div>
             <div class="mt-2 text-sm text-[var(--ui-text-soft)] whitespace-pre-line">{{ $agendamento->observacao_visitante }}</div>
           </div>
         @endif
       </x-dashboard.section-card>
 
-      <x-dashboard.section-card title="Observacao interna" subtitle="Anotacoes internas da equipe" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Observação interna" subtitle="Anotações internas da equipe" class="ui-coord-dashboard-panel">
         <form action="{{ route('coordenador.espacos-culturais.agendamentos.observacao-interna', $agendamento) }}" method="POST" class="space-y-4">
           @csrf
           @method('PATCH')
-          <textarea name="observacao_interna" rows="6" class="ui-form-control ui-aviso-textarea" placeholder="Anotacoes internas da equipe">{{ old('observacao_interna', $agendamento->observacao_interna) }}</textarea>
-          <button type="submit" class="ui-btn-primary">Salvar observacao</button>
+          <textarea name="observacao_interna" rows="6" class="ui-form-control ui-aviso-textarea" placeholder="Anotações internas da equipe">{{ old('observacao_interna', $agendamento->observacao_interna) }}</textarea>
+          <button type="submit" class="ui-btn-primary">Salvar observação</button>
         </form>
       </x-dashboard.section-card>
     </div>
@@ -77,27 +77,27 @@
         </div>
       </x-dashboard.section-card>
 
-      <x-dashboard.section-card title="Atribuicao de tecnico" subtitle="Vincule o atendimento responsavel" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Atribuição de técnico" subtitle="Vincule o atendimento responsável" class="ui-coord-dashboard-panel">
         <form action="{{ route('coordenador.espacos-culturais.agendamentos.atribuir-tecnico', $agendamento) }}" method="POST" class="space-y-4">
           @csrf
           @method('PATCH')
           <select name="tecnico_id" class="ui-form-select">
-            <option value="">Nao atribuido</option>
+            <option value="">Não atribuído</option>
             @foreach ($tecnicos as $tecnico)
               <option value="{{ $tecnico->id }}" @selected((string) old('tecnico_id', $agendamento->tecnico_id) === (string) $tecnico->id)>{{ $tecnico->name }}</option>
             @endforeach
           </select>
-          <button type="submit" class="ui-btn-secondary w-full">Salvar atribuicao</button>
+          <button type="submit" class="ui-btn-secondary w-full">Salvar atribuição</button>
         </form>
       </x-dashboard.section-card>
 
-      <x-dashboard.section-card title="Resumo tecnico" subtitle="Resumo operacional do atendimento" class="ui-coord-dashboard-panel">
+      <x-dashboard.section-card title="Resumo técnico" subtitle="Resumo operacional do atendimento" class="ui-coord-dashboard-panel">
         <div class="space-y-3 text-sm text-[var(--ui-text-soft)]">
-          <div><div class="ui-espaco-detail-label">Espaco</div><div class="ui-espaco-detail-value">{{ $agendamento->espaco?->nome }}</div></div>
+          <div><div class="ui-espaco-detail-label">Espaço</div><div class="ui-espaco-detail-value">{{ $agendamento->espaco?->nome }}</div></div>
           <div><div class="ui-espaco-detail-label">Status</div><div class="ui-espaco-detail-value">{{ ucfirst(str_replace('_', ' ', $agendamento->status)) }}</div></div>
-          <div><div class="ui-espaco-detail-label">Tecnico</div><div class="ui-espaco-detail-value">{{ $agendamento->tecnico?->name ?: 'Nao atribuido' }}</div></div>
-          <div><div class="ui-espaco-detail-label">Atribuido por</div><div class="ui-espaco-detail-value">{{ $agendamento->atribuidor?->name ?: '—' }}</div></div>
-          <div><div class="ui-espaco-detail-label">WhatsApp enviado</div><div class="ui-espaco-detail-value">{{ $agendamento->whatsapp_clicked_at ? $agendamento->whatsapp_clicked_at->format('d/m/Y H:i') : 'Ainda nao' }}</div></div>
+          <div><div class="ui-espaco-detail-label">Técnico</div><div class="ui-espaco-detail-value">{{ $agendamento->tecnico?->name ?: 'Não atribuído' }}</div></div>
+          <div><div class="ui-espaco-detail-label">Atribuído por</div><div class="ui-espaco-detail-value">{{ $agendamento->atribuidor?->name ?: '—' }}</div></div>
+          <div><div class="ui-espaco-detail-label">WhatsApp enviado</div><div class="ui-espaco-detail-value">{{ $agendamento->whatsapp_clicked_at ? $agendamento->whatsapp_clicked_at->format('d/m/Y H:i') : 'Ainda não' }}</div></div>
 
           @if ($agendamento->whatsapp_link)
             <a href="{{ localized_route('site.museus.agendamentos.whatsapp', ['protocolo' => $agendamento->protocolo]) }}" target="_blank" class="ui-btn-secondary mt-2">Abrir WhatsApp</a>

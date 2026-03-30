@@ -5,19 +5,19 @@
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
         <div>
-            <x-input-label for="email" :value="__('ui.auth.email')" />
+            <x-input-label for="email" :value="ui_text('ui.auth.email')" />
             <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
         <div class="mt-4">
-            <x-input-label for="password" :value="__('ui.auth.password')" />
+            <x-input-label for="password" :value="ui_text('ui.auth.password')" />
             <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
 
         <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('ui.auth.confirm_password')" />
+            <x-input-label for="password_confirmation" :value="ui_text('ui.auth.confirm_password')" />
 
             <x-text-input
                 id="password_confirmation"
@@ -33,7 +33,7 @@
 
         <div class="flex items-center justify-end mt-4">
             <x-primary-button>
-                {{ __('ui.auth.reset_password') }}
+                {{ ui_text('ui.auth.reset_password') }}
             </x-primary-button>
         </div>
     </form>

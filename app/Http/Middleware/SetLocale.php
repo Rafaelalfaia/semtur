@@ -11,7 +11,7 @@ class SetLocale
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $supported = config('app.supported_locales', []);
+        $supported = supported_locales();
         $routeLocale = $request->route('locale');
         $preferredLocale = route_locale(null, $request);
 
@@ -48,3 +48,4 @@ class SetLocale
         return $next($request);
     }
 }
+

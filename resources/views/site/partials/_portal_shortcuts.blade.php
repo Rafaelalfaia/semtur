@@ -4,7 +4,7 @@
 
 @if($items->isNotEmpty())
     <section class="site-section site-home-entry-section">
-        <x-section-head :title="__('ui.home.entry_title')" />
+        <x-section-head :title="ui_text('ui.home.entry_title')" />
 
         <div class="site-home-entry-grid">
             @foreach($items as $item)

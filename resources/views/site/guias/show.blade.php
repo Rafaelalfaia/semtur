@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', $material->nome . ' â€¢ ' . $material->tipo_label . ' â€¢ VisitAltamira')
+@section('title', $material->nome . ' • ' . $material->tipo_label . ' • VisitAltamira')
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) $material->descricao), 160))
 @section('meta.image', $material->capa_url ?: asset('imagens/altamira.jpg'))
 
@@ -20,17 +20,17 @@
     @include('site.partials._page_hero', [
         'backHref' => $guiasUrl,
         'breadcrumbs' => [
-            ['label' => __('ui.common.home'), 'href' => $homeUrl],
-            ['label' => __('ui.guides.index_title'), 'href' => $guiasUrl],
+            ['label' => ui_text('ui.common.home'), 'href' => $homeUrl],
+            ['label' => ui_text('ui.guides.index_title'), 'href' => $guiasUrl],
             ['label' => $material->nome],
         ],
         'badge' => $material->tipo_label,
         'title' => $material->nome,
         'subtitle' => Str::limit(strip_tags((string) $material->descricao), 180),
         'meta' => [],
-        'primaryActionLabel' => __('ui.guides.read_material'),
+        'primaryActionLabel' => ui_text('ui.guides.read_material'),
         'primaryActionHref' => '#leitura',
-        'secondaryActionLabel' => __('ui.common.back_to_guides'),
+        'secondaryActionLabel' => ui_text('ui.common.back_to_guides'),
         'secondaryActionHref' => $guiasUrl,
         'image' => $cover,
         'imageAlt' => $material->nome,
@@ -42,9 +42,9 @@
             <div class="site-editorial-main">
                 <section class="site-surface site-content-block">
                     <x-section-head
-                        :eyebrow="__('ui.guides.about_material')"
-                        :title="__('ui.guides.material_information', ['type' => Str::lower($material->tipo_label)])"
-                        :subtitle="__('ui.guides.editorial_summary')"
+                        :eyebrow="ui_text('ui.guides.about_material')"
+                        :title="ui_text('ui.guides.material_information', ['type' => Str::lower($material->tipo_label)])"
+                        :subtitle="ui_text('ui.guides.editorial_summary')"
                     />
 
                     <div class="site-prose">
@@ -54,9 +54,9 @@
 
                 <section id="leitura" class="site-surface site-content-block">
                     <x-section-head
-                        :eyebrow="__('ui.guides.reading')"
-                        :title="__('ui.guides.material_viewing')"
-                        :subtitle="__('ui.guides.embedded_copy')"
+                        :eyebrow="ui_text('ui.guides.reading')"
+                        :title="ui_text('ui.guides.material_viewing')"
+                        :subtitle="ui_text('ui.guides.embedded_copy')"
                     />
 
                     <div class="site-inline-actions">
@@ -67,7 +67,7 @@
                                 rel="noopener noreferrer"
                                 class="site-button-secondary"
                             >
-                                {{ __('ui.guides.open_drive') }}
+                                {{ ui_text('ui.guides.open_drive') }}
                             </a>
                         @endif
                     </div>
@@ -85,12 +85,12 @@
                         </div>
 
                         <p class="site-empty-state-copy">
-                            {{ __('ui.guides.viewer_fallback') }}
+                            {{ ui_text('ui.guides.viewer_fallback') }}
                         </p>
                     @else
                         <div class="site-empty-state">
-                            <p class="site-empty-state-title">{{ __('ui.guides.preview_unavailable') }}</p>
-                            <p class="site-empty-state-copy">{{ __('ui.guides.preview_unavailable_copy') }}</p>
+                            <p class="site-empty-state-title">{{ ui_text('ui.guides.preview_unavailable') }}</p>
+                            <p class="site-empty-state-copy">{{ ui_text('ui.guides.preview_unavailable_copy') }}</p>
 
                             @if(filled($material->link_acesso))
                                 <a
@@ -99,7 +99,7 @@
                                     rel="noopener noreferrer"
                                     class="site-button-primary"
                                 >
-                                    {{ __('ui.guides.open_material') }}
+                                    {{ ui_text('ui.guides.open_material') }}
                                 </a>
                             @endif
                         </div>
@@ -109,25 +109,25 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head :eyebrow="__('ui.common.summary')" :title="__('ui.guides.overview')" />
+                    <x-section-head :eyebrow="ui_text('ui.common.summary')" :title="ui_text('ui.guides.overview')" />
 
                     <div class="site-stats-grid">
                         <div class="site-stat-card">
-                            <span class="site-stat-label">{{ __('ui.guides.type') }}</span>
+                            <span class="site-stat-label">{{ ui_text('ui.guides.type') }}</span>
                             <span class="site-stat-value">{{ $material->tipo_label }}</span>
                         </div>
                     </div>
 
                     <div class="site-inline-actions">
-                        <a href="{{ $guiasUrl }}" class="site-button-secondary">{{ __('ui.guides.view_more_materials') }}</a>
+                        <a href="{{ $guiasUrl }}" class="site-button-secondary">{{ ui_text('ui.guides.view_more_materials') }}</a>
                     </div>
                 </section>
 
                 @if($relatedItems->isNotEmpty())
                     <section class="site-surface-soft site-content-block">
                         <x-section-head
-                            :eyebrow="__('ui.guides.related')"
-                            :title="__('ui.guides.more_materials', ['type' => Str::plural(Str::lower($material->tipo_label), 2)])"
+                            :eyebrow="ui_text('ui.guides.related')"
+                            :title="ui_text('ui.guides.more_materials', ['type' => Str::plural(Str::lower($material->tipo_label), 2)])"
                         />
 
                         <div class="space-y-4">

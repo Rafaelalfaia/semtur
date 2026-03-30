@@ -1,7 +1,7 @@
 @extends('console.layout')
 @section('title', 'Editar evento')
 @section('page.title', 'Editar evento')
-@section('topbar.description', 'Atualize o evento principal mantendo o shell global e a heranca de light/dark do console.')
+@section('topbar.description', 'Atualize o evento principal mantendo o shell global e a herança de light/dark do console.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
@@ -35,7 +35,7 @@
     @csrf
     @method('PUT')
 
-    <x-dashboard.section-card title="Dados principais" subtitle="Edite as informacoes institucionais do evento" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados principais" subtitle="Edite as informações institucionais do evento" class="ui-coord-dashboard-panel">
       <div class="grid gap-4 md:grid-cols-2">
         <div>
           <label class="ui-form-label">Nome *</label>
@@ -50,17 +50,17 @@
           <input name="cidade" value="{{ old('cidade', $evento->cidade) }}" class="ui-form-control">
         </div>
         <div>
-          <label class="ui-form-label">Regiao</label>
+          <label class="ui-form-label">Região</label>
           <input name="regiao" value="{{ old('regiao', $evento->regiao) }}" class="ui-form-control">
         </div>
         <div class="md:col-span-2">
-          <label class="ui-form-label">Descricao</label>
+          <label class="ui-form-label">Descrição</label>
           <textarea name="descricao" rows="5" class="ui-form-control">{{ old('descricao', $evento->descricao) }}</textarea>
         </div>
       </div>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Midia e status" subtitle="Atualize imagens e controle o estado editorial" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Mídia e status" subtitle="Atualize imagens e controle o estado editorial" class="ui-coord-dashboard-panel">
       <div class="grid gap-4 lg:grid-cols-2">
         <div class="space-y-4">
           <div>

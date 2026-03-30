@@ -1,7 +1,7 @@
 @extends('console.layout')
 @section('title', 'Novo evento')
 @section('page.title', 'Novo evento')
-@section('topbar.description', 'Cadastre um novo evento mantendo o padrao estrutural do console e a heranca global de modo.')
+@section('topbar.description', 'Cadastre um novo evento mantendo o padrão estrutural do console e a herança global de modo.')
 
 @section('topbar.nav')
   <a href="{{ route('coordenador.eventos.index') }}" class="ui-console-topbar-tab">Eventos</a>
@@ -12,7 +12,7 @@
 <div class="ui-console-page">
   <x-dashboard.page-header
     title="Novo evento"
-    subtitle="Cadastre a base institucional do evento, com capa, perfil, localizacao e status editorial."
+    subtitle="Cadastre a base institucional do evento, com capa, perfil, localização e status editorial."
   >
     <a href="{{ route('coordenador.eventos.index') }}" class="ui-btn-secondary">Voltar</a>
   </x-dashboard.page-header>
@@ -28,7 +28,7 @@
   <form method="POST" action="{{ route('coordenador.eventos.store') }}" enctype="multipart/form-data" class="mt-5 space-y-6">
     @csrf
 
-    <x-dashboard.section-card title="Dados principais" subtitle="Preencha as informacoes base do evento" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Dados principais" subtitle="Preencha as informações base do evento" class="ui-coord-dashboard-panel">
       <div class="grid gap-4 md:grid-cols-2">
         <div>
           <label class="ui-form-label">Nome *</label>
@@ -43,17 +43,17 @@
           <input name="cidade" value="{{ old('cidade') }}" class="ui-form-control">
         </div>
         <div>
-          <label class="ui-form-label">Regiao</label>
+          <label class="ui-form-label">Região</label>
           <input name="regiao" value="{{ old('regiao') }}" class="ui-form-control">
         </div>
         <div class="md:col-span-2">
-          <label class="ui-form-label">Descricao</label>
+          <label class="ui-form-label">Descrição</label>
           <textarea name="descricao" rows="5" class="ui-form-control">{{ old('descricao') }}</textarea>
         </div>
       </div>
     </x-dashboard.section-card>
 
-    <x-dashboard.section-card title="Midia e status" subtitle="Controle a apresentacao visual e o estado editorial" class="ui-coord-dashboard-panel">
+    <x-dashboard.section-card title="Mídia e status" subtitle="Controle a apresentação visual e o estado editorial" class="ui-coord-dashboard-panel">
       <div class="grid gap-4 md:grid-cols-2">
         <div>
           <label class="ui-form-label">Capa (1920x700 aprox.)</label>

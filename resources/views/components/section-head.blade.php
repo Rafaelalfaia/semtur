@@ -2,7 +2,7 @@
     'title',
     'subtitle' => null,
     'href' => null,
-    'label' => __('ui.common.view_all'),
+    'label' => ui_text('ui.common.view_all'),
     'eyebrow' => null,
 ])
 
@@ -23,4 +23,3 @@
         </a>
     @endif
 </div>
-

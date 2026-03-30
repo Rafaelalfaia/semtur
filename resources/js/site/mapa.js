@@ -1,7 +1,11 @@
 window.MapaPage = function () {
     const currentLocale = (() => {
+        const htmlLang = document.documentElement.lang || "";
+        const fromHtml = htmlLang.split("-")[0].toLowerCase();
+        if (fromHtml) return fromHtml;
+
         const segment = window.location.pathname.split("/").filter(Boolean)[0] || "";
-        return ["pt", "en", "es"].includes(segment) ? segment : "pt";
+        return segment || "pt";
     })();
 
     const localizedPath = (base, token) => `/${currentLocale}${base}/${token}`;
@@ -36,7 +40,7 @@ window.MapaPage = function () {
                 L.marker([m.lat, m.lng])
                     .addTo(this.map)
                     .bindPopup(
-                        `<a href="${href}">${m.nome || "Sem titulo"}</a>`
+                        `<a href="${href}">${m.nome || "Sem título"}</a>`
                     );
 
                 bounds.push([m.lat, m.lng]);
@@ -48,3 +52,4 @@ window.MapaPage = function () {
         },
     };
 };
+

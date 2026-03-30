@@ -1,7 +1,7 @@
 @extends('site.layouts.app')
 
-@section('title', 'Museus e teatros em Altamira')
-@section('meta.description', 'Agende visitas a museus e ao teatro municipal, consulte horários e veja informações públicas dos espaços culturais de Altamira.')
+@section('title', ui_text('ui.spaces.title'))
+@section('meta.description', ui_text('ui.spaces.meta_description'))
 
 @section('site.content')
 @php
@@ -27,32 +27,32 @@
     @include('site.partials._page_hero', [
         'backHref' => localized_route('site.home'),
         'breadcrumbs' => [
-            ['label' => 'Início', 'href' => localized_route('site.home')],
-            ['label' => 'Museus e teatros'],
+            ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
+            ['label' => ui_text('ui.spaces.breadcrumb')],
         ],
-        'badge' => 'Agendamento cultural',
-        'title' => 'Museus e teatro municipal',
-        'subtitle' => 'Consulte espaços culturais publicados, veja horários e solicite visitas para grupos, escolas e roteiros guiados.',
+        'badge' => ui_text('ui.spaces.badge'),
+        'title' => ui_text('ui.spaces.hero_title'),
+        'subtitle' => ui_text('ui.spaces.hero_subtitle'),
         'meta' => [
-            $espacos->total().' espaços publicados',
-            $tipo !== 'todos' ? ucfirst($tipo) : 'Museus e teatro',
-            filled($q) ? 'Busca ativa' : null,
+            $espacos->total().' '.ui_text('ui.spaces.published_spaces'),
+            $tipo !== 'todos' ? ucfirst($tipo) : ui_text('ui.spaces.all_types'),
+            filled($q) ? ui_text('ui.spaces.active_search') : null,
         ],
-        'primaryActionLabel' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? 'Solicitar visita' : null,
+        'primaryActionLabel' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? ui_text('ui.spaces.request_visit') : null,
         'primaryActionHref' => $cards->first() && $cards->first()['model']->agendamento_disponivel ? localized_route('site.museus.agendar', ['espaco' => $cards->first()['model']->slug]) : null,
-        'secondaryActionLabel' => 'Ver espaços',
+        'secondaryActionLabel' => ui_text('ui.spaces.view_spaces'),
         'secondaryActionHref' => '#espacos-lista',
         'image' => $cards->first()['image'] ?? $fallback,
-        'imageAlt' => 'Museus e teatros de Altamira',
+        'imageAlt' => ui_text('ui.spaces.image_alt'),
         'compact' => true,
     ])
 
     <section class="site-section">
         <div class="site-surface site-espacos-filter-shell">
             <x-section-head
-                eyebrow="Agendamento"
-                title="Encontre o espaço certo"
-                subtitle="Filtre por tipo ou nome para chegar mais rápido ao museu ou ao teatro que faz sentido para sua visita."
+                :eyebrow="ui_text('ui.spaces.filter_eyebrow')"
+                :title="ui_text('ui.spaces.filter_title')"
+                :subtitle="ui_text('ui.spaces.filter_subtitle')"
             />
 
             <form method="GET" class="site-search-form site-espacos-search-form">
@@ -60,7 +60,7 @@
                     type="text"
                     name="q"
                     value="{{ $q }}"
-                    placeholder="Buscar museu, teatro ou bairro"
+                    placeholder="{{ ui_text('ui.spaces.search_placeholder') }}"
                     class="w-full rounded-[var(--ui-radius-control)] border border-[var(--ui-border)] bg-[var(--ui-surface-raised)] px-4 py-3 text-sm text-[var(--ui-text)] outline-none focus:border-[var(--ui-primary)] focus:ring-4 focus:ring-[var(--ui-border-focus)]"
                 >
 
@@ -68,27 +68,27 @@
                     name="tipo"
                     class="w-full rounded-[var(--ui-radius-control)] border border-[var(--ui-border)] bg-[var(--ui-surface-raised)] px-4 py-3 text-sm text-[var(--ui-text)] outline-none focus:border-[var(--ui-primary)] focus:ring-4 focus:ring-[var(--ui-border-focus)]"
                 >
-                    <option value="todos" @selected($tipo === 'todos')>Museus e teatro</option>
-                    <option value="museu" @selected($tipo === 'museu')>Museus</option>
-                    <option value="teatro" @selected($tipo === 'teatro')>Teatro</option>
+                    <option value="todos" @selected($tipo === 'todos')>{{ ui_text('ui.spaces.all_types') }}</option>
+                    <option value="museu" @selected($tipo === 'museu')>{{ ui_text('ui.spaces.museums') }}</option>
+                    <option value="teatro" @selected($tipo === 'teatro')>{{ ui_text('ui.spaces.theater') }}</option>
                 </select>
 
-                <button type="submit" class="site-button-primary">Aplicar</button>
+                <button type="submit" class="site-button-primary">{{ ui_text('ui.common.apply') }}</button>
             </form>
         </div>
     </section>
 
     <section class="site-section" id="espacos-lista">
         <x-section-head
-            eyebrow="Espaços"
-            title="Agende sua visita"
-            subtitle="Cada página traz informações públicas do espaço, grade semanal e o formulário de solicitação quando o agendamento estiver disponível."
+            :eyebrow="ui_text('ui.spaces.section_eyebrow')"
+            :title="ui_text('ui.spaces.section_title')"
+            :subtitle="ui_text('ui.spaces.section_subtitle')"
         />
 
         @if($cards->isEmpty())
             <div class="site-empty-state">
-                <p class="site-empty-state-title">Nenhum espaço encontrado</p>
-                <p class="site-empty-state-copy">Tente ajustar a busca ou trocar o tipo para ver outros espaços culturais publicados.</p>
+                <p class="site-empty-state-title">{{ ui_text('ui.spaces.empty_title') }}</p>
+                <p class="site-empty-state-copy">{{ ui_text('ui.spaces.hero_subtitle') }}</p>
             </div>
         @else
             <div class="site-espacos-grid">
@@ -106,7 +106,7 @@
                                     <div class="site-espacos-card-badges">
                                         <span class="site-badge">{{ $espaco->tipo_label }}</span>
                                         @if($espaco->agendamento_disponivel)
-                                            <span class="site-filter-chip is-active">Agendamento disponível</span>
+                                            <span class="site-filter-chip is-active">{{ ui_text('ui.spaces.available_badge') }}</span>
                                         @endif
                                     </div>
 
@@ -118,7 +118,7 @@
                                         @if($espaco->bairro)
                                             <span>{{ $espaco->bairro }}</span>
                                         @endif
-                                        <span>{{ $espaco->cidade ?: 'Altamira' }}</span>
+                                        <span>{{ $espaco->cidade ?: ui_text('ui.common.altamira') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -139,9 +139,9 @@
                             @endif
 
                             <div class="site-inline-actions site-espacos-card-actions">
-                                <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" class="site-button-secondary">Ver espaço</a>
+                                <a href="{{ localized_route('site.museus.show', ['slug' => $espaco->slug]) }}" class="site-button-secondary">{{ ui_text('ui.spaces.view_space') }}</a>
                                 @if($espaco->agendamento_disponivel)
-                                    <a href="{{ localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) }}" class="site-button-primary">Agendar visita</a>
+                                    <a href="{{ localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) }}" class="site-button-primary">{{ ui_text('ui.spaces.schedule_visit') }}</a>
                                 @endif
                             </div>
                         </div>
@@ -158,4 +158,3 @@
     </section>
 </div>
 @endsection
-

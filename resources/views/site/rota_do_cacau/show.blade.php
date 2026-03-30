@@ -29,7 +29,7 @@
             href="{{ localized_route('site.rota_do_cacau.index') }}"
             class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white transition hover:bg-white/15"
         >
-            ← {{ __('ui.common.back_to_route') }}
+            ← {{ ui_text('ui.common.back_to_route') }}
         </a>
 
         <div class="mt-5 text-sm text-white/70">
