@@ -4077,7 +4077,7 @@ body {
 
     .site-brand-logo,
     .site-footer-logo {
-        height: 1.7rem;
+        height: 2rem;
         width: auto;
     }
 
@@ -5597,7 +5597,7 @@ body {
         .site-map-nearby {
             left: 50%;
             right: auto;
-            width: min(460px, 86vw);
+            width: min(100%, calc(100vw - 1.5rem));
             bottom: calc(var(--site-map-bottom-nav-h) - 12px);
             transform: translateX(-50%);
         }
@@ -5683,7 +5683,7 @@ body {
         .site-map-page .site-map-nearby {
             left: 50%;
             right: auto;
-            width: min(82vw, 220px);
+            width: min(100%, calc(100vw - 1.2rem));
             gap: 6px;
             padding: 3px;
             border-radius: 10px;
@@ -9712,7 +9712,7 @@ body {
         }
 
         .site-brand-logo {
-            height: 1.48rem;
+            height: 1.72rem;
         }
 
         .site-main {
@@ -9814,6 +9814,7 @@ body {
     /* === HOME MAPA: altura controlada sem travar interacao === */
     .site-home-map-viewport--compact {
         max-height: min(58svh, 460px);
+        overscroll-behavior: contain;
     }
 
     .site-home-map-viewport--compact::after {
@@ -9824,6 +9825,7 @@ body {
         min-height: 300px;
         height: clamp(300px, 30vw, 360px);
         aspect-ratio: auto;
+        touch-action: pan-x pan-y pinch-zoom;
     }
 
     @media (max-width: 1023px) {
@@ -9844,7 +9846,7 @@ body {
 
     @media (max-width: 767px) {
         .site-home-map-viewport--compact {
-            max-height: min(44svh, 300px);
+            max-height: min(48svh, 340px);
         }
 
         .site-home-map-viewport--compact::after {
@@ -9852,8 +9854,8 @@ body {
         }
 
         .site-home-map-canvas--compact {
-            min-height: 220px;
-            height: clamp(220px, 58vw, 280px);
+            min-height: 240px;
+            height: clamp(240px, 62vw, 320px);
             aspect-ratio: auto;
         }
     }

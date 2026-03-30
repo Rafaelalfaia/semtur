@@ -7,7 +7,8 @@
 @php
     $registerImage = asset('imagens/altamira.jpg');
     $registerImageSources = site_image_sources($registerImage, 'hero');
-    $logoSources = site_image_sources(theme_asset('logo'), 'logo');
+    $authLogo = asset('imagens/logosemtur.png');
+    $logoSources = site_image_sources($authLogo, 'logo');
 @endphp
 <div class="ui-auth-shell">
     <div class="ui-auth-card">
@@ -25,7 +26,7 @@
             <div class="ui-auth-media-overlay"></div>
             <div class="ui-auth-media-copy">
                 <x-picture
-                    :jpg="$logoSources['jpg'] ?? theme_asset('logo')"
+                    :jpg="$logoSources['jpg'] ?? $authLogo"
                     :webp="$logoSources['webp'] ?? null"
                     alt="{{ ui_text('ui.auth.logo_alt') }}"
                     class="ui-auth-media-logo"

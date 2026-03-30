@@ -149,6 +149,7 @@
                         <label class="ui-form-label" for="preview_image">Upload de preview</label>
                         <input id="preview_image" name="preview_image" type="file" accept="image/*" class="ui-form-control">
                         @error('preview_image')<p class="ui-form-error">{{ $message }}</p>@enderror
+                        <p class="mt-2 text-xs text-[var(--ui-text-soft)]">Tamanho ideal do preview: 1600x900 px ou 1200x675 px, no formato horizontal 16:9.</p>
                     </div>
 
                     @if($theme->preview_image_path)

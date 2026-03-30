@@ -31,10 +31,23 @@
                             </div>
                         </div>
 
-                        <div class="mt-3">
-                            <input id="{{ $field['key'] }}" name="{{ $field['key'] }}" type="file" accept="image/*" class="ui-form-control">
-                            @error($field['key'])<p class="ui-form-error mt-2">{{ $message }}</p>@enderror
-                        </div>
+                    <div class="mt-3">
+                        <input id="{{ $field['key'] }}" name="{{ $field['key'] }}" type="file" accept="image/*" class="ui-form-control">
+                        @error($field['key'])<p class="ui-form-error mt-2">{{ $message }}</p>@enderror
+                        <p class="mt-2 text-xs text-[var(--ui-text-soft)]">
+                            @switch($field['key'])
+                                @case('logo')
+                                    Tamanho ideal: 320x160 px ou 640x320 px, preferencialmente em PNG transparente ou SVG.
+                                    @break
+                                @case('login_background')
+                                    Tamanho ideal: 1600x900 px, com foco visual central para manter bom recorte em diferentes telas.
+                                    @break
+                                @case('hero_image')
+                                    Tamanho ideal: 1600x900 px ou 1920x1080 px, no formato horizontal 16:9.
+                                    @break
+                            @endswitch
+                        </p>
+                    </div>
 
                         @if($currentAsset)
                             <label class="mt-3 inline-flex items-center gap-2 text-sm text-[var(--ui-text-soft)]">

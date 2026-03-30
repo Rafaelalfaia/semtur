@@ -139,31 +139,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const applyPreviewInteractionMode = () => {
-        const locked = isTouchPreview();
-        const method = locked ? 'disable' : 'enable';
+        const touchPreview = isTouchPreview();
 
-        if (map.dragging && typeof map.dragging[method] === 'function') {
-            map.dragging[method]();
+        if (map.dragging && typeof map.dragging.enable === 'function') {
+            map.dragging.enable();
         }
 
-        if (map.touchZoom && typeof map.touchZoom[method] === 'function') {
-            map.touchZoom[method]();
+        if (map.touchZoom && typeof map.touchZoom.enable === 'function') {
+            map.touchZoom.enable();
         }
 
-        if (map.doubleClickZoom && typeof map.doubleClickZoom[method] === 'function') {
-            map.doubleClickZoom[method]();
+        if (map.doubleClickZoom && typeof map.doubleClickZoom.enable === 'function') {
+            map.doubleClickZoom.enable();
         }
 
-        if (map.tap && typeof map.tap[method] === 'function') {
-            map.tap[method]();
+        if (map.tap && typeof map.tap.enable === 'function') {
+            map.tap.enable();
         }
 
         if (map.scrollWheelZoom) {
-            if (locked) {
-                map.scrollWheelZoom.disable();
-            } else {
-                map.scrollWheelZoom.enable();
-            }
+            map.scrollWheelZoom.enable();
         }
 
         if (map.boxZoom) {
@@ -174,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             map.keyboard.disable();
         }
 
-        map.getContainer().classList.toggle('is-touch-preview', locked);
+        map.getContainer().classList.toggle('is-touch-preview', touchPreview);
     };
 
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -587,4 +582,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
-

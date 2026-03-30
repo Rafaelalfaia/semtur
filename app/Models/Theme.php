@@ -74,7 +74,7 @@ class Theme extends Model
     ];
 
     public const DEFAULT_ASSETS = [
-        'logo' => 'imagens/logosemtur.png',
+        'logo' => 'icons/pwa-512.png',
         'login_background' => 'imagens/altamira.jpg',
         'hero_image' => 'imagens/altamira.jpg',
     ];

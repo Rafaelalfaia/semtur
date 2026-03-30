@@ -628,7 +628,7 @@
                     <a href="{{ $dashboardRoute ?: '#' }}" class="ui-console-sidebar-brand">
                         <span class="ui-console-logo-wrap">
                             <img
-                                src="{{ theme_asset('logo') }}"
+                                src="{{ asset('imagens/logosemtur.png') }}"
                                 alt="Logo SEMTUR"
                                 class="ui-console-logo"
                             >
