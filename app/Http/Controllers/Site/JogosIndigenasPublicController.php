@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\JogosIndigenas;
 use Illuminate\Support\Collection;
 
 class JogosIndigenasPublicController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function index()
     {
         $jogo = $this->principalPublicado()?->load([
@@ -29,20 +32,30 @@ class JogosIndigenasPublicController extends Controller
             'patrocinadores' => $edicoes->sum(fn ($edicao) => (int) ($edicao->patrocinadores_count ?? $edicao->patrocinadores->count())),
         ];
 
-        return view('site.jogos_indigenas.index', [
+        return view('site.jogos_indigenas.index', array_merge([
             'jogo' => $jogo,
             'edicoes' => $edicoes,
             'stats' => $stats,
             'edicaoDestaque' => $edicoes->first(),
-        ]);
+        ], $this->resolveEditableHero('site.jogos_indigenas.index')));
     }
 
     private function principalPublicado(): ?JogosIndigenas
     {
-        return JogosIndigenas::query()
+        $publicado = JogosIndigenas::query()
             ->publicados()
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
+            ->orderBy('ordem')
+            ->orderBy('id')
+            ->first();
+
+        if ($publicado) {
+            return $publicado;
+        }
+
+        return JogosIndigenas::query()
+            ->whereHas('edicoes', fn ($query) => $this->aplicarFiltroPublicacaoEdicoes($query))
             ->orderBy('ordem')
             ->orderBy('id')
             ->first();

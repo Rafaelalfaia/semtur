@@ -2,7 +2,9 @@
 
 @section('title', 'Roteiros em Altamira')
 @section('meta.description', 'Explore roteiros por duração e perfil para viver Altamira com mais contexto, organização e curadoria local.')
-@section('meta.image', asset('imagens/altamira.jpg'))
+@section('meta.image', $heroMedia?->url ?: asset('imagens/altamira.jpg'))
+@section('title', $heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: 'Roteiros em Altamira'))
+@section('meta.description', $heroTranslation?->seo_description ?: ($heroTranslation?->lead ?: 'Explore roteiros por duração e perfil para viver Altamira com mais contexto, organização e curadoria local.'))
 
 @section('site.content')
 @php
@@ -26,32 +28,49 @@
         '2_3_dias' => '2 ou 3 dias',
         'meio_dia' => 'Meio dia',
     ];
+    $heroBadge = $heroTranslation?->eyebrow ?: 'Roteiros de viagem';
+    $heroTitle = $heroTranslation?->titulo ?: 'Descubra Altamira por duração e perfil';
+    $heroSubtitle = $heroTranslation?->lead ?: 'Roteiros pensados para ajudar o visitante a entender a cidade, organizar o tempo e encontrar experiências com mais contexto, paisagem, cultura e curadoria local.';
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: 'Explorar roteiros';
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: '#lista-roteiros';
+    $heroImage = $heroMedia?->url;
+    $heroStyle = $heroImage
+        ? "background-image: linear-gradient(135deg, rgba(4, 120, 87, 0.88), rgba(6, 95, 70, 0.76), rgba(2, 6, 23, 0.92)), url('{$heroImage}'); background-size: cover; background-position: center;"
+        : null;
 @endphp
 
 <section class="bg-slate-950 text-white">
     <div class="mx-auto max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8">
-        <div class="overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-emerald-700 via-emerald-800 to-slate-950">
+        <div class="overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-emerald-700 via-emerald-800 to-slate-950" @if($heroStyle) style="{{ $heroStyle }}" @endif>
             <div class="grid gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[1.35fr_.9fr] lg:px-10 lg:py-12">
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">
-                        Roteiros de viagem
+                        {{ $heroBadge }}
                     </div>
 
                     <h1 class="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">
+                        @if($heroTranslation?->titulo)
+                            {{ $heroTitle }}
+                        @else
                         Descubra Altamira por duração e perfil
+                        @endif
                     </h1>
 
                     <p class="mt-4 max-w-xl text-sm leading-7 text-emerald-50/90 sm:text-base">
+                        @if($heroTranslation?->lead)
+                            {{ $heroSubtitle }}
+                        @else
                         Roteiros pensados para ajudar o visitante a entender a cidade, organizar o tempo
                         e encontrar experiências com mais contexto, paisagem, cultura e curadoria local.
+                        @endif
                     </p>
 
                     <div class="mt-6 flex flex-wrap gap-3">
                         <a
-                            href="#lista-roteiros"
+                            href="{{ $heroPrimaryHref }}"
                             class="inline-flex items-center rounded-2xl bg-white px-5 py-3 text-sm font-medium text-slate-900 transition hover:bg-emerald-50"
                         >
-                            Explorar roteiros
+                            {{ $heroPrimaryLabel }}
                         </a>
 
                         <a
@@ -319,4 +338,26 @@
         </div>
     </div>
 </section>
+
+@include('site.partials._content_editor', [
+    'editorTitle' => $heroTitle,
+    'editorPage' => 'site.roteiros',
+    'editorKey' => 'hero',
+    'editorLabel' => 'Hero Roteiros',
+    'editorLocale' => route_locale(),
+    'editableTranslation' => $heroTranslation ?? null,
+    'editableHeroMedia' => $heroMedia ?? null,
+    'editableStatus' => $heroBlock?->status ?? 'publicado',
+    'editableFallback' => [
+        'eyebrow' => $heroBadge,
+        'titulo' => $heroTitle,
+        'subtitulo' => null,
+        'lead' => $heroSubtitle,
+        'conteudo' => null,
+        'cta_label' => $heroPrimaryLabel,
+        'cta_href' => $heroPrimaryHref,
+        'seo_title' => $heroTitle,
+        'seo_description' => $heroTranslation?->seo_description ?: 'Explore roteiros por duração e perfil para viver Altamira com mais contexto, organização e curadoria local.',
+    ],
+])
 @endsection

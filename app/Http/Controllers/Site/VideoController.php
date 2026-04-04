@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Conteudo\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class VideoController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function index(Request $request)
     {
         $q = trim((string) $request->input('q', ''));
@@ -28,10 +31,10 @@ class VideoController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('site.videos.index', [
+        return view('site.videos.index', array_merge([
             'videos' => $videos,
             'q' => $q,
-        ]);
+        ], $this->resolveEditableHero('site.videos')));
     }
 
     public function show(string $locale, string $slug)
@@ -47,9 +50,9 @@ class VideoController extends Controller
             ->limit(3)
             ->get();
 
-        return view('site.videos.show', [
+        return view('site.videos.show', array_merge([
             'video' => $video,
             'relacionados' => $relacionados,
-        ]);
+        ], $this->resolveEditableHero('site.videos.show')));
     }
 }

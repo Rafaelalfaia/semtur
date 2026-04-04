@@ -147,6 +147,13 @@
                         'patterns' => ['admin.usuarios.*'],
                     ],
                     [
+                        'label' => 'Cursos',
+                        'permission' => 'cursos.view',
+                        'roles' => ['Admin'],
+                        'routes' => ['admin.cursos.index'],
+                        'patterns' => ['admin.cursos.*'],
+                    ],
+                    [
                         'label' => 'Idiomas',
                         'permission' => null,
                         'roles' => ['Admin'],
@@ -208,6 +215,13 @@
                         'roles' => ['Coordenador'],
                         'routes' => ['coordenador.temas.index'],
                         'patterns' => ['coordenador.temas.*'],
+                    ],
+                    [
+                        'label' => 'Cursos',
+                        'permission' => 'cursos.view',
+                        'roles' => ['Coordenador'],
+                        'routes' => ['coordenador.cursos.index'],
+                        'patterns' => ['coordenador.cursos.*'],
                     ],
                 ],
             ],
@@ -440,6 +454,13 @@
                         'roles' => ['Tecnico'],
                         'routes' => ['coordenador.roteiros.index'],
                         'patterns' => ['coordenador.roteiros.*'],
+                    ],
+                    [
+                        'label' => 'Cursos',
+                        'permission' => 'cursos.view',
+                        'roles' => ['Tecnico'],
+                        'routes' => ['coordenador.cursos.index'],
+                        'patterns' => ['coordenador.cursos.*'],
                     ],
                     [
                         'label' => 'Guias e Revistas',

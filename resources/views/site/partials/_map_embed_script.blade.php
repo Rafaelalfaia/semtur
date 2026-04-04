@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const filterButtons = config.filterButtonSelector
             ? Array.from(root.querySelectorAll(config.filterButtonSelector))
             : [];
+        const autoplayCards = cardsElement?.dataset.mapAutoplay === 'true';
+        const categoryTrackElement = document.getElementById('home-map-categories-track');
 
         const url = new URL(window.location.href);
         const queryString = url.searchParams;
@@ -126,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const isCompactHomeMap = root.classList.contains('site-home-map-shell--compact');
     const isTouchPreview = () => isCompactHomeMap && window.matchMedia('(max-width: 1023px)').matches;
+        let userMovedMap = false;
 
     const map = window.L.map(config.mapId, {
         zoomControl: true,
@@ -138,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
         tap: true,
     });
 
-    const applyPreviewInteractionMode = () => {
-        const touchPreview = isTouchPreview();
+        const applyPreviewInteractionMode = () => {
+            const touchPreview = isTouchPreview();
 
         if (map.dragging && typeof map.dragging.enable === 'function') {
             map.dragging.enable();
@@ -169,8 +172,20 @@ document.addEventListener('DOMContentLoaded', () => {
             map.keyboard.disable();
         }
 
-        map.getContainer().classList.toggle('is-touch-preview', touchPreview);
-    };
+            map.getContainer().classList.toggle('is-touch-preview', touchPreview);
+        };
+
+        const recenterCompactHomeMap = (force = false) => {
+            if (!isCompactHomeMap || !isTouchPreview() || focus || hasCoords) {
+                return;
+            }
+
+            if (!force && userMovedMap) {
+                return;
+            }
+
+            map.setView(defaultCenter, defaultZoom, { animate: false });
+        };
 
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -203,6 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentQuery = typeof config.initialQuery === 'string' ? config.initialQuery : '';
         let currentCategory = typeof config.initialCategory === 'string' ? config.initialCategory : '';
         let abortController = null;
+        let cardsAutoplayTimer = null;
+        let cardsAutoplayResumeTimer = null;
+        let cardsAutoplayPaused = false;
 
         const markersLayer = window.L.layerGroup().addTo(map);
         const markersMap = new Map();
@@ -228,6 +246,182 @@ document.addEventListener('DOMContentLoaded', () => {
                 const step = Math.max(120, Math.round(target.clientWidth * 0.72));
                 target.scrollBy({ left: step * direction, behavior: 'smooth' });
             });
+        });
+
+        const clearCardsAutoplay = () => {
+            if (cardsAutoplayTimer) {
+                window.clearInterval(cardsAutoplayTimer);
+                cardsAutoplayTimer = null;
+            }
+        };
+
+        const scheduleCardsAutoplayResume = (delay = 2800) => {
+            if (!autoplayCards || !cardsElement) {
+                return;
+            }
+
+            if (cardsAutoplayResumeTimer) {
+                window.clearTimeout(cardsAutoplayResumeTimer);
+            }
+
+            cardsAutoplayResumeTimer = window.setTimeout(() => {
+                cardsAutoplayPaused = false;
+            }, delay);
+        };
+
+        const pauseCardsAutoplay = () => {
+            if (!autoplayCards || !cardsElement) {
+                return;
+            }
+
+            cardsAutoplayPaused = true;
+
+            if (cardsAutoplayResumeTimer) {
+                window.clearTimeout(cardsAutoplayResumeTimer);
+                cardsAutoplayResumeTimer = null;
+            }
+        };
+
+        const startCardsAutoplay = () => {
+            if (!autoplayCards || !cardsElement) {
+                return;
+            }
+
+            clearCardsAutoplay();
+
+            const cards = Array.from(cardsElement.querySelectorAll('.site-map-card'));
+            if (cards.length <= 1) {
+                return;
+            }
+
+            cardsAutoplayTimer = window.setInterval(() => {
+                if (cardsAutoplayPaused) {
+                    return;
+                }
+
+                const firstCard = cardsElement.querySelector('.site-map-card');
+                if (!firstCard) {
+                    return;
+                }
+
+                const styles = window.getComputedStyle(cardsElement);
+                const gap = parseFloat(styles.columnGap || styles.gap || '0');
+                const step = Math.max(firstCard.getBoundingClientRect().width + gap, cardsElement.clientWidth * 0.72);
+                const maxScroll = Math.max(cardsElement.scrollWidth - cardsElement.clientWidth, 0);
+                const nextScroll = cardsElement.scrollLeft + step >= maxScroll - 4 ? 0 : cardsElement.scrollLeft + step;
+
+                cardsElement.scrollTo({
+                    left: nextScroll,
+                    behavior: 'smooth',
+                });
+            }, 3600);
+        };
+
+        if (autoplayCards && cardsElement) {
+            cardsElement.addEventListener('mouseenter', pauseCardsAutoplay);
+            cardsElement.addEventListener('mouseleave', () => scheduleCardsAutoplayResume(900));
+            cardsElement.addEventListener('focusin', pauseCardsAutoplay);
+            cardsElement.addEventListener('focusout', () => scheduleCardsAutoplayResume(1200));
+            cardsElement.addEventListener('pointerdown', () => {
+                pauseCardsAutoplay();
+                scheduleCardsAutoplayResume();
+            }, { passive: true });
+            cardsElement.addEventListener('touchstart', () => {
+                pauseCardsAutoplay();
+                scheduleCardsAutoplayResume();
+            }, { passive: true });
+            cardsElement.addEventListener('wheel', () => {
+                pauseCardsAutoplay();
+                scheduleCardsAutoplayResume();
+            }, { passive: true });
+        }
+
+        const initHorizontalRailDrag = (element, hooks = {}) => {
+            if (!element || element.dataset.dragScrollReady === 'true') {
+                return;
+            }
+
+            element.dataset.dragScrollReady = 'true';
+
+            let pointerId = null;
+            let startX = 0;
+            let startScrollLeft = 0;
+            let moved = false;
+            let suppressClickUntil = 0;
+
+            const onStart = (event) => {
+                if (event.pointerType === 'mouse' && event.button !== 0) {
+                    return;
+                }
+
+                pointerId = event.pointerId;
+                startX = event.clientX;
+                startScrollLeft = element.scrollLeft;
+                moved = false;
+                suppressClickUntil = 0;
+                element.classList.add('is-dragging');
+                hooks.onStart?.();
+
+                if (typeof element.setPointerCapture === 'function') {
+                    element.setPointerCapture(pointerId);
+                }
+            };
+
+            const onMove = (event) => {
+                if (pointerId === null || event.pointerId !== pointerId) {
+                    return;
+                }
+
+                const deltaX = event.clientX - startX;
+                if (!moved && Math.abs(deltaX) > 6) {
+                    moved = true;
+                    suppressClickUntil = Date.now() + 320;
+                }
+
+                if (!moved) {
+                    return;
+                }
+
+                element.scrollLeft = startScrollLeft - deltaX;
+                hooks.onMove?.();
+                event.preventDefault();
+            };
+
+            const onEnd = (event) => {
+                if (pointerId === null || event.pointerId !== pointerId) {
+                    return;
+                }
+
+                if (typeof element.releasePointerCapture === 'function' && element.hasPointerCapture?.(pointerId)) {
+                    element.releasePointerCapture(pointerId);
+                }
+
+                pointerId = null;
+                element.classList.remove('is-dragging');
+                hooks.onEnd?.(moved);
+            };
+
+            element.addEventListener('pointerdown', onStart, { passive: true });
+            element.addEventListener('pointermove', onMove);
+            element.addEventListener('pointerup', onEnd);
+            element.addEventListener('pointercancel', onEnd);
+            element.addEventListener('click', (event) => {
+                if (Date.now() < suppressClickUntil) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }, true);
+        };
+
+        initHorizontalRailDrag(categoryTrackElement);
+        initHorizontalRailDrag(cardsElement, {
+            onStart: pauseCardsAutoplay,
+            onMove: pauseCardsAutoplay,
+            onEnd: (didMove) => {
+                if (didMove) {
+                    scheduleCardsAutoplayResume();
+                }
+            },
         });
 
         const keyFor = (item) => `${item.type}:${item.id}`;
@@ -353,7 +547,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            clearCardsAutoplay();
             cardsElement.innerHTML = '';
+            cardsElement.scrollLeft = 0;
 
             if (!items.length) {
                 cardsElement.innerHTML = `
@@ -402,6 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             updateStatus(items);
+            startCardsAutoplay();
         }
 
         function applyFocus(items) {
@@ -440,7 +637,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 params.set('categoria', currentCategory);
             }
 
-            if (!firstLoad && config.useBoundsAfterFirstLoad) {
+            const shouldUseBounds = !firstLoad
+                && config.useBoundsAfterFirstLoad
+                && (!isCompactHomeMap || !isTouchPreview() || userMovedMap);
+
+            if (shouldUseBounds) {
                 const bounds = map.getBounds();
                 params.set('bbox', `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`);
             }
@@ -544,10 +745,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const invalidateMapSize = debounce(() => {
             map.invalidateSize({ pan: false, animate: false });
             refreshMarkerSizes();
+            recenterCompactHomeMap();
         }, 80);
 
         map.whenReady(() => {
             window.setTimeout(() => invalidateMapSize(), 120);
+            window.setTimeout(() => recenterCompactHomeMap(true), 180);
             fetchFeed().catch((error) => {
                 if (error?.name === 'AbortError') {
                     return;
@@ -563,6 +766,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         map.on('moveend', fetchFeedDebounced);
+        map.on('dragstart', () => {
+            userMovedMap = true;
+        });
+        map.on('zoomstart', () => {
+            userMovedMap = true;
+        });
 
         if ('ResizeObserver' in window) {
             const observer = new ResizeObserver(() => invalidateMapSize());
@@ -573,11 +782,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const syncResponsiveMapState = debounce(() => {
             applyPreviewInteractionMode();
             invalidateMapSize();
+            if (!userMovedMap) {
+                recenterCompactHomeMap(true);
+            }
         }, 80);
 
-        window.addEventListener('resize', invalidateMapSize, { passive: true });
+        window.addEventListener('resize', syncResponsiveMapState, { passive: true });
         window.addEventListener('orientationchange', () => {
-            window.setTimeout(() => invalidateMapSize(), 120);
+            window.setTimeout(() => syncResponsiveMapState(), 120);
         }, { passive: true });
     });
 });

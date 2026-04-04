@@ -1,5 +1,6 @@
 @props([
     'banner' => null,
+    'eyebrow' => null,
     'title' => null,
     'subtitle' => null,
     'ctaLabel' => null,
@@ -10,6 +11,10 @@
     'overlayImageAlt' => null,
     'overlayOnly' => false,
     'heroClass' => null,
+    'contentVisible' => true,
+    'textEditor' => null,
+    'imageEditor' => null,
+    'sectionActions' => [],
 ])
 
 @php
@@ -52,6 +57,7 @@
     $isVideoHero = $hasValidVideoResolver
         ? (bool) ($banner?->media_type === 'video' && $banner->hasValidVideo())
         : (bool) (($banner?->media_type === 'video') && ($desktopVideo || $mobileVideo));
+    $resolvedEyebrow = $eyebrow ?? 'Destino oficial';
     $resolvedTitle = $title ?? $banner?->titulo ?? 'VisitAltamira';
     $resolvedSubtitle = $subtitle
         ?? $banner?->subtitulo
@@ -277,6 +283,42 @@
     <div class="site-hero-overlay">
     <div class="site-hero-veil" aria-hidden="true"></div>
 
+    @if(!empty($imageEditor))
+        <div class="site-hero-editor site-hero-editor--image">
+            @include('site.partials._content_editor', [
+                'editorTitle' => $imageEditor['title'] ?? $resolvedTitle,
+                'editorPage' => $imageEditor['page'] ?? 'site.home',
+                'editorKey' => $imageEditor['key'] ?? 'hero',
+                'editorLabel' => $imageEditor['label'] ?? 'Imagem do banner',
+                'editorLocale' => route_locale(),
+                'editorTriggerVariant' => 'inline-compact',
+                'editorTriggerLabel' => $imageEditor['trigger_label'] ?? 'Editar imagem',
+                'editorFields' => ['media'],
+                'editableTranslation' => $imageEditor['translation'] ?? null,
+                'editableMedia' => $imageEditor['media'] ?? null,
+                'editableStatus' => $imageEditor['status'] ?? 'publicado',
+                'editorMediaSlot' => $imageEditor['media_slot'] ?? 'hero',
+                'editorMediaLabel' => $imageEditor['media_label'] ?? 'Imagem do banner',
+                'editorMediaPreviewLabel' => $imageEditor['preview_label'] ?? 'imagem atual do banner',
+                'editableFallback' => [
+                    'titulo' => $resolvedTitle,
+                ],
+            ])
+        </div>
+    @endif
+
+    @if(collect($sectionActions)->isNotEmpty())
+        <div class="site-hero-editor">
+            <div class="site-inline-actions">
+                @foreach($sectionActions as $action)
+                    @if(!empty($action['href']) && !empty($action['label']))
+                        <a href="{{ $action['href'] }}" class="{{ $action['class'] ?? 'site-button-secondary' }}">{{ $action['label'] }}</a>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     @unless($overlayOnly)
         <div class="site-hero-reading-gradient" aria-hidden="true"></div>
         <div class="site-hero-glow" aria-hidden="true"></div>
@@ -296,9 +338,33 @@
                 draggable="false"
             >
         </div>
-    @else
+    @elseif($contentVisible)
         <div class="site-hero-copy site-hero-content site-hero-content-signature">
-            <p class="site-badge site-hero-badge">Destino oficial</p>
+            @if(!empty($textEditor))
+                <div class="site-hero-editor site-hero-editor--text">
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $textEditor['title'] ?? $resolvedTitle,
+                        'editorPage' => $textEditor['page'] ?? 'site.home',
+                        'editorKey' => $textEditor['key'] ?? 'hero',
+                        'editorLabel' => $textEditor['label'] ?? 'Texto do banner',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => $textEditor['trigger_label'] ?? 'Editar texto',
+                        'editorFields' => $textEditor['fields'] ?? ['eyebrow', 'titulo', 'cta_label', 'cta_href'],
+                        'editableTranslation' => $textEditor['translation'] ?? null,
+                        'editableStatus' => $textEditor['status'] ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => $resolvedEyebrow,
+                            'titulo' => $resolvedTitle,
+                            'subtitulo' => $resolvedSubtitle,
+                            'cta_label' => $resolvedCta,
+                            'cta_href' => $resolvedHref,
+                        ],
+                    ])
+                </div>
+            @endif
+
+            <p class="site-badge site-hero-badge">{{ $resolvedEyebrow }}</p>
 
             <div class="site-hero-copy-stack">
                 <h1 class="site-hero-title">{{ $resolvedTitle }}</h1>

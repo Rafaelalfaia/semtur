@@ -1,13 +1,25 @@
 @extends('site.layouts.app')
 
-@section('title', ui_text('ui.guides_index.title').' - Visit Altamira')
-@section('meta.description', ui_text('ui.guides_index.meta_description'))
-@section('meta.image', asset('imagens/altamira.jpg'))
+@section('title', ($heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: ui_text('ui.guides_index.title'))).' - Visit Altamira')
+@section('meta.description', $heroTranslation?->seo_description ?: ($heroTranslation?->lead ?: ui_text('ui.guides_index.meta_description')))
+@section('meta.image', $heroMedia?->url ?: asset('imagens/altamira.jpg'))
 
 @section('site.content')
 @php
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Str;
+
+    $pageBlocks = $pageBlocks ?? collect();
+    $guideBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'filters_section' => $pageBlocks->get('filters_section'),
+        'listing_section' => $pageBlocks->get('listing_section'),
+        'empty_state' => $pageBlocks->get('empty_state'),
+    ];
+    $guideTranslation = fn (string $key) => $guideBlocks[$key]?->getAttribute('traducao_resolvida');
+    $filtersTranslation = $guideTranslation('filters_section');
+    $listingTranslation = $guideTranslation('listing_section');
+    $emptyTranslation = $guideTranslation('empty_state');
 
     $tipoAtual = (string) ($tipo ?? '');
     $qAtual = (string) ($q ?? '');
@@ -15,8 +27,29 @@
     $agrupados = collect(method_exists($materiais, 'items') ? $materiais->items() : $materiais)->groupBy('tipo');
     $explorarUrl = localized_route('site.explorar');
     $homeUrl = localized_route('site.home');
+    $canCreateGuide = auth()->check() && auth()->user()->can('guias.create');
+    $canManageGuide = auth()->check() && auth()->user()->can('guias.update');
+    $createGuideHref = $canCreateGuide && Route::has('coordenador.guias.create')
+        ? route('coordenador.guias.create')
+        : null;
+    $heroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.guides_index.badge');
+    $heroTitle = $heroTranslation?->titulo ?: ui_text('ui.guides_index.title');
+    $heroSubtitle = $heroTranslation?->lead ?: ui_text('ui.guides_index.subtitle');
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ui_text('ui.guides_index.primary_action');
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: '#lista-materiais';
     $heroMeta = array_filter([
     ]);
+
+    $filtersEyebrow = $filtersTranslation?->eyebrow ?: ui_text('ui.common.filters');
+    $filtersTitle = $filtersTranslation?->titulo ?: ui_text('ui.guides_index.find_title');
+    $filtersSubtitle = $filtersTranslation?->lead ?: ui_text('ui.guides_index.find_subtitle');
+
+    $listingEyebrow = $listingTranslation?->eyebrow ?: ui_text('ui.guides_index.library_eyebrow');
+    $listingTitle = $listingTranslation?->titulo ?: ui_text('ui.guides_index.title');
+    $listingSubtitle = $listingTranslation?->lead ?: ui_text('ui.guides_index.subtitle');
+
+    $emptyTitle = $emptyTranslation?->titulo ?: ui_text('ui.guides_index.empty_title');
+    $emptyCopy = $emptyTranslation?->lead ?: ui_text('ui.guides_index.empty_copy');
 @endphp
 
 <div class="site-page site-page-shell site-guides-page">
@@ -24,28 +57,70 @@
         'backHref' => $homeUrl,
         'breadcrumbs' => [
             ['label' => ui_text('ui.common.home'), 'href' => $homeUrl],
-            ['label' => ui_text('ui.guides_index.title')],
+            ['label' => $heroTitle],
         ],
-        'badge' => ui_text('ui.guides_index.badge'),
-        'title' => ui_text('ui.guides_index.title'),
-        'subtitle' => ui_text('ui.guides_index.subtitle'),
+        'badge' => $heroBadge,
+        'title' => $heroTitle,
+        'subtitle' => $heroSubtitle,
         'meta' => $heroMeta,
-        'primaryActionLabel' => ui_text('ui.guides_index.primary_action'),
-        'primaryActionHref' => '#lista-materiais',
+        'primaryActionLabel' => $heroPrimaryLabel,
+        'primaryActionHref' => $heroPrimaryHref,
         'secondaryActionLabel' => ui_text('ui.guides_index.secondary_action'),
         'secondaryActionHref' => $explorarUrl,
-        'image' => asset('imagens/altamira.jpg'),
+        'image' => $heroMedia?->url ?: asset('imagens/altamira.jpg'),
         'imageAlt' => ui_text('ui.guides_index.image_alt'),
         'compact' => true,
+        'textEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.guias',
+            'key' => 'hero',
+            'label' => 'Texto da capa de Guias',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar texto',
+            'fields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href', 'seo_title', 'seo_description'],
+            'translation' => $heroTranslation ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+        ],
+        'imageEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.guias',
+            'key' => 'hero',
+            'label' => 'Imagem da capa de Guias',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar imagem',
+            'translation' => $heroTranslation ?? null,
+            'media' => $heroMedia ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+            'media_slot' => 'hero',
+            'media_label' => 'Imagem da capa',
+            'preview_label' => 'imagem atual da capa',
+        ],
     ])
 
     <section class="site-section">
         <div class="site-surface-soft">
+            @include('site.partials._content_editor', [
+                'editorTitle' => $filtersTitle,
+                'editorPage' => 'site.guias',
+                'editorKey' => 'filters_section',
+                'editorLabel' => 'Seção de filtros de Guias',
+                'editorLocale' => route_locale(),
+                'editorTriggerVariant' => 'inline-compact',
+                'editorTriggerLabel' => 'Editar texto',
+                'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                'editableTranslation' => $filtersTranslation,
+                'editableStatus' => $guideBlocks['filters_section']?->status ?? 'publicado',
+                'editableFallback' => [
+                    'eyebrow' => ui_text('ui.common.filters'),
+                    'titulo' => ui_text('ui.guides_index.find_title'),
+                    'lead' => ui_text('ui.guides_index.find_subtitle'),
+                ],
+            ])
             <div class="site-app-toolbar site-app-toolbar--stacked">
                 <div>
-                    <p class="site-app-eyebrow">{{ ui_text('ui.common.filters') }}</p>
-                    <h2 class="site-app-title">{{ ui_text('ui.guides_index.find_title') }}</h2>
-                    <p class="site-app-copy">{{ ui_text('ui.guides_index.find_subtitle') }}</p>
+                    <p class="site-app-eyebrow">{{ $filtersEyebrow }}</p>
+                    <h2 class="site-app-title">{{ $filtersTitle }}</h2>
+                    <p class="site-app-copy">{{ $filtersSubtitle }}</p>
                 </div>
             </div>
 
@@ -101,10 +176,55 @@
     </section>
 
     <section id="lista-materiais" class="site-section">
+        @if($createGuideHref)
+            <div class="site-inline-actions">
+                <a href="{{ $createGuideHref }}" class="site-button-primary">Novo material</a>
+            </div>
+        @endif
+
+        @include('site.partials._content_editor', [
+            'editorTitle' => $listingTitle,
+            'editorPage' => 'site.guias',
+            'editorKey' => 'listing_section',
+            'editorLabel' => 'Seção de materiais de Guias',
+            'editorLocale' => route_locale(),
+            'editorTriggerVariant' => 'inline-compact',
+            'editorTriggerLabel' => 'Editar texto',
+            'editorFields' => ['eyebrow', 'titulo', 'lead'],
+            'editableTranslation' => $listingTranslation,
+            'editableStatus' => $guideBlocks['listing_section']?->status ?? 'publicado',
+            'editableFallback' => [
+                'eyebrow' => ui_text('ui.guides_index.library_eyebrow'),
+                'titulo' => ui_text('ui.guides_index.title'),
+                'lead' => ui_text('ui.guides_index.subtitle'),
+            ],
+        ])
+        <x-section-head
+            :eyebrow="$listingEyebrow"
+            :title="$listingTitle"
+            :subtitle="$listingSubtitle"
+        />
+
         @if($totalMateriais === 0)
             <div class="site-empty-state">
-                <p class="site-empty-state-title">{{ ui_text('ui.guides_index.empty_title') }}</p>
-                <p class="site-empty-state-copy">{{ ui_text('ui.guides_index.empty_copy') }}</p>
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $emptyTitle,
+                    'editorPage' => 'site.guias',
+                    'editorKey' => 'empty_state',
+                    'editorLabel' => 'Estado vazio de Guias',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline-compact',
+                    'editorTriggerLabel' => 'Editar texto',
+                    'editorFields' => ['titulo', 'lead'],
+                    'editableTranslation' => $emptyTranslation,
+                    'editableStatus' => $guideBlocks['empty_state']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'titulo' => ui_text('ui.guides_index.empty_title'),
+                        'lead' => ui_text('ui.guides_index.empty_copy'),
+                    ],
+                ])
+                <p class="site-empty-state-title">{{ $emptyTitle }}</p>
+                <p class="site-empty-state-copy">{{ $emptyCopy }}</p>
             </div>
         @else
             <div class="site-guides-app-shell">
@@ -125,6 +245,12 @@
                                 @endphp
 
                                 <article class="site-directory-card">
+                                    @if($canManageGuide && Route::has('coordenador.guias.edit'))
+                                        <div class="site-inline-actions">
+                                            <a href="{{ route('coordenador.guias.edit', $material) }}" class="site-button-secondary">Editar material</a>
+                                        </div>
+                                    @endif
+
                                     <div class="site-directory-card-media">
                                         <img
                                             src="{{ $cover }}"
@@ -170,8 +296,24 @@
                     </section>
                 @empty
                     <div class="site-empty-state">
-                        <p class="site-empty-state-title">{{ ui_text('ui.guides_index.empty_title') }}</p>
-                        <p class="site-empty-state-copy">{{ ui_text('ui.guides_index.empty_copy') }}</p>
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $emptyTitle,
+                            'editorPage' => 'site.guias',
+                            'editorKey' => 'empty_state',
+                            'editorLabel' => 'Estado vazio de Guias',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['titulo', 'lead'],
+                            'editableTranslation' => $emptyTranslation,
+                            'editableStatus' => $guideBlocks['empty_state']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'titulo' => ui_text('ui.guides_index.empty_title'),
+                                'lead' => ui_text('ui.guides_index.empty_copy'),
+                            ],
+                        ])
+                        <p class="site-empty-state-title">{{ $emptyTitle }}</p>
+                        <p class="site-empty-state-copy">{{ $emptyCopy }}</p>
                     </div>
                 @endforelse
             </div>

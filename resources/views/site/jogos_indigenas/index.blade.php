@@ -2,9 +2,11 @@
 
 @php
     $canonical = localized_route('site.jogos_indigenas.index');
-    $title = $jogo?->titulo ?: ui_text('ui.indigenous_games.title');
-    $description = \Illuminate\Support\Str::limit(strip_tags($jogo?->descricao ?: ui_text('ui.indigenous_games.meta_description')), 160);
-    $image = $jogo?->foto_capa_url ?: $jogo?->foto_perfil_url ?: theme_asset('hero_image');
+    $baseTitle = $jogo?->titulo ?: ui_text('ui.indigenous_games.title');
+    $title = $heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: $baseTitle);
+    $description = $heroTranslation?->seo_description
+        ?: ($heroTranslation?->lead ?: \Illuminate\Support\Str::limit(strip_tags($jogo?->descricao ?: ui_text('ui.indigenous_games.meta_description')), 160));
+    $image = $heroMedia?->url ?: ($jogo?->foto_capa_url ?: $jogo?->foto_perfil_url ?: theme_asset('hero_image'));
 @endphp
 
 @section('title', $title)
@@ -18,11 +20,42 @@
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Str;
 
-    $heroMeta = $jogo ? array_filter([
-        ($stats['edicoes'] ?? 0) ? (($stats['edicoes'] ?? 0).' '.ui_text('ui.indigenous_games.editions')) : null,
-        ($stats['fotos'] ?? 0) ? (($stats['fotos'] ?? 0).' fotos') : null,
-        ($stats['videos'] ?? 0) ? (($stats['videos'] ?? 0).' '.ui_text('ui.common.videos')) : null,
-    ]) : [];
+    $pageBlocks = $pageBlocks ?? collect();
+    $jogosBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'about_section' => $pageBlocks->get('about_section'),
+        'editions_section' => $pageBlocks->get('editions_section'),
+        'empty_state' => $pageBlocks->get('empty_state'),
+    ];
+    $jogosTranslation = fn (string $key) => $jogosBlocks[$key]?->getAttribute('traducao_resolvida');
+    $aboutTranslation = $jogosTranslation('about_section');
+    $editionsTranslation = $jogosTranslation('editions_section');
+    $emptyTranslation = $jogosTranslation('empty_state');
+
+    $heroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.indigenous_games.badge');
+    $heroTitle = $heroTranslation?->titulo ?: $baseTitle;
+    $heroSubtitle = $heroTranslation?->lead ?: ($jogo?->descricao ? Str::limit(strip_tags($jogo->descricao), 180) : ui_text('ui.indigenous_games.subtitle'));
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ($edicaoDestaque ? ui_text('ui.indigenous_games.view_editions') : (Route::has('site.home') ? ui_text('ui.common.back_to_home') : null));
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: ($edicaoDestaque ? '#edicoes-jogos' : (Route::has('site.home') ? localized_route('site.home') : null));
+    $heroMeta = [];
+
+    $aboutEyebrow = $aboutTranslation?->eyebrow ?: ui_text('ui.common.about');
+    $aboutTitle = $aboutTranslation?->titulo ?: ui_text('ui.indigenous_games.about_title');
+    $aboutSubtitle = $aboutTranslation?->lead ?: ui_text('ui.indigenous_games.about_subtitle');
+    $editionsEyebrow = $editionsTranslation?->eyebrow ?: ui_text('ui.indigenous_games.badge');
+    $editionsTitle = $editionsTranslation?->titulo ?: ui_text('ui.indigenous_games.editions_title');
+    $editionsSubtitle = $editionsTranslation?->lead ?: ui_text('ui.indigenous_games.subtitle');
+    $emptyTitle = $emptyTranslation?->titulo ?: ui_text('ui.indigenous_games.empty_title');
+    $emptyCopy = $emptyTranslation?->lead ?: ui_text('ui.indigenous_games.empty_copy');
+
+    $canManageEditionText = auth()->check() && auth()->user()->can('jogos_indigenas.edicoes.update');
+    $canManageEditionPhotos = auth()->check() && auth()->user()->can('jogos_indigenas.edicoes.fotos.view');
+    $canManageEditionVideos = auth()->check() && auth()->user()->can('jogos_indigenas.edicoes.videos.view');
+    $canManageEditionSponsors = auth()->check() && auth()->user()->can('jogos_indigenas.edicoes.patrocinadores.view');
+    $canManageBase = auth()->check() && auth()->user()->can('jogos_indigenas.update');
+    $editJogoHref = $canManageBase && $jogo && Route::has('coordenador.jogos-indigenas.edit')
+        ? route('coordenador.jogos-indigenas.edit', $jogo)
+        : null;
 @endphp
 
 <div class="site-page site-page-shell site-jogos-page">
@@ -32,33 +65,96 @@
             ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
             ['label' => ui_text('ui.indigenous_games.title')],
         ],
-        'badge' => ui_text('ui.indigenous_games.badge'),
-        'title' => $title,
-        'subtitle' => $jogo?->descricao ? Str::limit(strip_tags($jogo->descricao), 180) : ui_text('ui.indigenous_games.subtitle'),
+        'badge' => $heroBadge,
+        'title' => $heroTitle,
+        'subtitle' => $heroSubtitle,
         'meta' => $heroMeta,
-        'primaryActionLabel' => $edicaoDestaque ? ui_text('ui.indigenous_games.view_editions') : (Route::has('site.home') ? ui_text('ui.common.back_to_home') : null),
-        'primaryActionHref' => $edicaoDestaque ? '#edicoes-jogos' : (Route::has('site.home') ? localized_route('site.home') : null),
+        'primaryActionLabel' => $heroPrimaryLabel,
+        'primaryActionHref' => $heroPrimaryHref,
         'secondaryActionLabel' => Route::has('site.explorar') ? ui_text('ui.events.explore_city') : null,
         'secondaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
         'image' => $image,
-        'imageAlt' => $title,
+        'imageAlt' => $heroTitle,
         'compact' => true,
+        'textEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.jogos_indigenas.index',
+            'key' => 'hero',
+            'label' => 'Texto da capa dos Jogos Indígenas',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar texto',
+            'fields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href'],
+            'translation' => $heroTranslation ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+        ],
+        'imageEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.jogos_indigenas.index',
+            'key' => 'hero',
+            'label' => 'Imagem da capa dos Jogos Indígenas',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar imagem',
+            'translation' => $heroTranslation ?? null,
+            'media' => $heroMedia ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+            'media_slot' => 'hero',
+            'media_label' => 'Imagem da capa',
+            'preview_label' => 'imagem atual da capa',
+        ],
     ])
 
     @if(!$jogo)
         <section class="site-section">
             <div class="site-empty-state">
-                <h2 class="site-empty-state-title">{{ ui_text('ui.indigenous_games.empty_title') }}</h2>
-                <p class="site-empty-state-copy">{{ ui_text('ui.indigenous_games.empty_copy') }}</p>
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $emptyTitle,
+                    'editorPage' => 'site.jogos_indigenas.index',
+                    'editorKey' => 'empty_state',
+                    'editorLabel' => 'Estado vazio dos Jogos Indígenas',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline-compact',
+                    'editorTriggerLabel' => 'Editar texto',
+                    'editorFields' => ['titulo', 'lead'],
+                    'editableTranslation' => $emptyTranslation,
+                    'editableStatus' => $jogosBlocks['empty_state']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'titulo' => ui_text('ui.indigenous_games.empty_title'),
+                        'lead' => ui_text('ui.indigenous_games.empty_copy'),
+                    ],
+                ])
+                <h2 class="site-empty-state-title">{{ $emptyTitle }}</h2>
+                <p class="site-empty-state-copy">{{ $emptyCopy }}</p>
             </div>
         </section>
     @else
         <section class="site-section">
             <section class="site-surface site-content-block">
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $aboutTitle,
+                    'editorPage' => 'site.jogos_indigenas.index',
+                    'editorKey' => 'about_section',
+                    'editorLabel' => 'Seção sobre dos Jogos Indígenas',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline-compact',
+                    'editorTriggerLabel' => 'Editar texto',
+                    'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                    'editableTranslation' => $aboutTranslation,
+                    'editableStatus' => $jogosBlocks['about_section']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'eyebrow' => ui_text('ui.common.about'),
+                        'titulo' => ui_text('ui.indigenous_games.about_title'),
+                        'lead' => ui_text('ui.indigenous_games.about_subtitle'),
+                    ],
+                ])
+                @if($editJogoHref)
+                    <div class="site-inline-actions">
+                        <a href="{{ $editJogoHref }}" class="site-button-secondary">Editar dados do evento</a>
+                    </div>
+                @endif
                 <div class="site-detail-profile">
                     <img src="{{ site_image_url($jogo->foto_perfil_url ?: theme_asset('logo'), 'avatar') }}" alt="{{ $title }}" class="site-detail-avatar" loading="lazy" decoding="async">
                     <div>
-                        <x-section-head :eyebrow="ui_text('ui.common.about')" :title="ui_text('ui.indigenous_games.about_title')" :subtitle="ui_text('ui.indigenous_games.about_subtitle')" />
+                        <x-section-head :eyebrow="$aboutEyebrow" :title="$aboutTitle" :subtitle="$aboutSubtitle" />
                     </div>
                 </div>
 
@@ -70,10 +166,27 @@
 
         @if($edicoes->isNotEmpty())
             <section class="site-section" id="edicoes-jogos">
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $editionsTitle,
+                    'editorPage' => 'site.jogos_indigenas.index',
+                    'editorKey' => 'editions_section',
+                    'editorLabel' => 'Seção edições dos Jogos Indígenas',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline-compact',
+                    'editorTriggerLabel' => 'Editar texto',
+                    'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                    'editableTranslation' => $editionsTranslation,
+                    'editableStatus' => $jogosBlocks['editions_section']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'eyebrow' => ui_text('ui.indigenous_games.badge'),
+                        'titulo' => ui_text('ui.indigenous_games.editions_title'),
+                        'lead' => ui_text('ui.indigenous_games.subtitle'),
+                    ],
+                ])
                 <x-section-head
-                    :eyebrow="ui_text('ui.indigenous_games.badge')"
-                    :title="ui_text('ui.indigenous_games.editions_title')"
-                    :subtitle="ui_text('ui.indigenous_games.subtitle')"
+                    :eyebrow="$editionsEyebrow"
+                    :title="$editionsTitle"
+                    :subtitle="$editionsSubtitle"
                 />
 
                 <div class="site-jogos-editions">
@@ -147,6 +260,23 @@
 
                             <div class="site-jogos-edition-body">
                                 <div class="site-jogos-edition-head">
+                                    @if($canManageEditionText || $canManageEditionPhotos || $canManageEditionVideos || $canManageEditionSponsors)
+                                        <div class="site-inline-actions">
+                                            @if($canManageEditionText && Route::has('coordenador.jogos-indigenas.edicoes.edit'))
+                                                <a href="{{ route('coordenador.jogos-indigenas.edicoes.edit', [$jogo, $edicao]) }}" class="site-button-secondary">Texto e capa</a>
+                                            @endif
+                                            @if($canManageEditionPhotos && Route::has('coordenador.jogos-indigenas.edicoes.fotos.index'))
+                                                <a href="{{ route('coordenador.jogos-indigenas.edicoes.fotos.index', [$jogo, $edicao]) }}" class="site-button-secondary">Fotos</a>
+                                            @endif
+                                            @if($canManageEditionVideos && Route::has('coordenador.jogos-indigenas.edicoes.videos.index'))
+                                                <a href="{{ route('coordenador.jogos-indigenas.edicoes.videos.index', [$jogo, $edicao]) }}" class="site-button-secondary">Vídeos</a>
+                                            @endif
+                                            @if($canManageEditionSponsors && Route::has('coordenador.jogos-indigenas.edicoes.patrocinadores.index'))
+                                                <a href="{{ route('coordenador.jogos-indigenas.edicoes.patrocinadores.index', [$jogo, $edicao]) }}" class="site-button-secondary">Patrocinadores</a>
+                                            @endif
+                                        </div>
+                                    @endif
+
                                     <span class="site-badge">{{ $edicao->ano }}</span>
                                     <h3 class="site-jogos-edition-title">{{ $edicao->titulo }}</h3>
                                     <p class="site-jogos-edition-summary">{{ Str::limit(strip_tags($edicao->descricao), 220) }}</p>

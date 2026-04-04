@@ -238,7 +238,12 @@ class EnsureCoordenadorAreaPermission
         if ($request->routeIs('coordenador.videos.arquivar')) return 'videos.arquivar';
         if ($request->routeIs('coordenador.videos.rascunho')) return 'videos.rascunho';
 
-        // Jogos Indígenas
+                // Cursos
+        if ($request->routeIs('coordenador.cursos.index', 'coordenador.cursos.show')) return 'cursos.view';
+        if ($request->routeIs('coordenador.cursos.modulos.show')) return 'cursos.modulos.view';
+        if ($request->routeIs('coordenador.cursos.modulos.aulas.show')) return 'cursos.aulas.view';
+
+// Jogos Indígenas
         if ($request->routeIs('coordenador.jogos-indigenas.index')) return 'jogos_indigenas.view';
         if ($request->routeIs('coordenador.jogos-indigenas.create', 'coordenador.jogos-indigenas.store')) return 'jogos_indigenas.create';
         if ($request->routeIs('coordenador.jogos-indigenas.edit', 'coordenador.jogos-indigenas.update')) return 'jogos_indigenas.update';

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\Auth\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -77,6 +78,7 @@ class User extends Authenticatable
             'tecnicos.manage',
             'usuarios.manage',
             'console.cache.clear',
+            'site.manage',
         ];
     }
 
@@ -86,7 +88,7 @@ class User extends Authenticatable
             ->pluck('name')
             ->reject(function ($permission) {
                 return in_array($permission, self::forbiddenForTecnicoPermissions(), true)
-                    || Str::startsWith($permission, ['usuarios.', 'console.cache.', 'tecnicos.']);
+                    || Str::startsWith($permission, ['usuarios.', 'console.cache.', 'tecnicos.', 'site.']);
             })
             ->values()
             ->all();
@@ -115,5 +117,10 @@ class User extends Authenticatable
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }

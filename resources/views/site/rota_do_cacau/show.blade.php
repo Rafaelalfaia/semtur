@@ -8,8 +8,47 @@
 @php
     use Illuminate\Support\Str;
 
-    $cover = $edicao->capa_url ?: ($rota->foto_capa_url ?: asset('imagens/altamira.jpg'));
+    $pageBlocks = $pageBlocks ?? collect();
+    $rotaShowBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'about_section' => $pageBlocks->get('about_section'),
+        'gallery_section' => $pageBlocks->get('gallery_section'),
+        'videos_section' => $pageBlocks->get('videos_section'),
+        'sponsors_section' => $pageBlocks->get('sponsors_section'),
+        'empty_state' => $pageBlocks->get('empty_state'),
+        'summary_sidebar' => $pageBlocks->get('summary_sidebar'),
+        'other_editions' => $pageBlocks->get('other_editions'),
+    ];
+    $rotaShowTranslation = fn (string $key) => $rotaShowBlocks[$key]?->getAttribute('traducao_resolvida');
+    $aboutTranslation = $rotaShowTranslation('about_section');
+    $galleryTranslation = $rotaShowTranslation('gallery_section');
+    $videosTranslation = $rotaShowTranslation('videos_section');
+    $sponsorsTranslation = $rotaShowTranslation('sponsors_section');
+    $emptyTranslation = $rotaShowTranslation('empty_state');
+    $summaryTranslation = $rotaShowTranslation('summary_sidebar');
+    $otherEditionsTranslation = $rotaShowTranslation('other_editions');
+
+    $cover = $heroMedia?->url ?: ($edicao->capa_url ?: ($rota->foto_capa_url ?: asset('imagens/altamira.jpg')));
     $profile = $rota->foto_perfil_url;
+    $heroBadge = $heroTranslation?->eyebrow ?: ('Edição '.$edicao->ano);
+    $heroTitle = $heroTranslation?->titulo ?: $edicao->titulo;
+    $heroSubtitle = $heroTranslation?->lead ?: Str::limit(strip_tags((string) $edicao->descricao), 280);
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ($edicao->fotos_count > 0 ? 'Ver galeria' : ($edicao->videos_count > 0 ? 'Ver vídeos' : ui_text('ui.common.back_to_route')));
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: ($edicao->fotos_count > 0 ? '#galeria' : ($edicao->videos_count > 0 ? '#videos' : localized_route('site.rota_do_cacau.index')));
+    $aboutEyebrow = $aboutTranslation?->eyebrow ?: 'Sobre a ediÃ§Ã£o';
+    $aboutTitle = $aboutTranslation?->titulo ?: 'Contexto editorial desta publicaÃ§Ã£o';
+    $galleryEyebrow = $galleryTranslation?->eyebrow ?: 'Galeria';
+    $galleryTitle = $galleryTranslation?->titulo ?: 'Fotos da ediÃ§Ã£o';
+    $videosEyebrow = $videosTranslation?->eyebrow ?: 'VÃ­deos';
+    $videosTitle = $videosTranslation?->titulo ?: 'ConteÃºdo audiovisual da ediÃ§Ã£o';
+    $sponsorsEyebrow = $sponsorsTranslation?->eyebrow ?: 'Patrocinadores';
+    $sponsorsTitle = $sponsorsTranslation?->titulo ?: 'Apoiadores desta ediÃ§Ã£o';
+    $emptyTitle = $emptyTranslation?->titulo ?: 'ConteÃºdos complementares em atualizaÃ§Ã£o';
+    $emptyCopy = $emptyTranslation?->lead ?: 'Esta ediÃ§Ã£o jÃ¡ estÃ¡ publicada, mas ainda nÃ£o possui galeria, vÃ­deos ou patrocinadores visÃ­veis no portal.';
+    $summaryEyebrow = $summaryTranslation?->eyebrow ?: 'Resumo rÃ¡pido';
+    $summaryTitle = $summaryTranslation?->titulo ?: 'VisÃ£o geral da ediÃ§Ã£o';
+    $otherEditionsEyebrow = $otherEditionsTranslation?->eyebrow ?: 'Outras ediÃ§Ãµes';
+    $otherEditionsTitle = $otherEditionsTranslation?->titulo ?: 'Continue explorando';
 @endphp
 
 <section class="relative isolate overflow-hidden bg-[#1f3027] text-white">
@@ -42,19 +81,41 @@
 
         <div class="mt-6 grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
             <div class="max-w-3xl">
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $heroTitle,
+                    'editorPage' => 'site.rota_do_cacau.show',
+                    'editorKey' => 'hero',
+                    'editorLabel' => 'Hero detalhe da Rota do Cacau',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline',
+                    'editableTranslation' => $heroTranslation ?? null,
+                    'editableHeroMedia' => $heroMedia ?? null,
+                    'editableStatus' => $heroBlock?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'eyebrow' => $heroBadge,
+                        'titulo' => $heroTitle,
+                        'subtitulo' => null,
+                        'lead' => $heroSubtitle,
+                        'conteudo' => null,
+                        'cta_label' => $heroPrimaryLabel,
+                        'cta_href' => $heroPrimaryHref,
+                        'seo_title' => $heroTitle,
+                        'seo_description' => \Illuminate\Support\Str::limit(strip_tags((string) ($edicao->descricao ?: $rota->descricao)), 160),
+                    ],
+                ])
                 <div class="flex flex-wrap gap-2">
-                    <span class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white">Edição {{ $edicao->ano }}</span>
+                    <span class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white">{{ $heroBadge }}</span>
                     <span class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white">
                         {{ optional($edicao->published_at)->format('d/m/Y') ?: 'Publicada' }}
                     </span>
                 </div>
 
                 <h1 class="mt-4 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-                    {{ $edicao->titulo }}
+                    {{ $heroTitle }}
                 </h1>
 
                 <p class="mt-4 max-w-2xl text-sm leading-7 text-white/85 sm:text-base">
-                    {{ Str::limit(strip_tags((string) $edicao->descricao), 280) }}
+                    {{ $heroSubtitle }}
                 </p>
 
                 <div class="mt-6 flex flex-wrap gap-3">
@@ -102,8 +163,22 @@
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div class="space-y-6">
                 <section class="rounded-[30px] border border-[#e8e2d9] bg-white p-6 shadow-sm sm:p-8">
-                    <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Sobre a edição</div>
-                    <h2 class="mt-3 text-2xl font-semibold text-slate-900">Contexto editorial desta publicação</h2>
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $aboutTitle,
+                        'editorPage' => 'site.rota_do_cacau.show',
+                        'editorKey' => 'about_section',
+                        'editorLabel' => 'Seção sobre da edição',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline',
+                        'editableTranslation' => $aboutTranslation,
+                        'editableStatus' => $rotaShowBlocks['about_section']?->status ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => 'Sobre a edição',
+                            'titulo' => 'Contexto editorial desta publicação',
+                        ],
+                    ])
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">{{ $aboutEyebrow }}</div>
+                    <h2 class="mt-3 text-2xl font-semibold text-slate-900">{{ $aboutTitle }}</h2>
                     <div class="mt-4 text-[15px] leading-8 text-slate-600">
                         {!! nl2br(e($edicao->descricao)) !!}
                     </div>
@@ -111,10 +186,24 @@
 
                 @if($edicao->fotos->count())
                     <section id="galeria" class="rounded-[30px] border border-[#e8e2d9] bg-white p-6 shadow-sm sm:p-8">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $galleryTitle,
+                            'editorPage' => 'site.rota_do_cacau.show',
+                            'editorKey' => 'gallery_section',
+                            'editorLabel' => 'Seção galeria da edição',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline',
+                            'editableTranslation' => $galleryTranslation,
+                            'editableStatus' => $rotaShowBlocks['gallery_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => 'Galeria',
+                                'titulo' => 'Fotos da edição',
+                            ],
+                        ])
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                             <div>
-                                <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Galeria</div>
-                                <h2 class="mt-2 text-2xl font-semibold text-slate-900">Fotos da edição</h2>
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">{{ $galleryEyebrow }}</div>
+                                <h2 class="mt-2 text-2xl font-semibold text-slate-900">{{ $galleryTitle }}</h2>
                             </div>
                             <div class="text-sm text-slate-500">{{ $edicao->fotos_count }} {{ $edicao->fotos_count === 1 ? 'foto' : 'fotos' }}</div>
                         </div>
@@ -140,10 +229,24 @@
 
                 @if($edicao->videos->count())
                     <section id="videos" class="rounded-[30px] border border-[#e8e2d9] bg-white p-6 shadow-sm sm:p-8">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $videosTitle,
+                            'editorPage' => 'site.rota_do_cacau.show',
+                            'editorKey' => 'videos_section',
+                            'editorLabel' => 'Seção vídeos da edição',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline',
+                            'editableTranslation' => $videosTranslation,
+                            'editableStatus' => $rotaShowBlocks['videos_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => 'Vídeos',
+                                'titulo' => 'Conteúdo audiovisual da edição',
+                            ],
+                        ])
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                             <div>
-                                <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Vídeos</div>
-                                <h2 class="mt-2 text-2xl font-semibold text-slate-900">Conteúdo audiovisual da edição</h2>
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">{{ $videosEyebrow }}</div>
+                                <h2 class="mt-2 text-2xl font-semibold text-slate-900">{{ $videosTitle }}</h2>
                             </div>
                             <div class="text-sm text-slate-500">{{ $edicao->videos_count }} {{ $edicao->videos_count === 1 ? 'vídeo' : 'vídeos' }}</div>
                         </div>
@@ -202,10 +305,24 @@
 
                 @if($edicao->patrocinadores->count())
                     <section id="patrocinadores" class="rounded-[30px] border border-[#e8e2d9] bg-white p-6 shadow-sm sm:p-8">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $sponsorsTitle,
+                            'editorPage' => 'site.rota_do_cacau.show',
+                            'editorKey' => 'sponsors_section',
+                            'editorLabel' => 'Seção patrocinadores da edição',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline',
+                            'editableTranslation' => $sponsorsTranslation,
+                            'editableStatus' => $rotaShowBlocks['sponsors_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => 'Patrocinadores',
+                                'titulo' => 'Apoiadores desta edição',
+                            ],
+                        ])
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                             <div>
-                                <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Patrocinadores</div>
-                                <h2 class="mt-2 text-2xl font-semibold text-slate-900">Apoiadores desta edição</h2>
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">{{ $sponsorsEyebrow }}</div>
+                                <h2 class="mt-2 text-2xl font-semibold text-slate-900">{{ $sponsorsTitle }}</h2>
                             </div>
                             <div class="text-sm text-slate-500">{{ $edicao->patrocinadores_count }} {{ $edicao->patrocinadores_count === 1 ? 'patrocinador' : 'patrocinadores' }}</div>
                         </div>
@@ -242,9 +359,23 @@
 
                 @if(!$temConteudoComplementar)
                     <section class="rounded-[30px] border border-dashed border-[#d8cfbf] bg-white px-6 py-10 text-center shadow-sm">
-                        <h2 class="text-xl font-semibold text-slate-900">Conteúdos complementares em atualização</h2>
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $emptyTitle,
+                            'editorPage' => 'site.rota_do_cacau.show',
+                            'editorKey' => 'empty_state',
+                            'editorLabel' => 'Estado vazio da edição',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline',
+                            'editableTranslation' => $emptyTranslation,
+                            'editableStatus' => $rotaShowBlocks['empty_state']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'titulo' => 'Conteúdos complementares em atualização',
+                                'lead' => 'Esta edição já está publicada, mas ainda não possui galeria, vídeos ou patrocinadores visíveis no portal.',
+                            ],
+                        ])
+                        <h2 class="text-xl font-semibold text-slate-900">{{ $emptyTitle }}</h2>
                         <p class="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                            Esta edição já está publicada, mas ainda não possui galeria, vídeos ou patrocinadores visíveis no portal.
+                            {{ $emptyCopy }}
                         </p>
                     </section>
                 @endif
@@ -252,8 +383,22 @@
 
             <aside class="space-y-6 lg:sticky lg:top-6 lg:self-start">
                 <section class="rounded-[30px] border border-[#e8e2d9] bg-white p-5 shadow-sm">
-                    <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Resumo rápido</div>
-                    <h2 class="mt-2 text-lg font-semibold text-slate-900">Visão geral da edição</h2>
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $summaryTitle,
+                        'editorPage' => 'site.rota_do_cacau.show',
+                        'editorKey' => 'summary_sidebar',
+                        'editorLabel' => 'Resumo lateral da edição',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline',
+                        'editableTranslation' => $summaryTranslation,
+                        'editableStatus' => $rotaShowBlocks['summary_sidebar']?->status ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => 'Resumo rápido',
+                            'titulo' => 'Visão geral da edição',
+                        ],
+                    ])
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">{{ $summaryEyebrow }}</div>
+                    <h2 class="mt-2 text-lg font-semibold text-slate-900">{{ $summaryTitle }}</h2>
 
                     <div class="mt-5 space-y-3">
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -281,8 +426,22 @@
 
                 @if($outrasEdicoes->count())
                     <section class="rounded-[30px] border border-[#e8e2d9] bg-white p-5 shadow-sm">
-                        <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">Outras edições</div>
-                        <h2 class="mt-2 text-lg font-semibold text-slate-900">Continue explorando</h2>
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $otherEditionsTitle,
+                            'editorPage' => 'site.rota_do_cacau.show',
+                            'editorKey' => 'other_editions',
+                            'editorLabel' => 'Outras edições da rota',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline',
+                            'editableTranslation' => $otherEditionsTranslation,
+                            'editableStatus' => $rotaShowBlocks['other_editions']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => 'Outras edições',
+                                'titulo' => 'Continue explorando',
+                            ],
+                        ])
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.20em] text-[#7b5a2c]">{{ $otherEditionsEyebrow }}</div>
+                        <h2 class="mt-2 text-lg font-semibold text-slate-900">{{ $otherEditionsTitle }}</h2>
 
                         <div class="mt-5 space-y-4">
                             @foreach($outrasEdicoes as $item)
@@ -304,4 +463,5 @@
         </div>
     </div>
 </section>
+
 @endsection

@@ -47,6 +47,21 @@ return [
     'feed_ttl'   => env('IG_FEED_TTL', 1800),
     ],
 
+    'site_translation' => [
+        'provider' => env('SITE_TRANSLATION_PROVIDER', 'null'),
+        'queue' => env('SITE_TRANSLATION_QUEUE', 'default'),
+        'timeout' => (int) env('SITE_TRANSLATION_TIMEOUT', 30),
+        'target_locales' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', env('SITE_TRANSLATION_TARGET_LOCALES', 'en,es'))
+        ))),
+        'openai' => [
+            'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+            'api_key' => env('OPENAI_API_KEY'),
+            'model' => env('OPENAI_TRANSLATION_MODEL', 'gpt-4.1-mini'),
+        ],
+    ],
+
 
 
 

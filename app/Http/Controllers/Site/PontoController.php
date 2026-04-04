@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Catalogo\PontoTuristico;
 
 class PontoController extends Controller
 {
+    use ResolvesEditableHero;
+
     /**
      * Mostra o detalhe do ponto (apenas 'publicado'), aceitando slug ou id.
      */
@@ -28,9 +31,9 @@ class PontoController extends Controller
             ? $query->where('id', $ponto)->firstOrFail()
             : $query->where('slug', $ponto)->firstOrFail();
 
-        return view('site.pontos.show', [
+        return view('site.pontos.show', array_merge([
             'ponto' => $modelo,
             'empresasRelacionadas' => $modelo->empresas,
-        ]);
+        ], $this->resolveEditableHero('site.pontos.show')));
     }
 }

@@ -12,6 +12,8 @@
     'image' => null,
     'imageAlt' => null,
     'compact' => false,
+    'textEditor' => null,
+    'imageEditor' => null,
 ])
 
 @php
@@ -55,9 +57,57 @@
                         @endforeach
                     </nav>
                 @endif
+
+                @if(!empty($imageEditor))
+                    <div class="site-page-hero-editor site-page-hero-editor--image">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $imageEditor['title'] ?? $title,
+                            'editorPage' => $imageEditor['page'] ?? 'site.page',
+                            'editorKey' => $imageEditor['key'] ?? 'hero',
+                            'editorLabel' => $imageEditor['label'] ?? 'Imagem da seção',
+                            'editorLocale' => $imageEditor['locale'] ?? route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => $imageEditor['trigger_label'] ?? 'Editar imagem',
+                            'editorFields' => ['media'],
+                            'editableTranslation' => $imageEditor['translation'] ?? null,
+                            'editableMedia' => $imageEditor['media'] ?? null,
+                            'editableStatus' => $imageEditor['status'] ?? 'publicado',
+                            'editorMediaSlot' => $imageEditor['media_slot'] ?? 'hero',
+                            'editorMediaLabel' => $imageEditor['media_label'] ?? 'Imagem',
+                            'editorMediaPreviewLabel' => $imageEditor['preview_label'] ?? 'imagem atual',
+                            'editableFallback' => [
+                                'titulo' => $title,
+                            ],
+                        ])
+                    </div>
+                @endif
             </div>
 
             <div class="site-detail-hero-copy site-page-hero-copy">
+                @if(!empty($textEditor))
+                    <div class="site-page-hero-editor site-page-hero-editor--text">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $textEditor['title'] ?? $title,
+                            'editorPage' => $textEditor['page'] ?? 'site.page',
+                            'editorKey' => $textEditor['key'] ?? 'hero',
+                            'editorLabel' => $textEditor['label'] ?? 'Texto da seção',
+                            'editorLocale' => $textEditor['locale'] ?? route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => $textEditor['trigger_label'] ?? 'Editar texto',
+                            'editorFields' => $textEditor['fields'] ?? ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href'],
+                            'editableTranslation' => $textEditor['translation'] ?? null,
+                            'editableStatus' => $textEditor['status'] ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => $badge,
+                                'titulo' => $title,
+                                'lead' => $subtitle,
+                                'cta_label' => $primaryActionLabel,
+                                'cta_href' => $primaryActionHref,
+                            ],
+                        ])
+                    </div>
+                @endif
+
                 @if($badge)
                     <span class="site-badge">{{ $badge }}</span>
                 @endif

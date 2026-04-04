@@ -18,6 +18,10 @@ use App\Models\Conteudo\Aviso;
 use App\Models\Conteudo\Banner;
 use App\Models\Conteudo\BannerDestaque;
 use App\Observers\SiteSyncObserver;
+use App\Services\ConteudoSiteTranslationEngine;
+use App\Services\ConteudoSiteTranslationManager;
+use App\Services\NullConteudoSiteTranslationEngine;
+use App\Services\OpenAiConteudoSiteTranslationEngine;
 use App\Services\ThemeManager;
 use App\Services\ThemeResolver;
 use Illuminate\Support\Carbon;
@@ -36,6 +40,18 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->singleton(ThemeResolver::class, fn () => new ThemeResolver());
         $this->app->singleton(ThemeManager::class, fn ($app) => new ThemeManager($app->make(ThemeResolver::class)));
+        $this->app->singleton(ConteudoSiteTranslationEngine::class, function ($app) {
+            $provider = (string) config('services.site_translation.provider', 'null');
+
+            return match ($provider) {
+                'openai' => new OpenAiConteudoSiteTranslationEngine(),
+                default => new NullConteudoSiteTranslationEngine(),
+            };
+        });
+        $this->app->singleton(
+            ConteudoSiteTranslationManager::class,
+            fn ($app) => new ConteudoSiteTranslationManager($app->make(ConteudoSiteTranslationEngine::class))
+        );
     }
 
     public function boot(): void

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Evento;
 use App\Models\EventoEdicao;
 
 class EventoPublicController extends Controller
 {
+    use ResolvesEditableHero;
+
     // /eventos (ver todos)
     public function index()
     {
@@ -27,7 +30,10 @@ class EventoPublicController extends Controller
             ->with(['edicoes' => fn($q) => $q->where('status','publicado')->orderByDesc('ano')])
             ->paginate(12);
 
-        return view('site.eventos.index', compact('eventos'));
+        return view('site.eventos.index', array_merge(
+            compact('eventos'),
+            $this->resolveEditableHero('site.eventos.index')
+        ));
     }
 
     // /eventos/{slug}/{ano?}
@@ -48,6 +54,9 @@ class EventoPublicController extends Controller
         // anos disponíveis para o seletor
         $anos = $evento->edicoes()->where('status','publicado')->orderByDesc('ano')->pluck('ano');
 
-        return view('site.eventos.show', compact('evento','edicao','anos'));
+        return view('site.eventos.show', array_merge(
+            compact('evento', 'edicao', 'anos'),
+            $this->resolveEditableHero('site.eventos.show')
+        ));
     }
 }

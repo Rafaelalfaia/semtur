@@ -12,12 +12,14 @@
     $companySource = collect(method_exists($empresas, 'items') ? $empresas->items() : $empresas);
     $categoriaSlugAtual = $currentCat?->slug ?? request('categoria') ?? request('cat');
     $explorarCanonical = R::has('site.explorar') ? localized_route('site.explorar') : url()->current();
-    $explorarTitle = $currentCat?->nome ? ui_text('ui.explore.title_category', ['category' => $currentCat->nome]) : ui_text('ui.explore.title_default');
-    $explorarDescription = $buscaAtual !== ''
+    $explorarBaseTitle = $currentCat?->nome ? ui_text('ui.explore.title_category', ['category' => $currentCat->nome]) : ui_text('ui.explore.title_default');
+    $explorarBaseDescription = $buscaAtual !== ''
         ? ui_text('ui.explore.description_search', ['search' => $buscaAtual])
         : ($currentCat?->nome
             ? ui_text('ui.explore.description_category', ['category' => $currentCat->nome])
             : ui_text('ui.explore.description_default'));
+    $explorarTitle = $heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: $explorarBaseTitle);
+    $explorarDescription = $heroTranslation?->seo_description ?: ($heroTranslation?->lead ?: $explorarBaseDescription);
 
     $explorarItems = $pointSource
         ->take(3)
@@ -84,7 +86,7 @@
 
 @section('title', $explorarTitle)
 @section('meta.description', $explorarDescription)
-@section('meta.image', asset('imagens/altamira.jpg'))
+@section('meta.image', $heroMedia?->url ?: asset('imagens/altamira.jpg'))
 @section('meta.canonical', $explorarCanonical)
 @section('meta.type', 'website')
 
@@ -94,6 +96,24 @@
 
 @section('site.content')
 @php
+    $pageBlocks = $pageBlocks ?? collect();
+    $exploreBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'discovery_section' => $pageBlocks->get('discovery_section'),
+        'context_section' => $pageBlocks->get('context_section'),
+        'points_section' => $pageBlocks->get('points_section'),
+        'points_empty_state' => $pageBlocks->get('points_empty_state'),
+        'companies_section' => $pageBlocks->get('companies_section'),
+        'companies_empty_state' => $pageBlocks->get('companies_empty_state'),
+    ];
+    $exploreTranslation = fn (string $key) => $exploreBlocks[$key]?->getAttribute('traducao_resolvida');
+    $discoveryTranslation = $exploreTranslation('discovery_section');
+    $contextTranslation = $exploreTranslation('context_section');
+    $pointsTranslation = $exploreTranslation('points_section');
+    $pointsEmptyTranslation = $exploreTranslation('points_empty_state');
+    $companiesTranslation = $exploreTranslation('companies_section');
+    $companiesEmptyTranslation = $exploreTranslation('companies_empty_state');
+
     $categoriaSlugAtual = $currentCat?->slug ?? request('categoria') ?? request('cat');
     $mapHref = R::has('site.mapa')
         ? localized_route('site.mapa', array_filter([
@@ -102,7 +122,12 @@
         ]))
         : '#';
 
-    $buildItem = function ($item, string $type) use ($categoriaSlugAtual, $buscaAtual) {
+    $canCreatePoint = auth()->check() && auth()->user()->can('pontos.create');
+    $canManagePoint = auth()->check() && auth()->user()->can('pontos.update');
+    $canCreateCompany = auth()->check() && auth()->user()->can('empresas.create');
+    $canManageCompany = auth()->check() && auth()->user()->can('empresas.update');
+
+    $buildItem = function ($item, string $type) use ($categoriaSlugAtual, $buscaAtual, $canManagePoint, $canManageCompany) {
         $href = $type === 'empresa' && R::has('site.empresa')
             ? localized_route('site.empresa', ['empresa' => $item->slug ?? $item->id])
             : (R::has('site.ponto') ? localized_route('site.ponto', ['ponto' => $item->slug ?? $item->id]) : '#');
@@ -128,11 +153,42 @@
             'meta' => null,
             'cta' => $type === 'empresa' ? ui_text('ui.explore.view_company') : ui_text('ui.explore.view_point'),
             'map_href' => $mapHref,
+            'admin_action' => $type === 'empresa'
+                ? (($canManageCompany && R::has('coordenador.empresas.edit')) ? [
+                    'href' => route('coordenador.empresas.edit', $item),
+                    'label' => 'Editar empresa',
+                ] : null)
+                : (($canManagePoint && R::has('coordenador.pontos.edit')) ? [
+                    'href' => route('coordenador.pontos.edit', $item),
+                    'label' => 'Editar ponto',
+                ] : null),
         ];
     };
 
     $pointItems = $pointSource->map(fn ($item) => $buildItem($item, 'ponto'));
     $companyItems = $companySource->map(fn ($item) => $buildItem($item, 'empresa'));
+    $explorarHeroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.common.explore');
+    $explorarHeroTitle = $heroTranslation?->titulo ?: $explorarBaseTitle;
+    $explorarHeroSubtitle = $heroTranslation?->lead ?: ui_text('ui.explore.hero_subtitle_default');
+    $explorarHeroPrimaryLabel = $heroTranslation?->cta_label ?: (R::has('site.mapa') ? ui_text('ui.common.see_on_map') : null);
+    $explorarHeroPrimaryHref = $heroTranslation?->cta_href ?: (R::has('site.mapa') ? $mapHref : null);
+    $explorarHeroImage = $heroMedia?->url ?: asset('imagens/altamira.jpg');
+    $discoveryEyebrow = $discoveryTranslation?->eyebrow ?: ui_text('ui.explore.discovery_eyebrow');
+    $discoveryTitle = $discoveryTranslation?->titulo ?: ui_text('ui.explore.discovery_title');
+    $discoverySubtitle = $discoveryTranslation?->lead ?: ui_text('ui.explore.discovery_subtitle');
+    $contextEyebrow = $contextTranslation?->eyebrow ?: ui_text('ui.common.list_plus_map');
+    $contextTitle = $contextTranslation?->titulo ?: ui_text('ui.explore.context_title');
+    $contextSubtitle = $contextTranslation?->lead ?: ui_text('ui.explore.context_subtitle');
+    $pointsEyebrow = $pointsTranslation?->eyebrow ?: ui_text('ui.explore.points_eyebrow');
+    $pointsTitle = $pointsTranslation?->titulo ?: ui_text('ui.explore.points_title');
+    $pointsSubtitle = $pointsTranslation?->lead ?: ui_text('ui.explore.points_subtitle');
+    $pointsEmptyTitle = $pointsEmptyTranslation?->titulo ?: ui_text('ui.explore.points_title');
+    $pointsEmptyCopy = $pointsEmptyTranslation?->lead ?: ui_text('ui.explore.points_empty');
+    $companiesEyebrow = $companiesTranslation?->eyebrow ?: ui_text('ui.explore.companies_eyebrow');
+    $companiesTitle = $companiesTranslation?->titulo ?: ui_text('ui.explore.companies_title');
+    $companiesSubtitle = $companiesTranslation?->lead ?: ui_text('ui.explore.companies_subtitle');
+    $companiesEmptyTitle = $companiesEmptyTranslation?->titulo ?: ui_text('ui.explore.companies_title');
+    $companiesEmptyCopy = $companiesEmptyTranslation?->lead ?: ui_text('ui.explore.companies_empty');
 @endphp
 
 <div class="site-page site-page-shell site-explore-page">
@@ -142,32 +198,72 @@
             ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
             ['label' => ui_text('ui.common.explore')],
         ],
-        'badge' => ui_text('ui.common.explore'),
-        'title' => $currentCat?->nome ? ui_text('ui.explore.title_category', ['category' => $currentCat->nome]) : ui_text('ui.explore.title_default'),
-        'subtitle' => $buscaAtual !== ''
-            ? ui_text('ui.explore.hero_subtitle_results')
-            : ui_text('ui.explore.hero_subtitle_default'),
+        'badge' => $explorarHeroBadge,
+        'title' => $explorarHeroTitle,
+        'subtitle' => $explorarHeroSubtitle,
         'meta' => [
             $currentCat?->nome,
             $buscaAtual !== '' ? ui_text('ui.explore.search_label', ['search' => $buscaAtual]) : null,
         ],
-        'primaryActionLabel' => R::has('site.mapa') ? ui_text('ui.common.see_on_map') : null,
-        'primaryActionHref' => R::has('site.mapa') ? $mapHref : null,
+        'primaryActionLabel' => $explorarHeroPrimaryLabel,
+        'primaryActionHref' => $explorarHeroPrimaryHref,
         'secondaryActionLabel' => $buscaAtual !== '' || $categoriaSlugAtual ? ui_text('ui.common.clear') : (R::has('site.home') ? ui_text('ui.common.home') : null),
         'secondaryActionHref' => ($buscaAtual !== '' || $categoriaSlugAtual)
             ? localized_route('site.explorar')
             : (R::has('site.home') ? localized_route('site.home') : null),
-        'image' => asset('imagens/altamira.jpg'),
+        'image' => $explorarHeroImage,
         'imageAlt' => ui_text('ui.explore.image_alt'),
         'compact' => true,
+        'textEditor' => [
+            'title' => $explorarHeroTitle,
+            'page' => 'site.explorar',
+            'key' => 'hero',
+            'label' => 'Texto da capa de Explorar',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar texto',
+            'fields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href', 'seo_title', 'seo_description'],
+            'translation' => $heroTranslation ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+        ],
+        'imageEditor' => [
+            'title' => $explorarHeroTitle,
+            'page' => 'site.explorar',
+            'key' => 'hero',
+            'label' => 'Imagem da capa de Explorar',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar imagem',
+            'translation' => $heroTranslation ?? null,
+            'media' => $heroMedia ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+            'media_slot' => 'hero',
+            'media_label' => 'Imagem da capa',
+            'preview_label' => 'imagem atual da capa',
+        ],
     ])
 
     <section class="site-section site-explore-discovery-section">
         <div class="site-surface site-search-shell site-explore-discovery-shell">
+            @include('site.partials._content_editor', [
+                'editorTitle' => $discoveryTitle,
+                'editorPage' => 'site.explorar',
+                'editorKey' => 'discovery_section',
+                'editorLabel' => 'Seção de descoberta do Explorar',
+                'editorLocale' => route_locale(),
+                'editorTriggerVariant' => 'inline-compact',
+                'editorTriggerLabel' => 'Editar texto',
+                'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                'editableTranslation' => $discoveryTranslation,
+                'editableStatus' => $exploreBlocks['discovery_section']?->status ?? 'publicado',
+                'editableFallback' => [
+                    'eyebrow' => ui_text('ui.explore.discovery_eyebrow'),
+                    'titulo' => ui_text('ui.explore.discovery_title'),
+                    'lead' => ui_text('ui.explore.discovery_subtitle'),
+                ],
+            ])
             <x-section-head
-                :eyebrow="ui_text('ui.explore.discovery_eyebrow')"
-                :title="ui_text('ui.explore.discovery_title')"
-                :subtitle="ui_text('ui.explore.discovery_subtitle')"
+                :eyebrow="$discoveryEyebrow"
+                :title="$discoveryTitle"
+                :subtitle="$discoverySubtitle"
             />
 
             <form method="get" class="site-search-form site-explore-search-form">
@@ -272,10 +368,27 @@
 
     <section class="site-section">
         <div class="site-surface-soft site-context-strip site-explore-context-strip">
+            @include('site.partials._content_editor', [
+                'editorTitle' => $contextTitle,
+                'editorPage' => 'site.explorar',
+                'editorKey' => 'context_section',
+                'editorLabel' => 'Seção de contexto do Explorar',
+                'editorLocale' => route_locale(),
+                'editorTriggerVariant' => 'inline-compact',
+                'editorTriggerLabel' => 'Editar texto',
+                'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                'editableTranslation' => $contextTranslation,
+                'editableStatus' => $exploreBlocks['context_section']?->status ?? 'publicado',
+                'editableFallback' => [
+                    'eyebrow' => ui_text('ui.common.list_plus_map'),
+                    'titulo' => ui_text('ui.explore.context_title'),
+                    'lead' => ui_text('ui.explore.context_subtitle'),
+                ],
+            ])
             <div class="site-context-strip-copy">
-                <span class="site-badge">{{ ui_text('ui.common.list_plus_map') }}</span>
-                <h2 class="site-section-head-title">{{ ui_text('ui.explore.context_title') }}</h2>
-                <p class="site-section-head-subtitle">{{ ui_text('ui.explore.context_subtitle') }}</p>
+                <span class="site-badge">{{ $contextEyebrow }}</span>
+                <h2 class="site-section-head-title">{{ $contextTitle }}</h2>
+                <p class="site-section-head-subtitle">{{ $contextSubtitle }}</p>
             </div>
             <div class="site-context-strip-actions">
                 <a href="{{ $mapHref }}" class="site-button-primary">{{ ui_text('ui.common.open_map') }}</a>
@@ -288,25 +401,95 @@
 
     @if($pointItems->isNotEmpty())
         @include('site.partials._category_section', [
-            'eyebrow' => ui_text('ui.explore.points_eyebrow'),
-            'title' => ui_text('ui.explore.points_title'),
-            'subtitle' => ui_text('ui.explore.points_subtitle'),
+            'eyebrow' => $pointsEyebrow,
+            'title' => $pointsTitle,
+            'subtitle' => $pointsSubtitle,
             'items' => $pointItems,
             'layout' => 'carousel',
             'cardVariant' => 'compact',
-            'empty' => ui_text('ui.explore.points_empty'),
+            'empty' => $pointsEmptyCopy,
+            'emptyTitle' => $pointsEmptyTitle,
+            'editor' => [
+                'title' => $pointsTitle,
+                'page' => 'site.explorar',
+                'key' => 'points_section',
+                'label' => 'Seção de pontos do Explorar',
+                'locale' => route_locale(),
+                'translation' => $pointsTranslation,
+                'status' => $exploreBlocks['points_section']?->status ?? 'publicado',
+                'fallback' => [
+                    'eyebrow' => ui_text('ui.explore.points_eyebrow'),
+                    'titulo' => ui_text('ui.explore.points_title'),
+                    'lead' => ui_text('ui.explore.points_subtitle'),
+                ],
+            ],
+            'sectionActions' => array_values(array_filter([
+                ($canCreatePoint && R::has('coordenador.pontos.create')) ? [
+                    'href' => route('coordenador.pontos.create'),
+                    'label' => 'Cadastrar ponto',
+                    'class' => 'site-button-primary',
+                ] : null,
+            ])),
+            'emptyEditor' => [
+                'title' => $pointsEmptyTitle,
+                'page' => 'site.explorar',
+                'key' => 'points_empty_state',
+                'label' => 'Estado vazio de pontos do Explorar',
+                'locale' => route_locale(),
+                'translation' => $pointsEmptyTranslation,
+                'status' => $exploreBlocks['points_empty_state']?->status ?? 'publicado',
+                'fallback' => [
+                    'titulo' => ui_text('ui.explore.points_title'),
+                    'lead' => ui_text('ui.explore.points_empty'),
+                ],
+            ],
         ])
     @endif
 
     @if($companyItems->isNotEmpty())
         @include('site.partials._category_section', [
-            'eyebrow' => ui_text('ui.explore.companies_eyebrow'),
-            'title' => ui_text('ui.explore.companies_title'),
-            'subtitle' => ui_text('ui.explore.companies_subtitle'),
+            'eyebrow' => $companiesEyebrow,
+            'title' => $companiesTitle,
+            'subtitle' => $companiesSubtitle,
             'items' => $companyItems,
             'layout' => 'carousel',
             'cardVariant' => 'compact',
-            'empty' => ui_text('ui.explore.companies_empty'),
+            'empty' => $companiesEmptyCopy,
+            'emptyTitle' => $companiesEmptyTitle,
+            'editor' => [
+                'title' => $companiesTitle,
+                'page' => 'site.explorar',
+                'key' => 'companies_section',
+                'label' => 'Seção de empresas do Explorar',
+                'locale' => route_locale(),
+                'translation' => $companiesTranslation,
+                'status' => $exploreBlocks['companies_section']?->status ?? 'publicado',
+                'fallback' => [
+                    'eyebrow' => ui_text('ui.explore.companies_eyebrow'),
+                    'titulo' => ui_text('ui.explore.companies_title'),
+                    'lead' => ui_text('ui.explore.companies_subtitle'),
+                ],
+            ],
+            'sectionActions' => array_values(array_filter([
+                ($canCreateCompany && R::has('coordenador.empresas.create')) ? [
+                    'href' => route('coordenador.empresas.create'),
+                    'label' => 'Cadastrar empresa',
+                    'class' => 'site-button-primary',
+                ] : null,
+            ])),
+            'emptyEditor' => [
+                'title' => $companiesEmptyTitle,
+                'page' => 'site.explorar',
+                'key' => 'companies_empty_state',
+                'label' => 'Estado vazio de empresas do Explorar',
+                'locale' => route_locale(),
+                'translation' => $companiesEmptyTranslation,
+                'status' => $exploreBlocks['companies_empty_state']?->status ?? 'publicado',
+                'fallback' => [
+                    'titulo' => ui_text('ui.explore.companies_title'),
+                    'lead' => ui_text('ui.explore.companies_empty'),
+                ],
+            ],
         ])
     @endif
 

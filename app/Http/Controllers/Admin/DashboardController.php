@@ -72,6 +72,7 @@ class DashboardController extends Controller
 
         $recentes = array_values(array_filter(array_merge(
             $this->safeRecent('categorias', 'nome', 'Categoria'),
+            $this->safeRecent('cursos', 'nome', 'Curso'),
             $this->safeRecent('empresas', 'nome', 'Empresa'),
             $this->safeRecent('pontos_turisticos', 'nome', 'Ponto'),
             $this->safeRecent('eventos', 'nome', 'Evento'),
@@ -144,6 +145,7 @@ class DashboardController extends Controller
             ['nome' => 'Roteiros',          'table' => 'roteiros'],
             ['nome' => 'Guias e revistas',  'table' => 'guias_revistas'],
             ['nome' => 'Vídeos',            'table' => 'videos'],
+            ['nome' => 'Cursos',            'table' => 'cursos'],
         ];
     }
 
@@ -187,6 +189,7 @@ class DashboardController extends Controller
             'roteiros',
             'guias_revistas',
             'videos',
+            'cursos',
             'avisos',
             'banners',
         ];

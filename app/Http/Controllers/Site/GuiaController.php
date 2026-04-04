@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Conteudo\GuiaRevista;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class GuiaController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function index(Request $request)
     {
         $q = trim((string) $request->input('q', ''));
@@ -31,12 +34,12 @@ class GuiaController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('site.guias.index', [
+        return view('site.guias.index', array_merge([
             'materiais' => $materiais,
             'q' => $q,
             'tipo' => $tipo,
             'tipos' => GuiaRevista::TIPOS_LABELS,
-        ]);
+        ], $this->resolveEditableHero('site.guias')));
     }
 
     public function show(string $locale, string $slug)
@@ -53,9 +56,9 @@ class GuiaController extends Controller
             ->limit(3)
             ->get();
 
-        return view('site.guias.show', [
+        return view('site.guias.show', array_merge([
             'material' => $material,
             'relacionados' => $relacionados,
-        ]);
+        ], $this->resolveEditableHero('site.guias.show')));
     }
 }

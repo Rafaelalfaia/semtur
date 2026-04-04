@@ -1,6 +1,6 @@
 @extends('site.layouts.app')
 
-@section('title', $espaco->nome . ' • ' . $espaco->tipo_label)
+@section('title', $espaco->nome . ' • Museu')
 @section('meta.description', \Illuminate\Support\Str::limit(strip_tags((string) ($espaco->resumo ?: $espaco->descricao)), 160))
 @section('meta.image', $espaco->capa_url ?: (optional($espaco->midias->first())->url ?: asset('imagens/altamira.jpg')))
 
@@ -8,16 +8,34 @@
 @php
     use Illuminate\Support\Facades\Route;
 
+    $pageBlocks = $pageBlocks ?? collect();
+    $museuShowBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'about_section' => $pageBlocks->get('about_section'),
+        'gallery_section' => $pageBlocks->get('gallery_section'),
+        'info_section' => $pageBlocks->get('info_section'),
+        'schedule_section' => $pageBlocks->get('schedule_section'),
+        'booking_section' => $pageBlocks->get('booking_section'),
+        'empty_state' => $pageBlocks->get('empty_state'),
+    ];
+    $museuShowTranslation = fn (string $key) => $museuShowBlocks[$key]?->getAttribute('traducao_resolvida');
+    $aboutTranslation = $museuShowTranslation('about_section');
+    $galleryTranslation = $museuShowTranslation('gallery_section');
+    $infoTranslation = $museuShowTranslation('info_section');
+    $scheduleTranslation = $museuShowTranslation('schedule_section');
+    $bookingTranslation = $museuShowTranslation('booking_section');
+    $emptyTranslation = $museuShowTranslation('empty_state');
+
     $fallback = asset('imagens/altamira.jpg');
-    $capa = $espaco->capa_url ?: optional($espaco->midias->first())->url ?: $fallback;
+    $capa = $heroMedia?->url ?: ($espaco->capa_url ?: optional($espaco->midias->first())->url ?: $fallback);
     $galeria = collect($espaco->midias ?? [])->map(fn ($midia) => [
         'src' => $midia->url,
         'alt' => $midia->alt ?: $espaco->nome,
     ])->values();
 
     $localizacao = collect([
-        ['label' => 'Tipo', 'value' => $espaco->tipo_label],
-        ['label' => 'Endereco', 'value' => $espaco->endereco],
+        ['label' => 'Tipo', 'value' => 'Museu'],
+        ['label' => 'Endereço', 'value' => $espaco->endereco],
         ['label' => 'Bairro', 'value' => $espaco->bairro],
         ['label' => 'Cidade', 'value' => $espaco->cidade ?: 'Altamira'],
     ])->filter(fn ($item) => filled($item['value']))->values();
@@ -25,57 +43,135 @@
     $agendamentoWhatsappHref = null;
     if ($espaco->agendamento_disponivel && filled($espaco->agendamento_whatsapp_phone)) {
         $mensagemAgendamento = implode("\n", array_filter([
-            'Ola! Gostaria de fazer um agendamento para visitar '.$espaco->nome.'.',
-            'Tipo: '.$espaco->tipo_label,
+            'Olá! Gostaria de fazer um agendamento para visitar '.$espaco->nome.'.',
+            'Tipo: Museu',
             filled($espaco->cidade) ? 'Cidade: '.$espaco->cidade : 'Cidade: Altamira',
-            'Pode me orientar sobre disponibilidade e proximos passos?',
+            'Pode me orientar sobre disponibilidade e próximos passos?',
         ]));
 
         $agendamentoWhatsappHref = 'https://wa.me/'.$espaco->agendamento_whatsapp_phone.'?text='.rawurlencode($mensagemAgendamento);
     }
+
+    $heroBadge = $heroTranslation?->eyebrow ?: 'Museu';
+    $heroTitle = $heroTranslation?->titulo ?: $espaco->nome;
+    $heroSubtitle = $heroTranslation?->lead ?: 'Informações públicas, horários e orientações para planejar sua visita ao museu.';
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ($agendamentoWhatsappHref ? 'Fazer agendamento' : ($espaco->agendamento_disponivel ? 'Agendar visita' : null));
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: ($agendamentoWhatsappHref ?: ($espaco->agendamento_disponivel ? localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) : null));
+
+    $aboutEyebrow = $aboutTranslation?->eyebrow ?: 'Sobre';
+    $aboutTitle = $aboutTranslation?->titulo ?: 'Planeje a visita';
+    $aboutSubtitle = $aboutTranslation?->lead ?: 'Leia a apresentação pública do museu com contexto claro e orientação direta para a visita.';
+    $galleryEyebrow = $galleryTranslation?->eyebrow ?: 'Galeria';
+    $galleryTitle = $galleryTranslation?->titulo ?: 'Imagens do museu';
+    $gallerySubtitle = $galleryTranslation?->lead ?: 'Abra as fotos para ver melhor o ambiente e navegar pelas imagens publicadas.';
+    $infoEyebrow = $infoTranslation?->eyebrow ?: 'Informações';
+    $infoTitle = $infoTranslation?->titulo ?: 'Dados públicos';
+    $infoSubtitle = $infoTranslation?->lead ?: 'Tudo o que ajuda a decidir se este museu é adequado para sua visita.';
+    $scheduleEyebrow = $scheduleTranslation?->eyebrow ?: 'Grade semanal';
+    $scheduleTitle = $scheduleTranslation?->titulo ?: 'Horários disponíveis';
+    $scheduleSubtitle = $scheduleTranslation?->lead ?: 'Consulte dias, faixas de visita e observações publicadas pelo coordenador.';
+    $bookingEyebrow = $bookingTranslation?->eyebrow ?: 'Agendamento';
+    $bookingTitle = $bookingTranslation?->titulo ?: 'Solicite sua visita';
+    $bookingSubtitle = $bookingTranslation?->lead ?: 'Use o formulário público ou fale direto no WhatsApp do atendimento cadastrado pelo coordenador.';
+    $emptyTitle = $emptyTranslation?->titulo ?: 'Sem imagens publicadas';
+    $emptyCopy = $emptyTranslation?->lead ?: 'Este museu ainda não possui galeria pública disponível.';
+
+    $canManageMuseu = auth()->check() && auth()->user()->can('espacos_culturais.update');
+    $editMuseuHref = $canManageMuseu && Route::has('coordenador.espacos-culturais.edit')
+        ? route('coordenador.espacos-culturais.edit', $espaco)
+        : null;
 @endphp
 
 <div class="site-page site-page-shell site-espacos-page">
     @include('site.partials._page_hero', [
         'backHref' => Route::has('site.museus') ? localized_route('site.museus') : url()->previous(),
         'breadcrumbs' => [
-            ['label' => 'Inicio', 'href' => localized_route('site.home')],
-            ['label' => 'Museus e teatros', 'href' => Route::has('site.museus') ? localized_route('site.museus') : null],
+            ['label' => 'Início', 'href' => localized_route('site.home')],
+            ['label' => 'Museus', 'href' => Route::has('site.museus') ? localized_route('site.museus') : null],
             ['label' => $espaco->nome],
         ],
-        'badge' => $espaco->tipo_label,
-        'title' => $espaco->nome,
-        'subtitle' => 'Informacoes publicas, grade semanal e orientacoes para agendar visitas ao espaco cultural.',
+        'badge' => $heroBadge,
+        'title' => $heroTitle,
+        'subtitle' => $heroSubtitle,
         'meta' => [
             $espaco->bairro,
             $espaco->cidade ?: 'Altamira',
-            $espaco->agendamento_disponivel ? 'Agendamento disponivel' : 'Sem agendamento online',
+            $espaco->agendamento_disponivel ? 'Agendamento disponível' : 'Sem agendamento online',
         ],
-        'primaryActionLabel' => $agendamentoWhatsappHref ? 'Fazer agendamento' : ($espaco->agendamento_disponivel ? 'Agendar visita' : null),
-        'primaryActionHref' => $agendamentoWhatsappHref ?: ($espaco->agendamento_disponivel ? localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) : null),
-        'secondaryActionLabel' => $espaco->maps_url ? ui_text('ui.common.see_on_map') : ui_text('ui.common.back_to_listing'),
+        'primaryActionLabel' => $heroPrimaryLabel,
+        'primaryActionHref' => $heroPrimaryHref,
+        'secondaryActionLabel' => $espaco->maps_url ? ui_text('ui.common.see_on_map') : 'Voltar para museus',
         'secondaryActionHref' => $espaco->maps_url ?: localized_route('site.museus'),
         'image' => $capa,
-        'imageAlt' => $espaco->nome,
+        'imageAlt' => $heroTitle,
+        'textEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.museus.show',
+            'key' => 'hero',
+            'label' => 'Texto da capa do museu',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar texto',
+            'fields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href'],
+            'translation' => $heroTranslation ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+        ],
+        'imageEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.museus.show',
+            'key' => 'hero',
+            'label' => 'Imagem da capa do museu',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar imagem',
+            'translation' => $heroTranslation ?? null,
+            'media' => $heroMedia ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+            'media_slot' => 'hero',
+            'media_label' => 'Imagem da capa',
+            'preview_label' => 'imagem atual da capa',
+        ],
     ])
 
     <section class="site-section">
         <div class="site-editorial-layout site-espacos-layout">
             <div class="site-editorial-main">
                 <section class="site-surface site-content-block">
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $aboutTitle,
+                        'editorPage' => 'site.museus.show',
+                        'editorKey' => 'about_section',
+                        'editorLabel' => 'Seção sobre do museu',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => 'Editar texto',
+                        'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                        'editableTranslation' => $aboutTranslation,
+                        'editableStatus' => $museuShowBlocks['about_section']?->status ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => 'Sobre',
+                            'titulo' => 'Planeje a visita',
+                            'lead' => 'Leia a apresentação pública do museu com contexto claro e orientação direta para a visita.',
+                        ],
+                    ])
+
+                    @if($editMuseuHref)
+                        <div class="site-inline-actions">
+                            <a href="{{ $editMuseuHref }}" class="site-button-secondary">Editar dados do museu</a>
+                        </div>
+                    @endif
+
                     <div class="site-detail-profile site-espacos-detail-profile">
                         <img src="{{ site_image_url($capa, 'avatar') }}" alt="{{ $espaco->nome }}" class="site-detail-avatar" loading="lazy" decoding="async">
                         <div>
                             <x-section-head
-                                eyebrow="Sobre"
-                                title="Planeje a visita"
-                                subtitle="Museus e o teatro municipal entram aqui com leitura simples, horarios claros e caminho direto para o agendamento."
+                                :eyebrow="$aboutEyebrow"
+                                :title="$aboutTitle"
+                                :subtitle="$aboutSubtitle"
                             />
                         </div>
                     </div>
 
                     <div class="site-detail-copy site-prose">
-                        {!! $espaco->descricao ? nl2br(e($espaco->descricao)) : '<p>Este espaco ainda nao tem uma apresentacao publica detalhada.</p>' !!}
+                        {!! $espaco->descricao ? nl2br(e($espaco->descricao)) : '<p>Este museu ainda não tem uma apresentação pública detalhada.</p>' !!}
                     </div>
                 </section>
 
@@ -92,10 +188,34 @@
                             prev(){ this.index=(this.index-1+this.images.length)%this.images.length; }
                         }"
                     >
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $galleryTitle,
+                            'editorPage' => 'site.museus.show',
+                            'editorKey' => 'gallery_section',
+                            'editorLabel' => 'Seção galeria do museu',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                            'editableTranslation' => $galleryTranslation,
+                            'editableStatus' => $museuShowBlocks['gallery_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => 'Galeria',
+                                'titulo' => 'Imagens do museu',
+                                'lead' => 'Abra as fotos para ver melhor o ambiente e navegar pelas imagens publicadas.',
+                            ],
+                        ])
+
+                        @if($editMuseuHref)
+                            <div class="site-inline-actions">
+                                <a href="{{ $editMuseuHref }}" class="site-button-secondary">Editar imagens</a>
+                            </div>
+                        @endif
+
                         <x-section-head
-                            eyebrow="Galeria"
-                            title="Imagens do espaco"
-                            subtitle="Abra as fotos para ver melhor o ambiente e navegar entre as imagens publicadas."
+                            :eyebrow="$galleryEyebrow"
+                            :title="$galleryTitle"
+                            :subtitle="$gallerySubtitle"
                         />
 
                         <div class="site-gallery-grid site-espacos-gallery-grid">
@@ -111,8 +231,31 @@
                                 <button type="button" class="site-lightbox-close" @click="close()" aria-label="Fechar galeria">&times;</button>
                                 <button type="button" class="site-lightbox-arrow is-prev" @click.stop="prev()" aria-label="Foto anterior">&#8249;</button>
                                 <img :src="images[index]?.src" :alt="images[index]?.alt || ''" class="site-lightbox-image">
-                                <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="Proxima foto">&#8250;</button>
+                                <button type="button" class="site-lightbox-arrow is-next" @click.stop="next()" aria-label="Próxima foto">&#8250;</button>
                             </div>
+                        </div>
+                    </section>
+                @else
+                    <section class="site-surface-soft site-content-block">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $emptyTitle,
+                            'editorPage' => 'site.museus.show',
+                            'editorKey' => 'empty_state',
+                            'editorLabel' => 'Estado vazio da galeria do museu',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['titulo', 'lead'],
+                            'editableTranslation' => $emptyTranslation,
+                            'editableStatus' => $museuShowBlocks['empty_state']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'titulo' => 'Sem imagens publicadas',
+                                'lead' => 'Este museu ainda não possui galeria pública disponível.',
+                            ],
+                        ])
+                        <div class="site-empty-state">
+                            <p class="site-empty-state-title">{{ $emptyTitle }}</p>
+                            <p class="site-empty-state-copy">{{ $emptyCopy }}</p>
                         </div>
                     </section>
                 @endif
@@ -120,11 +263,35 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head eyebrow="Informacoes" title="Dados publicos" subtitle="Tudo o que ajuda a decidir se este espaco e adequado para sua visita." />
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $infoTitle,
+                        'editorPage' => 'site.museus.show',
+                        'editorKey' => 'info_section',
+                        'editorLabel' => 'Seção de informações do museu',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => 'Editar texto',
+                        'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                        'editableTranslation' => $infoTranslation,
+                        'editableStatus' => $museuShowBlocks['info_section']?->status ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => 'Informações',
+                            'titulo' => 'Dados públicos',
+                            'lead' => 'Tudo o que ajuda a decidir se este museu é adequado para sua visita.',
+                        ],
+                    ])
+
+                    @if($editMuseuHref)
+                        <div class="site-inline-actions">
+                            <a href="{{ $editMuseuHref }}" class="site-button-secondary">Editar dados do museu</a>
+                        </div>
+                    @endif
+
+                    <x-section-head :eyebrow="$infoEyebrow" :title="$infoTitle" :subtitle="$infoSubtitle" />
 
                     @if($localizacao->isEmpty())
                         <div class="site-empty-state">
-                            <p class="site-empty-state-copy">Os dados publicos deste espaco ainda estao em atualizacao.</p>
+                            <p class="site-empty-state-copy">Os dados públicos deste museu ainda estão em atualização.</p>
                         </div>
                     @else
                         <div class="site-location-card-list">
@@ -146,7 +313,31 @@
 
                 @if($espaco->horarios->count())
                     <section class="site-surface-soft site-content-block">
-                        <x-section-head eyebrow="Grade semanal" title="Horarios disponiveis" subtitle="Consulte dias, faixas de visita e observacoes publicadas pelo coordenador." />
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $scheduleTitle,
+                            'editorPage' => 'site.museus.show',
+                            'editorKey' => 'schedule_section',
+                            'editorLabel' => 'Seção de horários do museu',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                            'editableTranslation' => $scheduleTranslation,
+                            'editableStatus' => $museuShowBlocks['schedule_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => 'Grade semanal',
+                                'titulo' => 'Horários disponíveis',
+                                'lead' => 'Consulte dias, faixas de visita e observações publicadas pelo coordenador.',
+                            ],
+                        ])
+
+                        @if($editMuseuHref)
+                            <div class="site-inline-actions">
+                                <a href="{{ $editMuseuHref }}" class="site-button-secondary">Editar horarios</a>
+                            </div>
+                        @endif
+
+                        <x-section-head :eyebrow="$scheduleEyebrow" :title="$scheduleTitle" :subtitle="$scheduleSubtitle" />
 
                         <div class="site-espacos-detail-schedule">
                             @foreach($espaco->horarios as $horario)
@@ -171,7 +362,31 @@
 
                 @if($espaco->agendamento_disponivel)
                     <section class="site-surface site-content-block site-espacos-booking-cta">
-                        <x-section-head eyebrow="Agendamento" title="Solicite sua visita" subtitle="Use o formulario publico ou fale direto no WhatsApp do atendimento cadastrado pelo coordenador." />
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $bookingTitle,
+                            'editorPage' => 'site.museus.show',
+                            'editorKey' => 'booking_section',
+                            'editorLabel' => 'Seção de agendamento do museu',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                            'editableTranslation' => $bookingTranslation,
+                            'editableStatus' => $museuShowBlocks['booking_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => 'Agendamento',
+                                'titulo' => 'Solicite sua visita',
+                                'lead' => 'Use o formulário público ou fale direto no WhatsApp do atendimento cadastrado pelo coordenador.',
+                            ],
+                        ])
+
+                        @if($editMuseuHref)
+                            <div class="site-inline-actions">
+                                <a href="{{ $editMuseuHref }}" class="site-button-secondary">Editar agendamento</a>
+                            </div>
+                        @endif
+
+                        <x-section-head :eyebrow="$bookingEyebrow" :title="$bookingTitle" :subtitle="$bookingSubtitle" />
 
                         @if($espaco->agendamento_instrucoes)
                             <p class="site-card-list-summary">{{ $espaco->agendamento_instrucoes }}</p>
@@ -186,7 +401,7 @@
                                     <span>Fazer agendamento</span>
                                 </a>
                             @endif
-                            <a href="{{ localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) }}" class="site-button-secondary">Abrir formulario</a>
+                            <a href="{{ localized_route('site.museus.agendar', ['espaco' => $espaco->slug]) }}" class="site-button-secondary">Abrir formulário</a>
                         </div>
                     </section>
                 @endif

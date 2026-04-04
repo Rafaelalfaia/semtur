@@ -1,7 +1,7 @@
 @extends('site.layouts.app')
-@section('title', ui_text('ui.events.title'))
-@section('meta.description', ui_text('ui.events.meta_description'))
-@section('meta.image', theme_asset('hero_image'))
+@section('title', $heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: ui_text('ui.events.title')))
+@section('meta.description', $heroTranslation?->seo_description ?: ($heroTranslation?->lead ?: ui_text('ui.events.meta_description')))
+@section('meta.image', $heroMedia?->url ?: theme_asset('hero_image'))
 @section('meta.canonical', url()->full())
 
 @section('site.content')
@@ -14,6 +14,11 @@
   $pub = fn($p) => $p ? Storage::disk('public')->url($p) : null;
   $anosDisponiveis = collect($anosDisponiveis ?? []);
   $anoAtual = $anoAtual ?? request('ano');
+  $heroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.events.badge');
+  $heroTitle = $heroTranslation?->titulo ?: ui_text('ui.events.hero_title');
+  $heroSubtitle = $heroTranslation?->lead ?: ui_text('ui.events.hero_subtitle');
+  $heroPrimaryLabel = $heroTranslation?->cta_label ?: (Route::has('site.explorar') ? ui_text('ui.events.explore_city') : null);
+  $heroPrimaryHref = $heroTranslation?->cta_href ?: (Route::has('site.explorar') ? localized_route('site.explorar') : null);
 
   $eventCards = $items->map(function ($evento) use ($pub, $anoAtual) {
       $edicao = collect($evento->edicoes ?? [])->sortByDesc('ano')->first();
@@ -40,18 +45,18 @@
             ['label' => ui_text('ui.nav.home'), 'href' => localized_route('site.home')],
             ['label' => ui_text('ui.agenda.title')],
         ],
-        'badge' => ui_text('ui.events.badge'),
-        'title' => ui_text('ui.events.hero_title'),
-        'subtitle' => ui_text('ui.events.hero_subtitle'),
+        'badge' => $heroBadge,
+        'title' => $heroTitle,
+        'subtitle' => $heroSubtitle,
         'meta' => [
             ui_text('ui.events.events_count', ['count' => $eventCards->count()]),
             $anoAtual ? ('Ano '.$anoAtual) : ui_text('ui.events.multiple_years'),
         ],
-        'primaryActionLabel' => Route::has('site.explorar') ? ui_text('ui.events.explore_city') : null,
-        'primaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
+        'primaryActionLabel' => $heroPrimaryLabel,
+        'primaryActionHref' => $heroPrimaryHref,
         'secondaryActionLabel' => Route::has('site.mapa') ? ui_text('ui.common.tourist_map') : null,
         'secondaryActionHref' => Route::has('site.mapa') ? localized_route('site.mapa') : null,
-        'image' => theme_asset('hero_image'),
+        'image' => $heroMedia?->url ?: theme_asset('hero_image'),
         'imageAlt' => ui_text('ui.events.title'),
         'compact' => true,
     ])
@@ -96,4 +101,26 @@
 
     <div class="site-bottom-safe-space md:hidden" aria-hidden="true"></div>
 </div>
+
+@include('site.partials._content_editor', [
+    'editorTitle' => $heroTitle,
+    'editorPage' => 'site.eventos.index',
+    'editorKey' => 'hero',
+    'editorLabel' => 'Hero Eventos',
+    'editorLocale' => route_locale(),
+    'editableTranslation' => $heroTranslation ?? null,
+    'editableHeroMedia' => $heroMedia ?? null,
+    'editableStatus' => $heroBlock?->status ?? 'publicado',
+    'editableFallback' => [
+        'eyebrow' => $heroBadge,
+        'titulo' => $heroTitle,
+        'subtitulo' => null,
+        'lead' => $heroSubtitle,
+        'conteudo' => null,
+        'cta_label' => $heroPrimaryLabel,
+        'cta_href' => $heroPrimaryHref,
+        'seo_title' => $heroTitle,
+        'seo_description' => $heroTranslation?->seo_description ?: ui_text('ui.events.meta_description'),
+    ],
+])
 @endsection

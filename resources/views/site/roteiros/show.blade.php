@@ -10,7 +10,7 @@
     use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Str;
 
-    $cover = $roteiro->capa_url ?: asset('imagens/altamira.jpg');
+    $cover = $heroMedia?->url ?: ($roteiro->capa_url ?: asset('imagens/altamira.jpg'));
 
     $pointUrl = function ($ponto) {
         foreach (['site.pontos.show', 'site.ponto.show'] as $routeName) {
@@ -72,6 +72,11 @@
         ->groupBy(fn ($item) => $item->tipo_sugestao_label ?: ui_text('ui.itineraries.suggestions'));
 
     $temMapa = $pontosUnicos->contains(fn ($p) => filled($p->lat) && filled($p->lng));
+    $heroBadge = $heroTranslation?->eyebrow ?: $roteiro->duracao_label;
+    $heroTitle = $heroTranslation?->titulo ?: $roteiro->titulo;
+    $heroSubtitle = $heroTranslation?->lead ?: ($roteiro->resumo ?: null);
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ui_text('ui.explore.view_place');
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: '#percurso';
 @endphp
 
 <section class="relative overflow-hidden bg-slate-950 text-white">
@@ -98,7 +103,7 @@
             <div class="max-w-3xl">
                 <div class="flex flex-wrap gap-2">
                     <span class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white">
-                        {{ $roteiro->duracao_label }}
+                        {{ $heroBadge }}
                     </span>
                     <span class="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-white">
                         {{ $roteiro->perfil_label }}
@@ -111,21 +116,21 @@
                 </div>
 
                 <h1 class="mt-4 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-                    {{ $roteiro->titulo }}
+                    {{ $heroTitle }}
                 </h1>
 
-                @if($roteiro->resumo)
+                @if($heroSubtitle)
                     <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 sm:text-base">
-                        {{ $roteiro->resumo }}
+                        {{ $heroSubtitle }}
                     </p>
                 @endif
 
                 <div class="mt-6 flex flex-wrap gap-3">
                     <a
-                        href="#percurso"
+                        href="{{ $heroPrimaryHref }}"
                         class="inline-flex items-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-500"
                     >
-                        {{ ui_text('ui.explore.view_place') }}
+                        {{ $heroPrimaryLabel }}
                     </a>
 
                     @if($temMapa)
@@ -641,4 +646,26 @@
         </div>
     </div>
 </section>
+
+@include('site.partials._content_editor', [
+    'editorTitle' => $heroTitle,
+    'editorPage' => 'site.roteiros.show',
+    'editorKey' => 'hero',
+    'editorLabel' => 'Hero detalhe de roteiro',
+    'editorLocale' => route_locale(),
+    'editableTranslation' => $heroTranslation ?? null,
+    'editableHeroMedia' => $heroMedia ?? null,
+    'editableStatus' => $heroBlock?->status ?? 'publicado',
+    'editableFallback' => [
+        'eyebrow' => $heroBadge,
+        'titulo' => $heroTitle,
+        'subtitulo' => null,
+        'lead' => $heroSubtitle,
+        'conteudo' => null,
+        'cta_label' => $heroPrimaryLabel,
+        'cta_href' => $heroPrimaryHref,
+        'seo_title' => $heroTitle,
+        'seo_description' => \Illuminate\Support\Str::limit(strip_tags((string) ($roteiro->seo_description ?: $roteiro->resumo ?: $roteiro->descricao)), 160),
+    ],
+])
 @endsection
