@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\RotaDoCacau;
 use App\Models\RotaDoCacauEdicao;
 use Illuminate\Support\Collection;
 
 class RotaDoCacauController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function index()
     {
         $rota = $this->principalPublicada()?->load([
@@ -25,12 +28,12 @@ class RotaDoCacauController extends Controller
         $edicaoDestaque = $edicoes->first();
         $outrasEdicoes = $edicoes->slice(1)->values();
 
-        return view('site.rota_do_cacau.index', [
+        return view('site.rota_do_cacau.index', array_merge([
             'rota' => $rota,
             'edicoes' => $edicoes,
             'edicaoDestaque' => $edicaoDestaque,
             'outrasEdicoes' => $outrasEdicoes,
-        ]);
+        ], $this->resolveEditableHero('site.rota_do_cacau.index')));
     }
 
     public function show(string $locale, string $slug)
@@ -65,12 +68,12 @@ class RotaDoCacauController extends Controller
 
         $temConteudoComplementar = $this->temConteudoComplementar($edicao);
 
-        return view('site.rota_do_cacau.show', [
+        return view('site.rota_do_cacau.show', array_merge([
             'rota' => $rota,
             'edicao' => $edicao,
             'outrasEdicoes' => $outrasEdicoes,
             'temConteudoComplementar' => $temConteudoComplementar,
-        ]);
+        ], $this->resolveEditableHero('site.rota_do_cacau.show')));
     }
 
     private function principalPublicada(): ?RotaDoCacau

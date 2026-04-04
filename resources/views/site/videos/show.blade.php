@@ -8,8 +8,13 @@
 @php
     use Illuminate\Support\Str;
 
-    $cover = $video->capa_url ?: asset('imagens/altamira.jpg');
+    $cover = $heroMedia?->url ?: ($video->capa_url ?: asset('imagens/altamira.jpg'));
     $embedUrl = $video->embed_url;
+    $heroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.common.video');
+    $heroTitle = $heroTranslation?->titulo ?: $video->titulo;
+    $heroSubtitle = $heroTranslation?->lead ?: Str::limit(strip_tags((string) $video->descricao), 240);
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ui_text('ui.home.watch_now');
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: '#visualizacao';
 @endphp
 
 <section class="relative isolate overflow-hidden bg-[#07131C] text-white">
@@ -20,12 +25,12 @@
 
     <div class="relative mx-auto max-w-7xl px-4 pb-14 pt-10 sm:px-6 lg:px-8 lg:pb-20 lg:pt-14">
         <div class="max-w-3xl">
-            <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.20em] text-cyan-100">{{ ui_text('ui.common.video') }}</span>
-            <h1 class="mt-5 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">{{ $video->titulo }}</h1>
-            <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 sm:text-base">{{ Str::limit(strip_tags((string) $video->descricao), 240) }}</p>
+            <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.20em] text-cyan-100">{{ $heroBadge }}</span>
+            <h1 class="mt-5 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">{{ $heroTitle }}</h1>
+            <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 sm:text-base">{{ $heroSubtitle }}</p>
 
             <div class="mt-7 flex flex-wrap gap-3">
-                <a href="#visualizacao" class="inline-flex items-center justify-center rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-cyan-500">{{ ui_text('ui.home.watch_now') }}</a>
+                <a href="{{ $heroPrimaryHref }}" class="inline-flex items-center justify-center rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-cyan-500">{{ $heroPrimaryLabel }}</a>
                 <a href="{{ localized_route('site.videos') }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15">{{ ui_text('ui.common.back_to_videos') }}</a>
             </div>
         </div>
@@ -126,6 +131,28 @@
         </div>
     </div>
 </section>
+
+@include('site.partials._content_editor', [
+    'editorTitle' => $heroTitle,
+    'editorPage' => 'site.videos.show',
+    'editorKey' => 'hero',
+    'editorLabel' => 'Hero detalhe de vídeo',
+    'editorLocale' => route_locale(),
+    'editableTranslation' => $heroTranslation ?? null,
+    'editableHeroMedia' => $heroMedia ?? null,
+    'editableStatus' => $heroBlock?->status ?? 'publicado',
+    'editableFallback' => [
+        'eyebrow' => $heroBadge,
+        'titulo' => $heroTitle,
+        'subtitulo' => null,
+        'lead' => $heroSubtitle,
+        'conteudo' => null,
+        'cta_label' => $heroPrimaryLabel,
+        'cta_href' => $heroPrimaryHref,
+        'seo_title' => $heroTitle,
+        'seo_description' => \Illuminate\Support\Str::limit(strip_tags((string) $video->descricao), 160),
+    ],
+])
 @endsection
 
 

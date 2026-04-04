@@ -33,7 +33,7 @@
 @endpush
 
 @section('content')
-    <div class="site-shell" data-site-theme="{{ $resolvedThemeDataTheme ?? 'default' }}">
+    <div class="site-shell" data-site-theme="{{ $resolvedThemeDataTheme ?? 'default' }}" data-desktop-frame="bleed">
         @include('site.partials._top_nav')
 
         <main class="site-main">
@@ -50,13 +50,71 @@
         (() => {
             const shell = document.querySelector('.site-shell');
             const topbar = document.querySelector('.site-topbar');
+            const desktopFrameToggle = document.querySelector('[data-desktop-frame-toggle]');
 
             if (!shell || !topbar) {
                 return;
             }
 
             const mobileQuery = window.matchMedia('(max-width: 1023px)');
+            const desktopQuery = window.matchMedia('(min-width: 1024px)');
+            const storageKey = 'siteDesktopFrameMode';
             let lastScrollY = window.scrollY;
+
+            const readDesktopFrame = () => {
+                try {
+                    const saved = window.localStorage.getItem(storageKey);
+                    return saved === 'contained' ? 'contained' : 'bleed';
+                } catch (error) {
+                    return 'bleed';
+                }
+            };
+
+            const writeDesktopFrame = (value) => {
+                try {
+                    window.localStorage.setItem(storageKey, value);
+                } catch (error) {
+                    // ignore storage failures for public desktop preference
+                }
+            };
+
+            const syncDesktopFrameButton = (button = desktopFrameToggle) => {
+                if (!button) {
+                    return;
+                }
+
+                const mode = shell.dataset.desktopFrame === 'bleed' ? 'bleed' : 'contained';
+                const nextLabel = mode === 'bleed'
+                    ? button.dataset.labelBleed
+                    : button.dataset.labelContained;
+                const labelNode = button.querySelector('.site-desktop-frame-toggle-label');
+
+                button.setAttribute('aria-pressed', mode === 'bleed' ? 'true' : 'false');
+                if (labelNode) {
+                    labelNode.textContent = nextLabel || '';
+                }
+            };
+
+            const applyDesktopFrame = (value, persist = false, button = desktopFrameToggle) => {
+                const mode = value === 'bleed' ? 'bleed' : 'contained';
+                shell.setAttribute('data-desktop-frame', mode);
+                document.documentElement.setAttribute('data-site-desktop-frame', mode);
+
+                if (persist) {
+                    writeDesktopFrame(mode);
+                }
+
+                syncDesktopFrameButton(button);
+            };
+
+            const toggleDesktopFrame = (button = desktopFrameToggle) => {
+                if (!desktopQuery.matches) {
+                    return;
+                }
+
+                const currentMode = shell.dataset.desktopFrame === 'bleed' ? 'bleed' : 'contained';
+                applyDesktopFrame(currentMode === 'bleed' ? 'contained' : 'bleed', true, button);
+            };
 
             const syncTopbarState = () => {
                 if (!mobileQuery.matches) {
@@ -77,9 +135,14 @@
                 lastScrollY = currentY;
             };
 
+            window.toggleSiteDesktopFrame = toggleDesktopFrame;
+
             window.addEventListener('scroll', syncTopbarState, { passive: true });
             window.addEventListener('resize', syncTopbarState, { passive: true });
             mobileQuery.addEventListener?.('change', syncTopbarState);
+            desktopQuery.addEventListener?.('change', () => syncDesktopFrameButton(desktopFrameToggle));
+
+            applyDesktopFrame(readDesktopFrame());
             syncTopbarState();
         })();
     </script>

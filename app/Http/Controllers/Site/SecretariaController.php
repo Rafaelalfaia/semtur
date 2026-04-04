@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Controller;
 use App\Models\Secretaria;
 use App\Models\EquipeMembro;
+use App\Services\ConteudoSiteResolver;
 
 class SecretariaController extends Controller
 {
@@ -20,7 +21,11 @@ class SecretariaController extends Controller
         }
 
         $membros = EquipeMembro::publicados()->ordenados()->get();
+        $resolver = app(ConteudoSiteResolver::class);
+        $heroBlock = $resolver->bloco('site.semtur', 'hero');
+        $heroTranslation = $heroBlock?->getAttribute('traducao_resolvida');
+        $heroMedia = $heroBlock?->midias->first();
 
-        return view('site.semtur.show', compact('sec','membros'));
+        return view('site.semtur.show', compact('sec', 'membros', 'heroBlock', 'heroTranslation', 'heroMedia'));
     }
 }

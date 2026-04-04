@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Evento;
 use App\Models\EventoEdicao;
 
 class PortalController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function roteiros()
     {
         return $this->page('roteiros');
@@ -54,8 +57,19 @@ class PortalController extends Controller
 
         abort_unless(isset($pages[$key]), 404);
 
+        $editable = $this->resolveEditableHero("portal.{$key}");
+        $heroBlock = $editable['heroBlock'] ?? null;
+        $heroTranslation = $editable['heroTranslation'] ?? null;
+        $heroMedia = $editable['heroMedia'] ?? null;
+        $page = $this->mergeEditablePageData($pages[$key], $heroTranslation);
+
         $payload = [
-            'page' => $pages[$key],
+            'page' => $page,
+            'editableHeroBlock' => $heroBlock,
+            'editableHeroTranslation' => $heroTranslation,
+            'editableHeroMedia' => $heroMedia,
+            'editablePageKey' => "portal.{$key}",
+            'pageBlocks' => $editable['pageBlocks'] ?? collect(),
         ];
 
         if ($key === 'agenda') {
@@ -63,6 +77,22 @@ class PortalController extends Controller
         }
 
         return view('site.portal.index', $payload);
+    }
+
+    private function mergeEditablePageData(array $page, $heroTranslation): array
+    {
+        if (! $heroTranslation) {
+            return $page;
+        }
+
+        return array_merge($page, array_filter([
+            'eyebrow' => $heroTranslation->eyebrow,
+            'title' => $heroTranslation->titulo,
+            'description' => $heroTranslation->seo_description ?: $page['description'] ?? null,
+            'lead' => $heroTranslation->lead,
+            'cta_label' => $heroTranslation->cta_label,
+            'cta_href' => $heroTranslation->cta_href,
+        ], fn ($value) => filled($value)));
     }
 
     private function agendaPreviewEvents()

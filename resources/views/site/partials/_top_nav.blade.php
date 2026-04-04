@@ -35,6 +35,7 @@
         ->values();
 
     $u = Auth::user();
+    $themeLogoEditHref = null;
     if ($u) {
         $perfilLabel = ui_text('ui.nav.profile');
 
@@ -51,6 +52,18 @@
         }
     }
 
+    if (
+        $u
+        && method_exists($u, 'can')
+        && method_exists($u, 'hasRole')
+        && $u->hasRole('Admin')
+        && $u->can('themes.edit')
+        && !empty($resolvedActiveTheme)
+        && R::has('admin.temas.edit')
+    ) {
+        $themeLogoEditHref = route('admin.temas.edit', $resolvedActiveTheme);
+    }
+
     $sections = collect([
         ['label' => ui_text('ui.nav.home'),'href' => $routeUrl('site.home', localized_route('site.home')),'match' => ['site.home']],
         ['label' => ui_text('ui.nav.explore'),'href' => $routeUrl('site.explorar'),'match' => ['site.explorar*']],
@@ -60,6 +73,23 @@
     ])->filter(fn ($item) => filled($item['href']) && $item['href'] !== '#')->values();
 
     $navLabel = ui_text('ui.nav.sections');
+    $desktopFrameI18n = [
+        'label' => match ($activeLocale) {
+            'en' => 'Desktop width',
+            'es' => 'Ancho de escritorio',
+            default => 'Largura desktop',
+        },
+        'expand' => match ($activeLocale) {
+            'en' => 'Remove margins',
+            'es' => 'Quitar márgenes',
+            default => 'Sem margens',
+        },
+        'contain' => match ($activeLocale) {
+            'en' => 'Use margins',
+            'es' => 'Con márgenes',
+            default => 'Com margens',
+        },
+    ];
 @endphp
 
 <header class="site-topbar">
@@ -88,23 +118,52 @@
             @endforeach
         </nav>
 
-        @if($localeLinks->isNotEmpty())
-            <div class="site-topbar-locale" aria-label="{{ ui_text('ui.locale.label') }}">
-                @foreach($localeLinks as $localeItem)
-                    <a href="{{ $localeItem['href'] }}"
-                       class="{{ $localeItem['active'] ? 'site-locale-chip is-active' : 'site-locale-chip' }}"
-                       hreflang="{{ $localeItem['hreflang'] }}"
-                       lang="{{ $localeItem['html_lang'] }}"
-                       title="{{ ui_text('ui.locale.switch_to', ['language' => $localeItem['name']]) }}"
-                       aria-label="{{ ui_text('ui.locale.switch_to', ['language' => $localeItem['name']]) }}">
-                        @if($localeItem['icon'])
-                            <img src="{{ $localeItem['icon'] }}" alt="" class="site-locale-icon" loading="lazy" decoding="async">
-                        @else
-                            <span class="site-locale-icon flex items-center justify-center bg-white/70 text-[10px] font-semibold text-slate-700">{{ $localeItem['prefix'] }}</span>
-                        @endif
-                    </a>
-                @endforeach
-            </div>
-        @endif
+        <div class="site-topbar-meta">
+            <button
+                type="button"
+                class="site-desktop-frame-toggle"
+                data-desktop-frame-toggle
+                data-label-contained="{{ $desktopFrameI18n['expand'] }}"
+                data-label-bleed="{{ $desktopFrameI18n['contain'] }}"
+                onclick="window.toggleSiteDesktopFrame && window.toggleSiteDesktopFrame(this)"
+                aria-pressed="false"
+                aria-label="{{ $desktopFrameI18n['label'] }}"
+                title="{{ $desktopFrameI18n['label'] }}"
+            >
+                <span class="site-desktop-frame-toggle-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3.5" y="5" width="17" height="14" rx="2.6"></rect>
+                        <path d="M7.5 8.5v7"></path>
+                        <path d="M16.5 8.5v7"></path>
+                    </svg>
+                </span>
+                <span class="site-desktop-frame-toggle-label sr-only">{{ $desktopFrameI18n['contain'] }}</span>
+            </button>
+
+            @if($localeLinks->isNotEmpty())
+                <div class="site-topbar-locale" aria-label="{{ ui_text('ui.locale.label') }}">
+                    @foreach($localeLinks as $localeItem)
+                        <a href="{{ $localeItem['href'] }}"
+                           class="{{ $localeItem['active'] ? 'site-locale-chip is-active' : 'site-locale-chip' }}"
+                           hreflang="{{ $localeItem['hreflang'] }}"
+                           lang="{{ $localeItem['html_lang'] }}"
+                           title="{{ ui_text('ui.locale.switch_to', ['language' => $localeItem['name']]) }}"
+                           aria-label="{{ ui_text('ui.locale.switch_to', ['language' => $localeItem['name']]) }}">
+                            @if($localeItem['icon'])
+                                <img src="{{ $localeItem['icon'] }}" alt="" class="site-locale-icon" loading="lazy" decoding="async">
+                            @else
+                                <span class="site-locale-icon flex items-center justify-center bg-white/70 text-[10px] font-semibold text-slate-700">{{ $localeItem['prefix'] }}</span>
+                            @endif
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+
+            @if($themeLogoEditHref)
+                <div class="site-inline-actions">
+                    <a href="{{ $themeLogoEditHref }}" class="site-button-secondary">Trocar logo</a>
+                </div>
+            @endif
+        </div>
     </div>
 </header>

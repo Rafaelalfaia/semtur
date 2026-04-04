@@ -4,9 +4,9 @@
     use Illuminate\Support\Facades\Route as R;
 
     $homeCanonical = localized_route('site.home');
-    $homeTitle = ui_text('ui.home.title');
-    $homeDescription = ui_text('ui.home.description');
-    $homeImage = theme_asset('hero_image');
+    $homeTitle = $heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: ui_text('ui.home.title'));
+    $homeDescription = $heroTranslation?->seo_description ?: ($heroTranslation?->lead ?: ui_text('ui.home.description'));
+    $homeImage = $heroMedia?->url ?: theme_asset('hero_image');
     $homeSchema = [
         [
             '@type' => 'TouristDestination',
@@ -40,6 +40,33 @@
 
 @section('site.content')
 @php
+    $pageBlocks = $pageBlocks ?? collect();
+    $homeContentBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'conheca' => $pageBlocks->get('conheca'),
+        'discovery_band' => $pageBlocks->get('discovery_band'),
+        'recommended_section' => $pageBlocks->get('recommended_section'),
+        'points_section' => $pageBlocks->get('points_section'),
+        'planning_section' => $pageBlocks->get('planning_section'),
+        'videos_section' => $pageBlocks->get('videos_section'),
+        'whatsapp_section' => $pageBlocks->get('whatsapp_section'),
+        'map_section' => $pageBlocks->get('map_section'),
+        'instagram_section' => $pageBlocks->get('instagram_section'),
+        'entry_section' => $pageBlocks->get('entry_section'),
+        'editorial_banner_section' => $pageBlocks->get('editorial_banner_section'),
+        'entry_rota_do_cacau' => $pageBlocks->get('entry_rota_do_cacau'),
+        'entry_jogos_indigenas' => $pageBlocks->get('entry_jogos_indigenas'),
+        'entry_museus' => $pageBlocks->get('entry_museus'),
+        'utility_onde_comer' => $pageBlocks->get('utility_onde_comer'),
+        'utility_onde_ficar' => $pageBlocks->get('utility_onde_ficar'),
+        'utility_guias' => $pageBlocks->get('utility_guias'),
+    ];
+    $homeBlockTranslation = function (string $key) use ($homeContentBlocks) {
+        return $homeContentBlocks[$key]?->getAttribute('traducao_resolvida');
+    };
+    $homeBlockMedia = function (string $key, string $slot = 'hero') use ($homeContentBlocks) {
+        return $homeContentBlocks[$key]?->getAttribute('media_by_slot')?->get($slot);
+    };
     $pontosDestaque = collect($pontosDestaque ?? []);
     $recomendacoes = collect($recomendacoes ?? []);
     $videosHome = collect($videosHome ?? []);
@@ -50,9 +77,38 @@
     $mapCategories = collect($mapCategories ?? []);
     $bannerTopo = $bannerTopo ?? $bannersDestaque->first() ?? null;
     $bannerIntermediario = $bannerIntermediario ?? $banner ?? null;
-    $conhecaImage = asset('imagens/conheça.png');
-    $grafismoIndigena = asset('imagens/fundo.svg');
-    $grafismoExperiencia = asset('imagens/grafismo.svg');
+    $conhecaTranslation = $homeBlockTranslation('conheca');
+    $conhecaMedia = $homeBlockMedia('conheca', 'brand') ?: $homeBlockMedia('conheca');
+    $discoveryBandTranslation = $homeBlockTranslation('discovery_band');
+    $discoveryBandMedia = $homeBlockMedia('discovery_band', 'background') ?: $homeBlockMedia('discovery_band');
+    $recommendedSectionTranslation = $homeBlockTranslation('recommended_section');
+    $pointsSectionTranslation = $homeBlockTranslation('points_section');
+    $planningSectionTranslation = $homeBlockTranslation('planning_section');
+    $videosSectionTranslation = $homeBlockTranslation('videos_section');
+    $whatsAppSectionTranslation = $homeBlockTranslation('whatsapp_section');
+    $mapSectionTranslation = $homeBlockTranslation('map_section');
+    $instagramSectionTranslation = $homeBlockTranslation('instagram_section');
+    $entrySectionTranslation = $homeBlockTranslation('entry_section');
+    $editorialBannerSectionTranslation = $homeBlockTranslation('editorial_banner_section');
+    $planningBackgroundMedia = $homeBlockMedia('planning_section', 'background') ?: $homeBlockMedia('planning_section');
+    $entryImageKeys = [
+        'rota_do_cacau' => 'entry_rota_do_cacau',
+        'jogos_indigenas' => 'entry_jogos_indigenas',
+        'museus' => 'entry_museus',
+    ];
+    $utilityImageKeys = [
+        'onde_comer' => 'utility_onde_comer',
+        'onde_ficar' => 'utility_onde_ficar',
+        'guias' => 'utility_guias',
+    ];
+    $conhecaImage = $conhecaMedia?->url ?: asset('imagens/conheça.png');
+    $grafismoIndigena = $discoveryBandMedia?->url ?: asset('imagens/fundo.svg');
+    $grafismoExperiencia = $planningBackgroundMedia?->url ?: asset('imagens/grafismo.svg');
+    $homeHeroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.common.official_destination');
+    $homeHeroTitle = $heroTranslation?->titulo ?: 'Visit Altamira';
+    $homeHeroPrimaryLabel = $heroTranslation?->cta_label ?: ui_text('ui.common.discover');
+    $homeHeroPrimaryHref = $heroTranslation?->cta_href ?: localized_route('site.explorar');
+    $homeHeroImage = $heroMedia?->url ?: asset('imagens/visitcapa.png');
     $pointCards = $pontosDestaque
         ->take(8)
         ->map(fn ($item) => [
@@ -86,6 +142,78 @@
     });
 
     $videosIndexHref = R::has('site.videos') ? localized_route('site.videos') : '#';
+    $recommendedTitle = $recommendedSectionTranslation?->titulo ?: ui_text('ui.home.recommended_title');
+    $recommendedEyebrow = $recommendedSectionTranslation?->eyebrow;
+    $recommendedSubtitle = $recommendedSectionTranslation?->lead;
+    $pointsEyebrow = $pointsSectionTranslation?->eyebrow ?: ui_text('ui.home.points_eyebrow');
+    $pointsTitle = $pointsSectionTranslation?->titulo ?: ui_text('ui.home.points_title');
+    $pointsSubtitle = $pointsSectionTranslation?->lead ?: ui_text('ui.home.points_subtitle');
+    $pointsHref = $pointsSectionTranslation?->cta_href ?: localized_route('site.explorar');
+    $planningEyebrow = $planningSectionTranslation?->eyebrow ?: ui_text('ui.home.planning_eyebrow');
+    $planningTitle = $planningSectionTranslation?->titulo ?: ui_text('ui.home.planning_title');
+    $planningSubtitle = $planningSectionTranslation?->lead ?: ui_text('ui.home.planning_subtitle');
+    $videosEyebrow = $videosSectionTranslation?->eyebrow;
+    $videosTitle = $videosSectionTranslation?->titulo ?: ui_text('ui.home.videos_title');
+    $videosSubtitle = $videosSectionTranslation?->lead;
+    $videosAllLabel = $videosSectionTranslation?->cta_label ?: ui_text('ui.home.videos_all');
+    $videosAllHref = $videosSectionTranslation?->cta_href ?: $videosIndexHref;
+    $whatsAppTitle = $whatsAppSectionTranslation?->titulo ?: 'WhatsApp';
+    $whatsAppSubtitle = $whatsAppSectionTranslation?->lead ?: 'Fale com a SEMTUR';
+    $whatsAppHref = $whatsAppSectionTranslation?->cta_href ?: 'https://wa.me/559391727547?text='.rawurlencode('Olá! Quero tirar dúvidas e planejar minha visita a Altamira.');
+    $mapEyebrow = $mapSectionTranslation?->eyebrow ?: ui_text('ui.home.map_badge');
+    $mapTitle = $mapSectionTranslation?->titulo ?: ui_text('ui.home.map_title');
+    $mapCtaLabel = $mapSectionTranslation?->cta_label ?: ui_text('ui.home.map_open_full');
+    $mapCtaHref = $mapSectionTranslation?->cta_href ?: (R::has('site.mapa') ? localized_route('site.mapa') : '#');
+    $instagramEyebrow = $instagramSectionTranslation?->eyebrow ?: ui_text('ui.instagram.eyebrow');
+    $instagramTitle = $instagramSectionTranslation?->titulo ?: '@visitaltamira';
+    $instagramCtaHref = $instagramSectionTranslation?->cta_href ?: 'https://www.instagram.com/visitaltamira/';
+    $entrySectionTitle = $entrySectionTranslation?->titulo ?: ui_text('ui.home.entry_title');
+    $editorialBannerTitle = $editorialBannerSectionTranslation?->titulo ?: ($bannerIntermediario->titulo ?? 'VisitAltamira');
+    $editorialBannerSubtitle = $editorialBannerSectionTranslation?->subtitulo ?: ($bannerIntermediario->subtitulo ?? null);
+    $editorialBannerCtaLabel = $editorialBannerSectionTranslation?->cta_label ?: ($bannerIntermediario->cta_label ?? ui_text('ui.home.banner_cta'));
+    $editorialBannerCtaHref = $editorialBannerSectionTranslation?->cta_href ?: ($bannerIntermediario->cta_url ?? $bannerIntermediario->href ?? localized_route('site.explorar'));
+    $canViewFeaturedBanners = auth()->check() && auth()->user()->can('banners_destaque.view');
+    $canManageFeaturedBanners = auth()->check() && auth()->user()->can('banners_destaque.manage');
+    $canViewBanners = auth()->check() && auth()->user()->can('banners.view');
+    $canManageBanners = auth()->check() && auth()->user()->can('banners.manage');
+    $experienciasEntrada = $experienciasEntrada->map(function (array $item) use ($entryImageKeys, $homeContentBlocks, $homeBlockTranslation) {
+        $blockKey = $entryImageKeys[$item['key']] ?? null;
+        $block = $blockKey ? ($homeContentBlocks[$blockKey] ?? null) : null;
+        $translation = $blockKey ? $homeBlockTranslation($blockKey) : null;
+        $media = $block?->getAttribute('media_by_slot')?->get('card') ?: $block?->getAttribute('media_by_slot')?->get('hero');
+
+        return array_merge($item, [
+            'image' => $media?->url ?: ($item['image'] ?? null),
+            'editor' => $blockKey ? [
+                'title' => $translation?->titulo ?: ($item['title'] ?? 'Imagem'),
+                'page' => 'site.home',
+                'key' => $blockKey,
+                'label' => 'Imagem '.($item['title'] ?? 'do bloco'),
+                'translation' => $translation,
+                'media' => $media,
+                'status' => $block?->status ?? 'publicado',
+            ] : null,
+        ]);
+    });
+    $atalhosPremium = $atalhosPremium->map(function (array $item) use ($utilityImageKeys, $homeContentBlocks, $homeBlockTranslation) {
+        $blockKey = $utilityImageKeys[$item['key']] ?? null;
+        $block = $blockKey ? ($homeContentBlocks[$blockKey] ?? null) : null;
+        $translation = $blockKey ? $homeBlockTranslation($blockKey) : null;
+        $media = $block?->getAttribute('media_by_slot')?->get('card') ?: $block?->getAttribute('media_by_slot')?->get('hero');
+
+        return array_merge($item, [
+            'image' => $media?->url ?: ($item['image'] ?? null),
+            'editor' => $blockKey ? [
+                'title' => $translation?->titulo ?: ($item['title'] ?? 'Imagem'),
+                'page' => 'site.home',
+                'key' => $blockKey,
+                'label' => 'Imagem '.($item['title'] ?? 'do bloco'),
+                'translation' => $translation,
+                'media' => $media,
+                'status' => $block?->status ?? 'publicado',
+            ] : null,
+        ]);
+    });
 @endphp
 
 <div
@@ -112,37 +240,54 @@
     <div class="site-section site-home-hero-section site-home-hero-section--premium">
         @include('site.partials._banner', [
             'banner' => $bannerTopo,
-            'title' => '',
+            'eyebrow' => $homeHeroBadge,
+            'title' => $homeHeroTitle,
             'subtitle' => null,
-            'ctaLabel' => null,
-            'href' => null,
+            'ctaLabel' => $homeHeroPrimaryLabel,
+            'href' => $homeHeroPrimaryHref,
             'secondaryCtaLabel' => null,
             'secondaryHref' => null,
-            'overlayOnly' => true,
-            'overlayImage' => asset('imagens/visitcapa.png'),
+            'overlayOnly' => false,
+            'overlayImage' => $homeHeroImage,
             'overlayImageAlt' => ui_text('ui.home.hero_overlay_alt'),
             'heroClass' => 'site-hero-home-immersive',
+            'contentVisible' => false,
+            'sectionActions' => array_values(array_filter([
+                ($bannerTopo && $canManageFeaturedBanners && R::has('coordenador.banners-destaque.edit'))
+                    ? ['label' => 'Editar banner principal', 'href' => route('coordenador.banners-destaque.edit', $bannerTopo), 'class' => 'site-button-secondary']
+                    : null,
+                ($canViewFeaturedBanners && R::has('coordenador.banners-destaque.index'))
+                    ? ['label' => 'Banners principais', 'href' => route('coordenador.banners-destaque.index'), 'class' => 'site-button-secondary']
+                    : null,
+            ])),
         ])
-
-        <div class="site-home-hero-panel">
-            <div class="site-home-hero-panel-copy">
-                <span class="site-badge">{{ ui_text('ui.common.official_destination') }}</span>
-                <img
-                    src="{{ $conhecaImage }}"
-                    alt="{{ ui_text('ui.home.know_altamira') }}"
-                    class="site-home-hero-panel-brand"
-                    loading="lazy"
-                    decoding="async"
-                >
-            </div>
-        </div>
     </div>
 
-    <section class="site-section site-home-conheca-section" aria-label="{{ ui_text('ui.home.know_altamira') }}">
+    <section class="site-section site-home-conheca-section" aria-label="{{ $conhecaTranslation?->titulo ?: ui_text('ui.home.know_altamira') }}">
         <div class="site-home-conheca-shell">
+            @include('site.partials._content_editor', [
+                'editorTitle' => $homeHeroBadge,
+                'editorPage' => 'site.home',
+                'editorKey' => 'conheca',
+                'editorLabel' => 'Logo da home',
+                'editorLocale' => route_locale(),
+                'editorTriggerVariant' => 'inline-compact',
+                'editorTriggerLabel' => 'Editar logo',
+                'editorFields' => ['eyebrow', 'media'],
+                'editableTranslation' => $conhecaTranslation,
+                'editableMedia' => $conhecaMedia,
+                'editableStatus' => $homeContentBlocks['conheca']?->status ?? 'publicado',
+                'editorMediaSlot' => 'brand',
+                'editorMediaLabel' => 'Logo',
+                'editorMediaPreviewLabel' => 'logo atual',
+                'editableFallback' => [
+                    'eyebrow' => $homeHeroBadge,
+                ],
+            ])
+            <span class="site-badge site-home-conheca-badge">{{ $conhecaTranslation?->eyebrow ?: $homeHeroBadge }}</span>
             <img
                 src="{{ $conhecaImage }}"
-                alt="{{ ui_text('ui.home.know_altamira') }}"
+                alt="{{ $conhecaTranslation?->titulo ?: ui_text('ui.home.know_altamira') }}"
                 class="site-home-conheca-image"
                 loading="lazy"
                 decoding="async"
@@ -151,11 +296,56 @@
     </section>
 
     <div class="site-home-discovery-band" style="--site-home-band-art: url('{{ $grafismoIndigena }}');">
-        @include('site.partials._portal_shortcuts', ['experienciasEntrada' => $experienciasEntrada])
+        @include('site.partials._content_editor', [
+            'editorTitle' => $discoveryBandTranslation?->titulo ?: 'Faixa de descoberta',
+            'editorPage' => 'site.home',
+            'editorKey' => 'discovery_band',
+            'editorLabel' => 'Grafismo de descoberta',
+            'editorLocale' => route_locale(),
+            'editorTriggerVariant' => 'inline-compact',
+            'editorTriggerLabel' => 'Editar fundo',
+            'editorFields' => ['media'],
+            'editableTranslation' => $discoveryBandTranslation,
+            'editableMedia' => $discoveryBandMedia,
+            'editableStatus' => $homeContentBlocks['discovery_band']?->status ?? 'publicado',
+            'editorMediaSlot' => 'background',
+            'editorMediaLabel' => 'Imagem de fundo',
+            'editorMediaPreviewLabel' => 'Imagem de fundo atual',
+            'editableFallback' => [
+                'titulo' => 'Faixa de descoberta',
+            ],
+        ])
+        @include('site.partials._portal_shortcuts', [
+            'experienciasEntrada' => $experienciasEntrada,
+            'title' => $entrySectionTitle,
+            'editor' => [
+                'title' => $entrySectionTitle,
+                'page' => 'site.home',
+                'key' => 'entry_section',
+                'label' => 'Título da seção de experiências',
+                'translation' => $entrySectionTranslation,
+                'status' => $homeContentBlocks['entry_section']?->status ?? 'publicado',
+            ],
+        ])
 
         @if($recommendationCards->isNotEmpty())
             <section class="site-section site-home-recommendations-section">
-                <x-section-head :title="ui_text('ui.home.recommended_title')" />
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $recommendedTitle,
+                    'editorPage' => 'site.home',
+                    'editorKey' => 'recommended_section',
+                    'editorLabel' => 'Seção recomendados',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline',
+                    'editableTranslation' => $recommendedSectionTranslation,
+                    'editableStatus' => $homeContentBlocks['recommended_section']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'eyebrow' => null,
+                        'titulo' => ui_text('ui.home.recommended_title'),
+                        'lead' => null,
+                    ],
+                ])
+                <x-section-head :eyebrow="$recommendedEyebrow" :title="$recommendedTitle" :subtitle="$recommendedSubtitle" />
 
                 <div class="site-home-carousel-shell site-home-recommendations-shell" x-data="{
                     canPrev: false,
@@ -199,25 +389,74 @@
         @endif
     </div>
 
-    @include('site.partials._instagram_carousel', ['instagram' => $instagram])
+    @include('site.partials._instagram_carousel', [
+        'instagram' => $instagram,
+        'eyebrow' => $instagramEyebrow,
+        'title' => $instagramTitle,
+        'href' => $instagramCtaHref,
+        'editor' => [
+            'title' => $instagramTitle,
+            'page' => 'site.home',
+            'key' => 'instagram_section',
+            'label' => 'Seção Instagram',
+            'translation' => $instagramSectionTranslation,
+            'status' => $homeContentBlocks['instagram_section']?->status ?? 'publicado',
+        ],
+    ])
 
     @if($bannerIntermediario)
         <section class="site-section site-home-editorial-banner-section">
             @include('site.partials._banner', [
                 'banner' => $bannerIntermediario,
-                'title' => $bannerIntermediario->titulo ?? 'VisitAltamira',
-                'ctaLabel' => $bannerIntermediario->cta_label ?? ui_text('ui.home.banner_cta'),
-                'href' => $bannerIntermediario->cta_url ?? $bannerIntermediario->href ?? (localized_route('site.explorar')),
+                'title' => $editorialBannerTitle,
+                'subtitle' => $editorialBannerSubtitle,
+                'ctaLabel' => $editorialBannerCtaLabel,
+                'href' => $editorialBannerCtaHref,
                 'heroClass' => 'site-hero-home-editorial-banner',
-            ])
+                'textEditor' => [
+                    'title' => $editorialBannerTitle,
+                    'page' => 'site.home',
+                    'key' => 'editorial_banner_section',
+                    'label' => 'Texto do banner intermediário',
+                'translation' => $editorialBannerSectionTranslation,
+                'status' => $homeContentBlocks['editorial_banner_section']?->status ?? 'publicado',
+                'trigger_label' => 'Editar texto',
+                'fields' => ['titulo', 'subtitulo', 'cta_label', 'cta_href'],
+            ],
+            'sectionActions' => array_values(array_filter([
+                ($bannerIntermediario && $canManageBanners && R::has('coordenador.banners.edit'))
+                    ? ['label' => 'Editar banner', 'href' => route('coordenador.banners.edit', $bannerIntermediario), 'class' => 'site-button-secondary']
+                    : null,
+                ($canViewBanners && R::has('coordenador.banners.index'))
+                    ? ['label' => 'Banners', 'href' => route('coordenador.banners.index'), 'class' => 'site-button-secondary']
+                    : null,
+            ])),
+        ])
         </section>
     @endif
 
+    @include('site.partials._content_editor', [
+        'editorTitle' => $pointsTitle,
+        'editorPage' => 'site.home',
+        'editorKey' => 'points_section',
+        'editorLabel' => 'Seção pontos',
+        'editorLocale' => route_locale(),
+        'editorTriggerVariant' => 'inline',
+        'editableTranslation' => $pointsSectionTranslation,
+        'editableStatus' => $homeContentBlocks['points_section']?->status ?? 'publicado',
+        'editableFallback' => [
+            'eyebrow' => ui_text('ui.home.points_eyebrow'),
+            'titulo' => ui_text('ui.home.points_title'),
+            'lead' => ui_text('ui.home.points_subtitle'),
+            'cta_href' => localized_route('site.explorar'),
+        ],
+    ])
+
     @include('site.partials._category_section', [
-        'eyebrow' => ui_text('ui.home.points_eyebrow'),
-        'title' => ui_text('ui.home.points_title'),
-        'subtitle' => ui_text('ui.home.points_subtitle'),
-        'href' => localized_route('site.explorar'),
+        'eyebrow' => $pointsEyebrow,
+        'title' => $pointsTitle,
+        'subtitle' => $pointsSubtitle,
+        'href' => $pointsHref,
         'items' => $pointCards,
         'layout' => 'carousel',
         'cardVariant' => 'compact',
@@ -226,38 +465,80 @@
     ])
 
     @if($atalhosPremium->isNotEmpty() || $videoCards->isNotEmpty())
+        @include('site.partials._content_editor', [
+            'editorTitle' => $planningTitle,
+            'editorPage' => 'site.home',
+            'editorKey' => 'planning_section',
+            'editorLabel' => 'Seção planeje sua viagem',
+            'editorLocale' => route_locale(),
+            'editorTriggerVariant' => 'inline',
+            'editableTranslation' => $planningSectionTranslation,
+            'editableMedia' => $planningBackgroundMedia,
+            'editableStatus' => $homeContentBlocks['planning_section']?->status ?? 'publicado',
+            'editorMediaSlot' => 'background',
+            'editorMediaLabel' => 'Grafismo de fundo',
+            'editorMediaPreviewLabel' => 'Grafismo atual',
+            'editableFallback' => [
+                'eyebrow' => ui_text('ui.home.planning_eyebrow'),
+                'titulo' => ui_text('ui.home.planning_title'),
+                'lead' => ui_text('ui.home.planning_subtitle'),
+            ],
+        ])
         <div class="site-home-experience-band" style="--site-home-experience-art: url('{{ $grafismoExperiencia }}');">
     @endif
 
     @if($atalhosPremium->isNotEmpty())
         <section class="site-section site-home-utility-section">
             <x-section-head
-                :eyebrow="ui_text('ui.home.planning_eyebrow')"
-                :title="ui_text('ui.home.planning_title')"
-                :subtitle="ui_text('ui.home.planning_subtitle')"
+                :eyebrow="$planningEyebrow"
+                :title="$planningTitle"
+                :subtitle="$planningSubtitle"
             />
 
             <div class="site-home-utility-grid">
                 @foreach($atalhosPremium as $item)
-                    <a
-                        href="{{ $item['href'] ?? '#' }}"
-                        class="site-home-utility-card site-home-utility-card--{{ $item['key'] ?? 'entry' }}"
-                        aria-label="{{ $item['title'] }}"
-                        title="{{ $item['title'] }}"
-                    >
-                        <div class="site-home-utility-media">
-                            @php $utilityImageSources = site_image_sources($item['image'] ?? null, 'card'); @endphp
-                            <x-picture
-                                :jpg="$utilityImageSources['jpg'] ?? ($item['image'] ?? null)"
-                                :webp="$utilityImageSources['webp'] ?? null"
-                                :alt="$item['title']"
-                                class="site-home-utility-image"
-                                sizes="(max-width: 768px) 86vw, 33vw"
-                                :width="$utilityImageSources['width'] ?? null"
-                                :height="$utilityImageSources['height'] ?? null"
-                            />
-                        </div>
-                    </a>
+                    <div>
+                        @if(!empty($item['editor']))
+                            @include('site.partials._content_editor', [
+                                'editorTitle' => $item['editor']['title'],
+                                'editorPage' => $item['editor']['page'],
+                                'editorKey' => $item['editor']['key'],
+                                'editorLabel' => $item['editor']['label'],
+                                'editorLocale' => route_locale(),
+                                'editorTriggerVariant' => 'inline-compact',
+                                'editorTriggerLabel' => 'Editar imagem',
+                                'editableTranslation' => $item['editor']['translation'],
+                                'editableMedia' => $item['editor']['media'],
+                                'editableStatus' => $item['editor']['status'],
+                                'editorMediaSlot' => 'card',
+                                'editorMediaLabel' => 'Imagem do card',
+                                'editorMediaPreviewLabel' => 'imagem do card atual',
+                                'editorFields' => ['media'],
+                                'editableFallback' => [
+                                    'titulo' => $item['title'] ?? 'Imagem do card',
+                                ],
+                            ])
+                        @endif
+                        <a
+                            href="{{ $item['href'] ?? '#' }}"
+                            class="site-home-utility-card site-home-utility-card--{{ $item['key'] ?? 'entry' }}"
+                            aria-label="{{ $item['title'] }}"
+                            title="{{ $item['title'] }}"
+                        >
+                            <div class="site-home-utility-media">
+                                @php $utilityImageSources = site_image_sources($item['image'] ?? null, 'card'); @endphp
+                                <x-picture
+                                    :jpg="$utilityImageSources['jpg'] ?? ($item['image'] ?? null)"
+                                    :webp="$utilityImageSources['webp'] ?? null"
+                                    :alt="$item['title']"
+                                    class="site-home-utility-image"
+                                    sizes="(max-width: 768px) 86vw, 33vw"
+                                    :width="$utilityImageSources['width'] ?? null"
+                                    :height="$utilityImageSources['height'] ?? null"
+                                />
+                            </div>
+                        </a>
+                    </div>
                 @endforeach
             </div>
         </section>
@@ -265,7 +546,23 @@
 
     @if($videoCards->isNotEmpty())
         <section class="site-section site-home-videos-section">
-            <x-section-head :title="ui_text('ui.home.videos_title')" />
+            @include('site.partials._content_editor', [
+                'editorTitle' => $videosTitle,
+                'editorPage' => 'site.home',
+                'editorKey' => 'videos_section',
+                'editorLabel' => 'Seção vídeos',
+                'editorLocale' => route_locale(),
+                'editorTriggerVariant' => 'inline',
+                'editableTranslation' => $videosSectionTranslation,
+                'editableStatus' => $homeContentBlocks['videos_section']?->status ?? 'publicado',
+                'editableFallback' => [
+                    'titulo' => ui_text('ui.home.videos_title'),
+                    'lead' => null,
+                    'cta_label' => ui_text('ui.home.videos_all'),
+                    'cta_href' => $videosIndexHref,
+                ],
+            ])
+            <x-section-head :eyebrow="$videosEyebrow" :title="$videosTitle" :subtitle="$videosSubtitle" />
 
             <div class="site-home-carousel-shell site-home-video-shell" x-data="{
                 canPrev: false,
@@ -326,7 +623,7 @@
                 </div>
 
                 <div class="site-home-video-actions">
-                    <a href="{{ $videosIndexHref }}" class="site-button-primary">{{ ui_text('ui.home.videos_all') }}</a>
+                    <a href="{{ $videosAllHref }}" class="site-button-primary">{{ $videosAllLabel }}</a>
                 </div>
             </div>
         </section>
@@ -336,15 +633,44 @@
         </div>
     @endif
 
-    @include('site.partials._home_map_embed', ['mapCategories' => $mapCategories])
+    @include('site.partials._home_map_embed', [
+        'mapCategories' => $mapCategories,
+        'eyebrow' => $mapEyebrow,
+        'title' => $mapTitle,
+        'ctaLabel' => $mapCtaLabel,
+        'ctaHref' => $mapCtaHref,
+        'editor' => [
+            'title' => $mapTitle,
+            'page' => 'site.home',
+            'key' => 'map_section',
+            'label' => 'Mapa da home',
+            'translation' => $mapSectionTranslation,
+            'status' => $homeContentBlocks['map_section']?->status ?? 'publicado',
+        ],
+    ])
 
+    @include('site.partials._content_editor', [
+        'editorTitle' => $whatsAppTitle,
+        'editorPage' => 'site.home',
+        'editorKey' => 'whatsapp_section',
+        'editorLabel' => 'Atalho WhatsApp',
+        'editorLocale' => route_locale(),
+        'editorTriggerVariant' => 'inline',
+        'editableTranslation' => $whatsAppSectionTranslation,
+        'editableStatus' => $homeContentBlocks['whatsapp_section']?->status ?? 'publicado',
+        'editableFallback' => [
+            'titulo' => 'WhatsApp',
+            'lead' => 'Fale com a SEMTUR',
+            'cta_href' => 'https://wa.me/559391727547?text='.rawurlencode('Olá! Quero tirar dúvidas e planejar minha visita a Altamira.'),
+        ],
+    ])
     <a
-        href="https://wa.me/559391727547?text={{ rawurlencode('Olá! Quero tirar dúvidas e planejar minha visita a Altamira.') }}"
+        href="{{ $whatsAppHref }}"
         target="_blank"
         rel="noopener noreferrer"
         class="site-home-whatsapp"
-        aria-label="Falar com a SEMTUR no WhatsApp"
-        title="Falar com a SEMTUR no WhatsApp"
+        aria-label="{{ trim($whatsAppTitle.' '.$whatsAppSubtitle) }}"
+        title="{{ trim($whatsAppTitle.' '.$whatsAppSubtitle) }}"
     >
         <span class="site-home-whatsapp-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -352,8 +678,8 @@
             </svg>
         </span>
         <span class="site-home-whatsapp-copy">
-            <strong>WhatsApp</strong>
-            <span>Fale com a SEMTUR</span>
+            <strong>{{ $whatsAppTitle }}</strong>
+            <span>{{ $whatsAppSubtitle }}</span>
         </span>
     </a>
 

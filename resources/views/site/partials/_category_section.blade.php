@@ -9,13 +9,57 @@
     'gridClass' => null,
     'cardVariant' => null,
     'layout' => 'grid',
+    'editor' => null,
+    'sectionActions' => [],
+    'emptyEditor' => null,
 ])
 
 <section {{ $attributes->class('site-section site-home-category-section') }}>
+    @if(!empty($editor))
+        @include('site.partials._content_editor', [
+            'editorTitle' => $editor['title'] ?? $title,
+            'editorPage' => $editor['page'] ?? 'site.page',
+            'editorKey' => $editor['key'] ?? 'section',
+            'editorLabel' => $editor['label'] ?? 'Seção editorial',
+            'editorLocale' => $editor['locale'] ?? route_locale(),
+            'editorTriggerVariant' => $editor['trigger_variant'] ?? 'inline-compact',
+            'editorTriggerLabel' => $editor['trigger_label'] ?? 'Editar texto',
+            'editorFields' => $editor['fields'] ?? ['eyebrow', 'titulo', 'lead'],
+            'editableTranslation' => $editor['translation'] ?? null,
+            'editableStatus' => $editor['status'] ?? 'publicado',
+            'editableFallback' => $editor['fallback'] ?? [],
+        ])
+    @endif
+
     <x-section-head :eyebrow="$eyebrow" :title="$title" :subtitle="$subtitle" :href="$href" />
+
+    @if(collect($sectionActions)->isNotEmpty())
+        <div class="site-inline-actions">
+            @foreach($sectionActions as $action)
+                @if(!empty($action['href']) && !empty($action['label']))
+                    <a href="{{ $action['href'] }}" class="{{ $action['class'] ?? 'site-button-secondary' }}">{{ $action['label'] }}</a>
+                @endif
+            @endforeach
+        </div>
+    @endif
 
     @if(collect($items)->isEmpty())
         <div class="site-empty-state">
+            @if(!empty($emptyEditor))
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $emptyEditor['title'] ?? $emptyTitle,
+                    'editorPage' => $emptyEditor['page'] ?? 'site.page',
+                    'editorKey' => $emptyEditor['key'] ?? 'empty_state',
+                    'editorLabel' => $emptyEditor['label'] ?? 'Estado vazio',
+                    'editorLocale' => $emptyEditor['locale'] ?? route_locale(),
+                    'editorTriggerVariant' => $emptyEditor['trigger_variant'] ?? 'inline-compact',
+                    'editorTriggerLabel' => $emptyEditor['trigger_label'] ?? 'Editar texto',
+                    'editorFields' => $emptyEditor['fields'] ?? ['titulo', 'lead'],
+                    'editableTranslation' => $emptyEditor['translation'] ?? null,
+                    'editableStatus' => $emptyEditor['status'] ?? 'publicado',
+                    'editableFallback' => $emptyEditor['fallback'] ?? [],
+                ])
+            @endif
             <p class="site-empty-state-title">{{ $emptyTitle }}</p>
             <p class="site-empty-state-copy">{{ $empty }}</p>
         </div>
@@ -56,6 +100,7 @@
                                 :meta="$item['meta'] ?? null"
                                 :cta="$item['cta'] ?? ui_text('ui.common.view_more')"
                                 :variant="$cardVariant"
+                                :admin-action="$item['admin_action'] ?? null"
                             />
                         </div>
                     @endforeach
@@ -74,11 +119,11 @@
                         :meta="$item['meta'] ?? null"
                         :cta="$item['cta'] ?? ui_text('ui.common.view_more')"
                         :variant="$cardVariant"
+                        :admin-action="$item['admin_action'] ?? null"
                     />
                 @endforeach
             </div>
         @endif
     @endif
 </section>
-
 

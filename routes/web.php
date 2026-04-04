@@ -75,6 +75,9 @@ use App\Http\Controllers\Admin\BackupController as AdminBackupController;
 use App\Http\Controllers\Admin\UsuarioController as AdminUsuario;
 use App\Http\Controllers\Admin\IdiomaController as AdminIdiomaController;
 use App\Http\Controllers\Admin\TranslationController as AdminTranslationController;
+use App\Http\Controllers\Admin\CursoController as AdminCursoController;
+use App\Http\Controllers\Admin\CursoModuloController as AdminCursoModuloController;
+use App\Http\Controllers\Admin\CursoAulaController as AdminCursoAulaController;
 
 
 
@@ -112,6 +115,8 @@ use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoController as CoordRotaDoC
 use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoFotoController as CoordRotaDoCacauEdicaoFotoController;
 use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoVideoController as CoordRotaDoCacauEdicaoVideoController;
 use App\Http\Controllers\Coordenador\RotaDoCacauEdicaoPatrocinadorController as CoordRotaDoCacauEdicaoPatrocinadorController;
+use App\Http\Controllers\Coordenador\ConteudoSiteController as CoordConteudoSiteController;
+use App\Http\Controllers\Coordenador\CursoController as CoordCursoController;
 
 // =========================
 /* SITE Ã¢â‚¬â€œ PÃƒÅ¡BLICO (WEB) */
@@ -522,6 +527,95 @@ Route::middleware(['auth','role:Admin'])
 
     Route::resource('usuarios', \App\Http\Controllers\Admin\UsuarioController::class)->except(['show']);
     Route::resource('idiomas', AdminIdiomaController::class)->except(['show']);
+    Route::prefix('cursos')->name('cursos.')->group(function () {
+        Route::get('/', [AdminCursoController::class, 'index'])
+            ->middleware('permission:cursos.view')
+            ->name('index');
+        Route::get('/create', [AdminCursoController::class, 'create'])
+            ->middleware('permission:cursos.create')
+            ->name('create');
+        Route::post('/', [AdminCursoController::class, 'store'])
+            ->middleware('permission:cursos.create')
+            ->name('store');
+        Route::get('/{curso}/edit', [AdminCursoController::class, 'edit'])
+            ->middleware('permission:cursos.update')
+            ->name('edit');
+        Route::put('/{curso}', [AdminCursoController::class, 'update'])
+            ->middleware('permission:cursos.update')
+            ->name('update');
+        Route::delete('/{curso}', [AdminCursoController::class, 'destroy'])
+            ->middleware('permission:cursos.delete')
+            ->name('destroy');
+        Route::patch('/{curso}/publicar', [AdminCursoController::class, 'publicar'])
+            ->middleware('permission:cursos.publicar')
+            ->name('publicar');
+        Route::patch('/{curso}/arquivar', [AdminCursoController::class, 'arquivar'])
+            ->middleware('permission:cursos.arquivar')
+            ->name('arquivar');
+        Route::patch('/{curso}/rascunho', [AdminCursoController::class, 'rascunho'])
+            ->middleware('permission:cursos.rascunho')
+            ->name('rascunho');
+
+        Route::prefix('/{curso}/modulos')->name('modulos.')->group(function () {
+            Route::get('/', [AdminCursoModuloController::class, 'index'])
+                ->middleware('permission:cursos.modulos.view')
+                ->name('index');
+            Route::get('/create', [AdminCursoModuloController::class, 'create'])
+                ->middleware('permission:cursos.modulos.create')
+                ->name('create');
+            Route::post('/', [AdminCursoModuloController::class, 'store'])
+                ->middleware('permission:cursos.modulos.create')
+                ->name('store');
+            Route::get('/{modulo}/edit', [AdminCursoModuloController::class, 'edit'])
+                ->middleware('permission:cursos.modulos.update')
+                ->name('edit');
+            Route::put('/{modulo}', [AdminCursoModuloController::class, 'update'])
+                ->middleware('permission:cursos.modulos.update')
+                ->name('update');
+            Route::delete('/{modulo}', [AdminCursoModuloController::class, 'destroy'])
+                ->middleware('permission:cursos.modulos.delete')
+                ->name('destroy');
+            Route::patch('/{modulo}/publicar', [AdminCursoModuloController::class, 'publicar'])
+                ->middleware('permission:cursos.modulos.publicar')
+                ->name('publicar');
+            Route::patch('/{modulo}/arquivar', [AdminCursoModuloController::class, 'arquivar'])
+                ->middleware('permission:cursos.modulos.arquivar')
+                ->name('arquivar');
+            Route::patch('/{modulo}/rascunho', [AdminCursoModuloController::class, 'rascunho'])
+                ->middleware('permission:cursos.modulos.rascunho')
+                ->name('rascunho');
+
+            Route::prefix('/{modulo}/aulas')->name('aulas.')->group(function () {
+                Route::get('/', [AdminCursoAulaController::class, 'index'])
+                    ->middleware('permission:cursos.aulas.view')
+                    ->name('index');
+                Route::get('/create', [AdminCursoAulaController::class, 'create'])
+                    ->middleware('permission:cursos.aulas.create')
+                    ->name('create');
+                Route::post('/', [AdminCursoAulaController::class, 'store'])
+                    ->middleware('permission:cursos.aulas.create')
+                    ->name('store');
+                Route::get('/{aula}/edit', [AdminCursoAulaController::class, 'edit'])
+                    ->middleware('permission:cursos.aulas.update')
+                    ->name('edit');
+                Route::put('/{aula}', [AdminCursoAulaController::class, 'update'])
+                    ->middleware('permission:cursos.aulas.update')
+                    ->name('update');
+                Route::delete('/{aula}', [AdminCursoAulaController::class, 'destroy'])
+                    ->middleware('permission:cursos.aulas.delete')
+                    ->name('destroy');
+                Route::patch('/{aula}/publicar', [AdminCursoAulaController::class, 'publicar'])
+                    ->middleware('permission:cursos.aulas.publicar')
+                    ->name('publicar');
+                Route::patch('/{aula}/arquivar', [AdminCursoAulaController::class, 'arquivar'])
+                    ->middleware('permission:cursos.aulas.arquivar')
+                    ->name('arquivar');
+                Route::patch('/{aula}/rascunho', [AdminCursoAulaController::class, 'rascunho'])
+                    ->middleware('permission:cursos.aulas.rascunho')
+                    ->name('rascunho');
+            });
+        });
+    });
     Route::get('traducoes/export/csv', [AdminTranslationController::class, 'export'])->name('traducoes.export');
     Route::post('traducoes/import/csv', [AdminTranslationController::class, 'import'])->name('traducoes.import');
     Route::post('traducoes/sync/lang', [AdminTranslationController::class, 'sync'])->name('traducoes.sync');
@@ -647,6 +741,12 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
         Route::patch('categorias/{categoria}/arquivar', [CategoriaController::class,'arquivar'])->name('categorias.arquivar');
         Route::patch('categorias/{categoria}/rascunho', [CategoriaController::class,'rascunho'])->name('categorias.rascunho');
         Route::delete('categorias/{categoria}/icone',   [CategoriaController::class,'removerIcone'])->name('categorias.icone.remover');
+
+        // Cursos (somente leitura)
+        Route::get('cursos', [CoordCursoController::class, 'index'])->name('cursos.index');
+        Route::get('cursos/{curso}', [CoordCursoController::class, 'show'])->name('cursos.show');
+        Route::get('cursos/{curso}/modulos/{modulo}', [CoordCursoController::class, 'showModulo'])->name('cursos.modulos.show');
+        Route::get('cursos/{curso}/modulos/{modulo}/aulas/{aula}', [CoordCursoController::class, 'showAula'])->name('cursos.modulos.aulas.show');
 
         // Empresas
         Route::resource('empresas', CoordEmpresaController::class)->except(['show']);
@@ -958,6 +1058,15 @@ Route::middleware(['auth','role:Coordenador|Tecnico','coordenador.permission'])
 Route::post('/console/cache/clear', [MaintenanceController::class, 'clear'])
     ->middleware(['auth', 'permission:console.cache.clear', 'throttle:3,1'])
     ->name('console.cache.clear');
+
+Route::middleware(['auth', 'role:Admin|Coordenador', 'permission:site.manage'])
+    ->prefix('coordenador/conteudo-site')
+    ->name('coordenador.conteudo-site.')
+    ->group(function () {
+        Route::put('{pagina}/{chave}', [CoordConteudoSiteController::class, 'update'])
+            ->where(['pagina' => '[A-Za-z0-9._-]+', 'chave' => '[A-Za-z0-9._-]+'])
+            ->name('update');
+    });
 
 
 

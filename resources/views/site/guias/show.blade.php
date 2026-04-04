@@ -9,42 +9,132 @@
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Str;
 
-    $cover = $material->capa_url ?: asset('imagens/altamira.jpg');
+    $pageBlocks = $pageBlocks ?? collect();
+    $guideShowBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'about_section' => $pageBlocks->get('about_section'),
+        'reading_section' => $pageBlocks->get('reading_section'),
+        'preview_empty_state' => $pageBlocks->get('preview_empty_state'),
+        'overview_section' => $pageBlocks->get('overview_section'),
+        'related_section' => $pageBlocks->get('related_section'),
+    ];
+    $guideShowTranslation = fn (string $key) => $guideShowBlocks[$key]?->getAttribute('traducao_resolvida');
+    $aboutTranslation = $guideShowTranslation('about_section');
+    $readingTranslation = $guideShowTranslation('reading_section');
+    $previewEmptyTranslation = $guideShowTranslation('preview_empty_state');
+    $overviewTranslation = $guideShowTranslation('overview_section');
+    $relatedTranslation = $guideShowTranslation('related_section');
+
+    $cover = $heroMedia?->url ?: ($material->capa_url ?: asset('imagens/altamira.jpg'));
     $embedUrl = $material->embed_url;
     $guiasUrl = Route::has('site.guias') ? localized_route('site.guias') : '#';
     $homeUrl = localized_route('site.home');
     $relatedItems = collect($relacionados ?? []);
+    $canManageGuide = auth()->check() && auth()->user()->can('guias.update');
+    $editGuideHref = $canManageGuide && Route::has('coordenador.guias.edit')
+        ? route('coordenador.guias.edit', $material)
+        : null;
+    $heroBadge = $heroTranslation?->eyebrow ?: $material->tipo_label;
+    $heroTitle = $heroTranslation?->titulo ?: $material->nome;
+    $heroSubtitle = $heroTranslation?->lead ?: Str::limit(strip_tags((string) $material->descricao), 180);
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ui_text('ui.guides.read_material');
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: '#leitura';
+
+    $aboutEyebrow = $aboutTranslation?->eyebrow ?: ui_text('ui.guides.about_material');
+    $aboutTitle = $aboutTranslation?->titulo ?: ui_text('ui.guides.material_information', ['type' => Str::lower($material->tipo_label)]);
+    $aboutSubtitle = $aboutTranslation?->lead ?: ui_text('ui.guides.editorial_summary');
+
+    $readingEyebrow = $readingTranslation?->eyebrow ?: ui_text('ui.guides.reading');
+    $readingTitle = $readingTranslation?->titulo ?: ui_text('ui.guides.material_viewing');
+    $readingSubtitle = $readingTranslation?->lead ?: ui_text('ui.guides.embedded_copy');
+
+    $previewEmptyTitle = $previewEmptyTranslation?->titulo ?: ui_text('ui.guides.preview_unavailable');
+    $previewEmptyCopy = $previewEmptyTranslation?->lead ?: ui_text('ui.guides.preview_unavailable_copy');
+
+    $overviewEyebrow = $overviewTranslation?->eyebrow ?: ui_text('ui.common.summary');
+    $overviewTitle = $overviewTranslation?->titulo ?: ui_text('ui.guides.overview');
+
+    $relatedEyebrow = $relatedTranslation?->eyebrow ?: ui_text('ui.guides.related');
+    $relatedTitle = $relatedTranslation?->titulo ?: ui_text('ui.guides.more_materials', ['type' => Str::plural(Str::lower($material->tipo_label), 2)]);
 @endphp
 
-<div class="site-page site-page-shell">
+<div class="site-page site-page-shell site-guide-detail-page">
     @include('site.partials._page_hero', [
         'backHref' => $guiasUrl,
         'breadcrumbs' => [
             ['label' => ui_text('ui.common.home'), 'href' => $homeUrl],
             ['label' => ui_text('ui.guides.index_title'), 'href' => $guiasUrl],
-            ['label' => $material->nome],
+            ['label' => $heroTitle],
         ],
-        'badge' => $material->tipo_label,
-        'title' => $material->nome,
-        'subtitle' => Str::limit(strip_tags((string) $material->descricao), 180),
+        'badge' => $heroBadge,
+        'title' => $heroTitle,
+        'subtitle' => $heroSubtitle,
         'meta' => [],
-        'primaryActionLabel' => ui_text('ui.guides.read_material'),
-        'primaryActionHref' => '#leitura',
+        'primaryActionLabel' => $heroPrimaryLabel,
+        'primaryActionHref' => $heroPrimaryHref,
         'secondaryActionLabel' => ui_text('ui.common.back_to_guides'),
         'secondaryActionHref' => $guiasUrl,
         'image' => $cover,
-        'imageAlt' => $material->nome,
+        'imageAlt' => $heroTitle,
         'compact' => true,
+        'textEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.guias.show',
+            'key' => 'hero',
+            'label' => 'Texto da capa do detalhe de guia',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar texto',
+            'fields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href', 'seo_title', 'seo_description'],
+            'translation' => $heroTranslation ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+        ],
+        'imageEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.guias.show',
+            'key' => 'hero',
+            'label' => 'Imagem da capa do detalhe de guia',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar imagem',
+            'translation' => $heroTranslation ?? null,
+            'media' => $heroMedia ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+            'media_slot' => 'hero',
+            'media_label' => 'Imagem da capa',
+            'preview_label' => 'imagem atual da capa',
+        ],
     ])
 
     <section class="site-section">
         <div class="site-editorial-layout">
             <div class="site-editorial-main">
                 <section class="site-surface site-content-block">
+                    @if($editGuideHref)
+                        <div class="site-inline-actions">
+                            <a href="{{ $editGuideHref }}" class="site-button-secondary">Editar material</a>
+                        </div>
+                    @endif
+
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $aboutTitle,
+                        'editorPage' => 'site.guias.show',
+                        'editorKey' => 'about_section',
+                        'editorLabel' => 'Seção sobre o material',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => 'Editar texto',
+                        'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                        'editableTranslation' => $aboutTranslation,
+                        'editableStatus' => $guideShowBlocks['about_section']?->status ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => ui_text('ui.guides.about_material'),
+                            'titulo' => ui_text('ui.guides.material_information', ['type' => Str::lower($material->tipo_label)]),
+                            'lead' => ui_text('ui.guides.editorial_summary'),
+                        ],
+                    ])
                     <x-section-head
-                        :eyebrow="ui_text('ui.guides.about_material')"
-                        :title="ui_text('ui.guides.material_information', ['type' => Str::lower($material->tipo_label)])"
-                        :subtitle="ui_text('ui.guides.editorial_summary')"
+                        :eyebrow="$aboutEyebrow"
+                        :title="$aboutTitle"
+                        :subtitle="$aboutSubtitle"
                     />
 
                     <div class="site-prose">
@@ -53,10 +143,27 @@
                 </section>
 
                 <section id="leitura" class="site-surface site-content-block">
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $readingTitle,
+                        'editorPage' => 'site.guias.show',
+                        'editorKey' => 'reading_section',
+                        'editorLabel' => 'Seção de leitura do guia',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => 'Editar texto',
+                        'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                        'editableTranslation' => $readingTranslation,
+                        'editableStatus' => $guideShowBlocks['reading_section']?->status ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => ui_text('ui.guides.reading'),
+                            'titulo' => ui_text('ui.guides.material_viewing'),
+                            'lead' => ui_text('ui.guides.embedded_copy'),
+                        ],
+                    ])
                     <x-section-head
-                        :eyebrow="ui_text('ui.guides.reading')"
-                        :title="ui_text('ui.guides.material_viewing')"
-                        :subtitle="ui_text('ui.guides.embedded_copy')"
+                        :eyebrow="$readingEyebrow"
+                        :title="$readingTitle"
+                        :subtitle="$readingSubtitle"
                     />
 
                     <div class="site-inline-actions">
@@ -89,8 +196,24 @@
                         </p>
                     @else
                         <div class="site-empty-state">
-                            <p class="site-empty-state-title">{{ ui_text('ui.guides.preview_unavailable') }}</p>
-                            <p class="site-empty-state-copy">{{ ui_text('ui.guides.preview_unavailable_copy') }}</p>
+                            @include('site.partials._content_editor', [
+                                'editorTitle' => $previewEmptyTitle,
+                                'editorPage' => 'site.guias.show',
+                                'editorKey' => 'preview_empty_state',
+                                'editorLabel' => 'Estado vazio da leitura de guia',
+                                'editorLocale' => route_locale(),
+                                'editorTriggerVariant' => 'inline-compact',
+                                'editorTriggerLabel' => 'Editar texto',
+                                'editorFields' => ['titulo', 'lead'],
+                                'editableTranslation' => $previewEmptyTranslation,
+                                'editableStatus' => $guideShowBlocks['preview_empty_state']?->status ?? 'publicado',
+                                'editableFallback' => [
+                                    'titulo' => ui_text('ui.guides.preview_unavailable'),
+                                    'lead' => ui_text('ui.guides.preview_unavailable_copy'),
+                                ],
+                            ])
+                            <p class="site-empty-state-title">{{ $previewEmptyTitle }}</p>
+                            <p class="site-empty-state-copy">{{ $previewEmptyCopy }}</p>
 
                             @if(filled($material->link_acesso))
                                 <a
@@ -109,7 +232,23 @@
 
             <aside class="site-editorial-aside">
                 <section class="site-surface-soft site-content-block">
-                    <x-section-head :eyebrow="ui_text('ui.common.summary')" :title="ui_text('ui.guides.overview')" />
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $overviewTitle,
+                        'editorPage' => 'site.guias.show',
+                        'editorKey' => 'overview_section',
+                        'editorLabel' => 'Resumo do detalhe de guia',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => 'Editar texto',
+                        'editorFields' => ['eyebrow', 'titulo'],
+                        'editableTranslation' => $overviewTranslation,
+                        'editableStatus' => $guideShowBlocks['overview_section']?->status ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => ui_text('ui.common.summary'),
+                            'titulo' => ui_text('ui.guides.overview'),
+                        ],
+                    ])
+                    <x-section-head :eyebrow="$overviewEyebrow" :title="$overviewTitle" />
 
                     <div class="site-stats-grid">
                         <div class="site-stat-card">
@@ -125,9 +264,25 @@
 
                 @if($relatedItems->isNotEmpty())
                     <section class="site-surface-soft site-content-block">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $relatedTitle,
+                            'editorPage' => 'site.guias.show',
+                            'editorKey' => 'related_section',
+                            'editorLabel' => 'Seção de materiais relacionados',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['eyebrow', 'titulo'],
+                            'editableTranslation' => $relatedTranslation,
+                            'editableStatus' => $guideShowBlocks['related_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => ui_text('ui.guides.related'),
+                                'titulo' => ui_text('ui.guides.more_materials', ['type' => Str::plural(Str::lower($material->tipo_label), 2)]),
+                            ],
+                        ])
                         <x-section-head
-                            :eyebrow="ui_text('ui.guides.related')"
-                            :title="ui_text('ui.guides.more_materials', ['type' => Str::plural(Str::lower($material->tipo_label), 2)])"
+                            :eyebrow="$relatedEyebrow"
+                            :title="$relatedTitle"
                         />
 
                         <div class="space-y-4">

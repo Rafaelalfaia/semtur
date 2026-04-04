@@ -9,8 +9,32 @@
     $isAgendaPage = request()->routeIs('site.agenda');
     $pageCards = collect($page['cards'] ?? []);
     $agendaEvents = collect($agendaEvents ?? []);
+    $pageBlocks = $pageBlocks ?? collect();
+    $portalPageKey = $editablePageKey ?? null;
+    $canCreateEvent = auth()->check() && auth()->user()->can('eventos.create');
+    $canManageEvent = auth()->check() && auth()->user()->can('eventos.update');
+    $canViewEventsPanel = auth()->check() && auth()->user()->can('eventos.view');
+    $createEventHref = $canCreateEvent && Route::has('coordenador.eventos.create')
+        ? route('coordenador.eventos.create')
+        : null;
+    $eventsPanelHref = $canViewEventsPanel && Route::has('coordenador.eventos.index')
+        ? route('coordenador.eventos.index')
+        : null;
+    $agendaBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'highlight_section' => $pageBlocks->get('highlight_section'),
+        'carousel_section' => $pageBlocks->get('carousel_section'),
+        'cta_section' => $pageBlocks->get('cta_section'),
+        'empty_state' => $pageBlocks->get('empty_state'),
+    ];
+    $agendaTranslation = fn (string $key) => $agendaBlocks[$key]?->getAttribute('traducao_resolvida');
+    $agendaHeroTranslation = $editableHeroTranslation ?? $agendaTranslation('hero');
+    $highlightTranslation = $agendaTranslation('highlight_section');
+    $carouselTranslation = $agendaTranslation('carousel_section');
+    $ctaTranslation = $agendaTranslation('cta_section');
+    $emptyTranslation = $agendaTranslation('empty_state');
 
-    $agendaEventCards = $agendaEvents->map(function ($evento) {
+    $agendaEventCards = $agendaEvents->map(function ($evento) use ($canManageEvent) {
         $edicao = collect($evento->edicoes ?? [])->sortByDesc('ano')->first();
         $ano = $edicao->ano ?? null;
         $periodo = $edicao->periodo
@@ -33,6 +57,12 @@
             'badge' => $periodo ?: ($ano ?: ui_text('ui.agenda.title')),
             'meta' => filled($edicao->local ?? null) ? $edicao->local : ui_text('ui.agenda.published_programming'),
             'cta' => ui_text('ui.agenda.view_event'),
+            'admin_action' => $canManageEvent && Route::has('coordenador.eventos.edit')
+                ? [
+                    'label' => 'Editar evento',
+                    'href' => route('coordenador.eventos.edit', $evento),
+                ]
+                : null,
         ];
     })->values();
 
@@ -70,6 +100,29 @@
     $hasAgendaCarousel = $agendaSecondaryCards->isNotEmpty();
     $hasAgendaCta = !empty($page['cta_href']) && !empty($page['cta_label']);
     $hasAgendaContent = $hasAgendaHighlight || $hasAgendaCarousel;
+    $agendaHeroImage = $editableHeroMedia?->url ?: $agendaHeroImage;
+    $agendaHeroBadge = $agendaHeroTranslation?->eyebrow ?: ($page['eyebrow'] ?? ui_text('ui.agenda.city_programming'));
+    $agendaHeroTitle = $agendaHeroTranslation?->titulo ?: ($page['title'] ?? ui_text('ui.agenda.title'));
+    $agendaHeroSubtitle = $agendaHeroTranslation?->lead ?: ui_text('ui.agenda.subtitle');
+    $agendaHeroPrimaryLabel = $agendaHeroTranslation?->cta_label ?: ($page['cta_label'] ?? null);
+    $agendaHeroPrimaryHref = $agendaHeroTranslation?->cta_href ?: ($page['cta_href'] ?? null);
+
+    $highlightEyebrow = $highlightTranslation?->eyebrow ?: ui_text('ui.agenda.now');
+    $highlightTitle = $highlightTranslation?->titulo ?: ui_text('ui.agenda.highlight_title');
+    $highlightSubtitle = $highlightTranslation?->lead ?: ui_text('ui.agenda.highlight_subtitle');
+
+    $carouselEyebrow = $carouselTranslation?->eyebrow ?: ui_text('ui.agenda.upcoming_eyebrow');
+    $carouselTitle = $carouselTranslation?->titulo ?: ui_text('ui.agenda.continue_title');
+    $carouselSubtitle = $carouselTranslation?->lead ?: ui_text('ui.agenda.continue_subtitle');
+
+    $ctaBadge = $ctaTranslation?->eyebrow ?: ui_text('ui.agenda.cta_badge');
+    $ctaTitle = $ctaTranslation?->titulo ?: ui_text('ui.agenda.cta_title');
+    $ctaSubtitle = $ctaTranslation?->lead ?: ui_text('ui.agenda.cta_subtitle');
+    $ctaLabel = $ctaTranslation?->cta_label ?: ($page['cta_label'] ?? null);
+    $ctaHref = $ctaTranslation?->cta_href ?: ($page['cta_href'] ?? null);
+
+    $emptyTitle = $emptyTranslation?->titulo ?: ui_text('ui.agenda.empty_title');
+    $emptyCopy = $emptyTranslation?->lead ?: ui_text('ui.agenda.empty_copy');
 @endphp
 
 @section('title', $pageTitle)
@@ -83,22 +136,47 @@
                 'backHref' => localized_route('site.home'),
                 'breadcrumbs' => [
                     ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
-                    ['label' => $page['title'] ?? ui_text('ui.agenda.title')],
+                    ['label' => $agendaHeroTitle],
                 ],
-                'badge' => $page['eyebrow'] ?? ui_text('ui.agenda.city_programming'),
-                'title' => $page['title'] ?? ui_text('ui.agenda.title'),
-                'subtitle' => ui_text('ui.agenda.subtitle'),
+                'badge' => $agendaHeroBadge,
+                'title' => $agendaHeroTitle,
+                'subtitle' => $agendaHeroSubtitle,
                 'meta' => [
                     $agendaEventCards->isNotEmpty() ? ui_text('ui.agenda.events_published', ['count' => $agendaEventCards->count()]) : null,
                     ui_text('ui.common.altamira'),
                 ],
-                'primaryActionLabel' => $page['cta_label'] ?? null,
-                'primaryActionHref' => $page['cta_href'] ?? null,
+                'primaryActionLabel' => $agendaHeroPrimaryLabel,
+                'primaryActionHref' => $agendaHeroPrimaryHref,
                 'secondaryActionLabel' => Route::has('site.explorar') ? ui_text('ui.agenda.explore_city') : null,
                 'secondaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
                 'image' => $agendaHeroImage,
-                'imageAlt' => $page['title'] ?? ui_text('ui.agenda.title'),
+                'imageAlt' => $agendaHeroTitle,
                 'compact' => true,
+                'textEditor' => [
+                    'title' => $agendaHeroTitle,
+                    'page' => $portalPageKey,
+                    'key' => 'hero',
+                    'label' => 'Texto da capa da agenda',
+                    'locale' => route_locale(),
+                    'trigger_label' => 'Editar texto',
+                    'fields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href'],
+                    'translation' => $agendaHeroTranslation,
+                    'status' => $editableHeroBlock?->status ?? 'publicado',
+                ],
+                'imageEditor' => [
+                    'title' => $agendaHeroTitle,
+                    'page' => $portalPageKey,
+                    'key' => 'hero',
+                    'label' => 'Imagem da capa da agenda',
+                    'locale' => route_locale(),
+                    'trigger_label' => 'Editar imagem',
+                    'translation' => $agendaHeroTranslation,
+                    'media' => $editableHeroMedia ?? null,
+                    'status' => $editableHeroBlock?->status ?? 'publicado',
+                    'media_slot' => 'hero',
+                    'media_label' => 'Imagem da capa',
+                    'preview_label' => 'imagem atual da capa',
+                ],
             ])
 
             <section class="site-section">
@@ -114,16 +192,44 @@
                             <a href="#agenda-completa" class="site-year-chip">{{ ui_text('ui.agenda.full_agenda') }}</a>
                         @endif
                     </div>
+
+                    @if($createEventHref || $eventsPanelHref)
+                        <div class="site-inline-actions">
+                            @if($createEventHref)
+                                <a href="{{ $createEventHref }}" class="site-button-primary">Novo evento</a>
+                            @endif
+                            @if($eventsPanelHref)
+                                <a href="{{ $eventsPanelHref }}" class="site-button-secondary">Painel de eventos</a>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </section>
 
             @if($hasAgendaHighlight)
                 <section class="site-section" id="agenda-destaques">
                     <div class="site-surface-soft site-agenda-portal-highlight">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $highlightTitle,
+                            'editorPage' => $portalPageKey,
+                            'editorKey' => 'highlight_section',
+                            'editorLabel' => 'Seção de destaques da agenda',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                            'editableTranslation' => $highlightTranslation,
+                            'editableStatus' => $agendaBlocks['highlight_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => ui_text('ui.agenda.now'),
+                                'titulo' => ui_text('ui.agenda.highlight_title'),
+                                'lead' => ui_text('ui.agenda.highlight_subtitle'),
+                            ],
+                        ])
                         <x-section-head
-                            :eyebrow="ui_text('ui.agenda.now')"
-                            :title="ui_text('ui.agenda.highlight_title')"
-                            :subtitle="ui_text('ui.agenda.highlight_subtitle')"
+                            :eyebrow="$highlightEyebrow"
+                            :title="$highlightTitle"
+                            :subtitle="$highlightSubtitle"
                         />
 
                         <div
@@ -185,6 +291,9 @@
                                             <p class="site-section-head-subtitle">{{ $eventCard['summary'] }}</p>
                                         @endif
                                         <div class="site-agenda-portal-highlight-actions">
+                                            @if(!empty($eventCard['admin_action']['href']) && !empty($eventCard['admin_action']['label']))
+                                                <a href="{{ $eventCard['admin_action']['href'] }}" class="site-button-secondary">{{ $eventCard['admin_action']['label'] }}</a>
+                                            @endif
                                             <a href="{{ $eventCard['href'] }}" class="site-button-secondary">{{ ui_text('ui.agenda.view_event') }}</a>
                                         </div>
                                     </div>
@@ -198,13 +307,29 @@
             @if($hasAgendaCarousel)
                 <div id="agenda-atalhos">
                     @include('site.partials._category_section', [
-                        'eyebrow' => ui_text('ui.agenda.upcoming_eyebrow'),
-                        'title' => ui_text('ui.agenda.continue_title'),
-                        'subtitle' => ui_text('ui.agenda.continue_subtitle'),
+                        'eyebrow' => $carouselEyebrow,
+                        'title' => $carouselTitle,
+                        'subtitle' => $carouselSubtitle,
                         'items' => $agendaSecondaryCards,
                         'layout' => 'carousel',
                         'cardVariant' => 'compact',
                         'empty' => ui_text('ui.agenda.empty_copy'),
+                        'editor' => [
+                            'title' => $carouselTitle,
+                            'page' => $portalPageKey,
+                            'key' => 'carousel_section',
+                            'label' => 'Seção de atalhos da agenda',
+                            'locale' => route_locale(),
+                            'trigger_label' => 'Editar texto',
+                            'fields' => ['eyebrow', 'titulo', 'lead'],
+                            'translation' => $carouselTranslation,
+                            'status' => $agendaBlocks['carousel_section']?->status ?? 'publicado',
+                            'fallback' => [
+                                'eyebrow' => ui_text('ui.agenda.upcoming_eyebrow'),
+                                'titulo' => ui_text('ui.agenda.continue_title'),
+                                'lead' => ui_text('ui.agenda.continue_subtitle'),
+                            ],
+                        ],
                     ])
                 </div>
             @endif
@@ -212,14 +337,33 @@
             @if($hasAgendaCta)
                 <section class="site-section" id="agenda-completa">
                     <div class="site-surface-soft site-agenda-portal-cta">
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $ctaTitle,
+                            'editorPage' => $portalPageKey,
+                            'editorKey' => 'cta_section',
+                            'editorLabel' => 'Seção de chamada final da agenda',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href'],
+                            'editableTranslation' => $ctaTranslation,
+                            'editableStatus' => $agendaBlocks['cta_section']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'eyebrow' => ui_text('ui.agenda.cta_badge'),
+                                'titulo' => ui_text('ui.agenda.cta_title'),
+                                'lead' => ui_text('ui.agenda.cta_subtitle'),
+                                'cta_label' => $page['cta_label'] ?? null,
+                                'cta_href' => $page['cta_href'] ?? null,
+                            ],
+                        ])
                         <div class="site-agenda-portal-cta-copy">
-                            <span class="site-badge">{{ ui_text('ui.agenda.cta_badge') }}</span>
-                            <h2 class="site-section-head-title">{{ ui_text('ui.agenda.cta_title') }}</h2>
-                            <p class="site-section-head-subtitle">{{ ui_text('ui.agenda.cta_subtitle') }}</p>
+                            <span class="site-badge">{{ $ctaBadge }}</span>
+                            <h2 class="site-section-head-title">{{ $ctaTitle }}</h2>
+                            <p class="site-section-head-subtitle">{{ $ctaSubtitle }}</p>
                         </div>
 
                         <div class="site-agenda-portal-cta-actions">
-                            <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ $page['cta_label'] }}</a>
+                            <a href="{{ $ctaHref }}" class="site-button-primary">{{ $ctaLabel }}</a>
                             @if(Route::has('site.mapa'))
                                 <a href="{{ localized_route('site.mapa') }}" class="site-button-secondary">{{ ui_text('ui.common.map') }}</a>
                             @endif
@@ -231,10 +375,26 @@
             @if(!$hasAgendaContent)
                 <section class="site-section">
                     <div class="site-empty-state">
-                        <p class="site-empty-state-title">{{ ui_text('ui.agenda.empty_title') }}</p>
-                        <p class="site-empty-state-copy">{{ ui_text('ui.agenda.empty_copy') }}</p>
+                        @include('site.partials._content_editor', [
+                            'editorTitle' => $emptyTitle,
+                            'editorPage' => $portalPageKey,
+                            'editorKey' => 'empty_state',
+                            'editorLabel' => 'Estado vazio da agenda',
+                            'editorLocale' => route_locale(),
+                            'editorTriggerVariant' => 'inline-compact',
+                            'editorTriggerLabel' => 'Editar texto',
+                            'editorFields' => ['titulo', 'lead'],
+                            'editableTranslation' => $emptyTranslation,
+                            'editableStatus' => $agendaBlocks['empty_state']?->status ?? 'publicado',
+                            'editableFallback' => [
+                                'titulo' => ui_text('ui.agenda.empty_title'),
+                                'lead' => ui_text('ui.agenda.empty_copy'),
+                            ],
+                        ])
+                        <p class="site-empty-state-title">{{ $emptyTitle }}</p>
+                        <p class="site-empty-state-copy">{{ $emptyCopy }}</p>
                         @if($hasAgendaCta)
-                            <a href="{{ $page['cta_href'] }}" class="site-button-primary">{{ ui_text('ui.agenda.view_full_agenda') }}</a>
+                            <a href="{{ $ctaHref }}" class="site-button-primary">{{ ui_text('ui.agenda.view_full_agenda') }}</a>
                         @endif
                     </div>
                 </section>
@@ -244,7 +404,8 @@
         </div>
     @else
         <section class="bg-gradient-to-b from-emerald-50 via-white to-white border-b border-emerald-100">
-            <div class="mx-auto w-full max-w-[1200px] px-4 md:px-6 py-8 md:py-12">
+            <div class="mx-auto grid w-full max-w-[1200px] gap-8 px-4 py-8 md:px-6 md:py-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)] lg:items-center">
+                <div>
                 @include('site.partials._breadcrumbs', [
                     'items' => [
                         ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
@@ -252,7 +413,7 @@
                     ],
                 ])
 
-                <div class="max-w-3xl mt-4">
+                <div class="mt-4 max-w-3xl">
                     @if(!empty($page['eyebrow']))
                         <div class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]">
                             {{ $page['eyebrow'] }}
@@ -278,6 +439,20 @@
                         </div>
                     @endif
                 </div>
+
+                </div>
+
+                @if($editableHeroMedia?->url)
+                    <div class="overflow-hidden rounded-[2rem] border border-emerald-100 bg-white p-2 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.35)]">
+                        <img
+                            src="{{ $editableHeroMedia->url }}"
+                            alt="{{ $editableHeroMedia->alt_text ?: ($page['title'] ?? ui_text('ui.common.view_more')) }}"
+                            class="h-[280px] w-full rounded-[1.5rem] object-cover lg:h-[360px]"
+                            loading="lazy"
+                            decoding="async"
+                        >
+                    </div>
+                @endif
             </div>
         </section>
 
@@ -303,4 +478,28 @@
             </section>
         @endif
     @endif
+
+    @unless($isAgendaPage)
+    @include('site.partials._content_editor', [
+        'editorTitle' => $page['title'] ?? 'Conteúdo da página',
+        'editorPage' => $editablePageKey ?? null,
+        'editorKey' => 'hero',
+        'editorLabel' => 'Hero editorial',
+        'editorLocale' => route_locale(),
+        'editableTranslation' => $editableHeroTranslation ?? null,
+        'editableHeroMedia' => $editableHeroMedia ?? null,
+        'editableStatus' => $editableHeroBlock?->status ?? 'publicado',
+        'editableFallback' => [
+            'eyebrow' => $page['eyebrow'] ?? null,
+            'titulo' => $page['title'] ?? null,
+            'subtitulo' => null,
+            'lead' => $page['lead'] ?? null,
+            'conteudo' => null,
+            'cta_label' => $page['cta_label'] ?? null,
+            'cta_href' => $page['cta_href'] ?? null,
+            'seo_title' => $page['title'] ?? null,
+            'seo_description' => $page['description'] ?? null,
+        ],
+    ])
+    @endunless
 @endsection

@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Catalogo\Roteiro;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RoteiroController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function index(Request $request)
     {
         $busca   = trim((string) $request->input('q', ''));
@@ -34,14 +37,14 @@ class RoteiroController extends Controller
             ->paginate(12)
             ->withQueryString();
 
-        return view('site.roteiros.index', [
+        return view('site.roteiros.index', array_merge([
             'roteiros' => $roteiros,
             'q' => $busca,
             'duracao' => $duracao,
             'perfil' => $perfil,
             'duracoes' => Roteiro::DURACOES,
             'perfis' => Roteiro::PERFIS,
-        ]);
+        ], $this->resolveEditableHero('site.roteiros')));
     }
 
     public function show(string $locale, string $slug)
@@ -96,9 +99,9 @@ class RoteiroController extends Controller
             ->limit(3)
             ->get();
 
-        return view('site.roteiros.show', [
+        return view('site.roteiros.show', array_merge([
             'roteiro' => $roteiro,
             'relacionados' => $relacionados,
-        ]);
+        ], $this->resolveEditableHero('site.roteiros.show')));
     }
 }

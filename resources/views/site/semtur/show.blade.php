@@ -57,9 +57,14 @@
 @php
     use Illuminate\Support\Facades\Route;
 
-    $heroUrl = $sec->foto_capa_url ?: ($sec->foto_url ?: theme_asset('hero_image'));
+    $heroUrl = $heroMedia?->url ?: ($sec->foto_capa_url ?: ($sec->foto_url ?: theme_asset('hero_image')));
     $logoUrl = $sec->foto_url ?: theme_asset('logo');
     $redes = is_array($sec->redes ?? null) ? $sec->redes : [];
+    $heroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.semtur.name');
+    $heroTitle = $heroTranslation?->titulo ?: ($sec->nome ?? 'SEMTUR');
+    $heroSubtitle = $heroTranslation?->lead ?: ui_text('ui.semtur.subtitle');
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: (Route::has('site.mapa') ? ui_text('ui.semtur.view_map') : null);
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: (Route::has('site.mapa') ? localized_route('site.mapa') : null);
     $redesLabels = [
         'instagram' => 'Instagram',
         'facebook' => 'Facebook',
@@ -89,16 +94,16 @@
             ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
             ['label' => ui_text('ui.semtur.name')],
         ],
-        'badge' => ui_text('ui.semtur.name'),
-        'title' => $sec->nome ?? 'SEMTUR',
-        'subtitle' => ui_text('ui.semtur.subtitle'),
+        'badge' => $heroBadge,
+        'title' => $heroTitle,
+        'subtitle' => $heroSubtitle,
         'meta' => [],
-        'primaryActionLabel' => Route::has('site.mapa') ? ui_text('ui.semtur.view_map') : null,
-        'primaryActionHref' => Route::has('site.mapa') ? localized_route('site.mapa') : null,
+        'primaryActionLabel' => $heroPrimaryLabel,
+        'primaryActionHref' => $heroPrimaryHref,
         'secondaryActionLabel' => Route::has('site.contato') ? ui_text('ui.portal_pages.contato.title') : null,
         'secondaryActionHref' => Route::has('site.contato') ? localized_route('site.contato') : null,
         'image' => $heroUrl,
-        'imageAlt' => $sec->nome ?? 'SEMTUR',
+        'imageAlt' => $heroTitle,
         'compact' => true,
     ])
 
@@ -171,5 +176,27 @@
         @endif
     </section>
 </div>
+
+@include('site.partials._content_editor', [
+    'editorTitle' => $heroTitle,
+    'editorPage' => 'site.semtur',
+    'editorKey' => 'hero',
+    'editorLabel' => 'Hero SEMTUR',
+    'editorLocale' => route_locale(),
+    'editableTranslation' => $heroTranslation ?? null,
+    'editableHeroMedia' => $heroMedia ?? null,
+    'editableStatus' => $heroBlock?->status ?? 'publicado',
+    'editableFallback' => [
+        'eyebrow' => $heroBadge,
+        'titulo' => $heroTitle,
+        'subtitulo' => null,
+        'lead' => $heroSubtitle,
+        'conteudo' => null,
+        'cta_label' => $heroPrimaryLabel,
+        'cta_href' => $heroPrimaryHref,
+        'seo_title' => $heroTitle,
+        'seo_description' => $semturDescription,
+    ],
+])
 @endsection
 

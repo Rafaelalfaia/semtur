@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Conteudo\OndeComerPagina;
 
 class OndeComerController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function show()
     {
         $pagina = OndeComerPagina::query()
@@ -54,8 +57,10 @@ class OndeComerController extends Controller
             );
         }
 
-        return view('site.onde-comer.show', [
+        $editableContent = $this->resolveEditableHero('site.onde_comer');
+
+        return view('site.onde-comer.show', array_merge([
             'pagina' => $pagina,
-        ]);
+        ], $editableContent));
     }
 }

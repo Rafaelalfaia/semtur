@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Catalogo\EspacoCultural;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EspacoCulturalPublicController extends Controller
 {
+    use ResolvesEditableHero;
+
     private array $diasSemana = [
         0 => 'Domingo',
         1 => 'Segunda-feira',
@@ -22,7 +25,7 @@ class EspacoCulturalPublicController extends Controller
     public function index(Request $request)
     {
         $q = trim((string) $request->input('q', ''));
-        $tipo = (string) $request->input('tipo', 'todos');
+        $tipo = EspacoCultural::TIPO_MUSEU;
 
         $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
 
@@ -32,7 +35,7 @@ class EspacoCulturalPublicController extends Controller
                 'horarios' => fn ($q) => $q->ativos()->orderBy('dia_semana')->orderBy('hora_inicio'),
             ])
             ->publicados()
-            ->when(in_array($tipo, EspacoCultural::TIPOS, true), fn ($query) => $query->where('tipo', $tipo))
+            ->where('tipo', EspacoCultural::TIPO_MUSEU)
             ->when($q !== '', function ($query) use ($q, $like) {
                 $query->where(function ($w) use ($q, $like) {
                     $w->where('nome', $like, "%{$q}%")
@@ -49,17 +52,18 @@ class EspacoCulturalPublicController extends Controller
         $destaques = EspacoCultural::query()
             ->with('midias')
             ->publicados()
+            ->where('tipo', EspacoCultural::TIPO_MUSEU)
             ->ordenados()
             ->limit(3)
             ->get();
 
-        return view('site.espacos_culturais.index', [
+        return view('site.espacos_culturais.index', array_merge([
             'espacos' => $espacos,
             'destaques' => $destaques,
             'q' => $q,
             'tipo' => $tipo,
             'diasSemana' => $this->diasSemana,
-        ]);
+        ], $this->resolveEditableHero('site.museus')));
     }
 
     public function show(string $locale, string $slug)
@@ -82,10 +86,10 @@ class EspacoCulturalPublicController extends Controller
             ->limit(3)
             ->get();
 
-        return view('site.espacos_culturais.show', [
+        return view('site.espacos_culturais.show', array_merge([
             'espaco' => $espaco,
             'relacionados' => $relacionados,
             'diasSemana' => $this->diasSemana,
-        ]);
+        ], $this->resolveEditableHero('site.museus.show')));
     }
 }

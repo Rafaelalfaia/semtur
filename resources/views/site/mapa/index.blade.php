@@ -7,12 +7,14 @@
   $currentQuery = trim((string) ($queryAtual ?? request('q', '')));
   $currentCategory = $categoriaAtual ?? null;
   $mapCanonical = R::has('site.mapa') ? localized_route('site.mapa') : url()->current();
-  $mapTitle = $currentCategory?->nome ? ui_text('ui.map_page.title_category', ['category' => $currentCategory->nome]) : ui_text('ui.map_page.title_default');
-  $mapDescription = $currentQuery !== ''
+  $mapBaseTitle = $currentCategory?->nome ? ui_text('ui.map_page.title_category', ['category' => $currentCategory->nome]) : ui_text('ui.map_page.title_default');
+  $mapBaseDescription = $currentQuery !== ''
       ? ui_text('ui.map_page.description_search', ['search' => $currentQuery])
       : ($currentCategory?->nome
           ? ui_text('ui.map_page.description_category', ['category' => $currentCategory->nome])
           : ui_text('ui.map_page.description_default'));
+  $mapTitle = $heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: $mapBaseTitle);
+  $mapDescription = $heroTranslation?->seo_description ?: ($heroTranslation?->lead ?: $mapBaseDescription);
   $mapSchemaItems = $initItems
       ->take(8)
       ->map(function ($item, $index) {
@@ -71,7 +73,7 @@
   ];
 @endphp
 
-@section('meta.image', theme_asset('hero_image'))
+@section('meta.image', $heroMedia?->url ?: theme_asset('hero_image'))
 @section('title', $mapTitle)
 @section('meta.description', $mapDescription)
 @section('meta.canonical', $mapCanonical)
@@ -102,6 +104,12 @@
     $PTO_PATTERNS = array_values(array_filter([
       $safeUrl('site.ponto', ['ponto' => $TOK], null),
     ]));
+    $mapHeroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.common.tourist_map');
+    $mapHeroTitle = $heroTranslation?->titulo ?: $mapBaseTitle;
+    $mapHeroSubtitle = $heroTranslation?->lead ?: $mapBaseDescription;
+    $mapHeroPrimaryLabel = $heroTranslation?->cta_label ?: (R::has('site.explorar') ? ui_text('ui.common.explore') : null);
+    $mapHeroPrimaryHref = $heroTranslation?->cta_href ?: (R::has('site.explorar') ? localized_route('site.explorar') : null);
+    $mapHeroImage = $heroMedia?->url;
   @endphp
 
   <div id="mapa-root" class="site-map-page">
@@ -147,6 +155,7 @@
       <div class="site-map-cards" id="cards" aria-label="{{ ui_text('ui.map_page.nearby_items') }}"></div>
     </section>
   </div>
+
 @endsection
 
 @push('scripts')

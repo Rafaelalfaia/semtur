@@ -2,9 +2,11 @@
 
 @php
     $canonical = localized_route('site.rota_do_cacau.index');
-    $title = $rota?->titulo ?: ui_text('ui.cocoa_route.title');
-    $description = \Illuminate\Support\Str::limit(strip_tags((string) ($rota?->descricao ?: ui_text('ui.cocoa_route.meta_description'))), 160);
-    $image = $rota?->foto_capa_url ?: ($rota?->foto_perfil_url ?: asset('imagens/altamira.jpg'));
+    $baseTitle = $rota?->titulo ?: ui_text('ui.cocoa_route.title');
+    $title = $heroTranslation?->seo_title ?: ($heroTranslation?->titulo ?: $baseTitle);
+    $description = $heroTranslation?->seo_description
+        ?: ($heroTranslation?->lead ?: \Illuminate\Support\Str::limit(strip_tags((string) ($rota?->descricao ?: ui_text('ui.cocoa_route.meta_description'))), 160));
+    $image = $heroMedia?->url ?: ($rota?->foto_capa_url ?: ($rota?->foto_perfil_url ?: asset('imagens/altamira.jpg')));
 @endphp
 
 @section('title', $title.' • Visit Altamira')
@@ -18,11 +20,40 @@
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Str;
 
-    $heroMeta = $rota ? array_filter([
-        ($edicoes->count() ?? 0) ? (($edicoes->count() ?? 0).' '.ui_text('ui.cocoa_route.editions')) : null,
-        ($edicoes->sum('fotos_count') ?? 0) ? ($edicoes->sum('fotos_count').' fotos') : null,
-        ($edicoes->sum('videos_count') ?? 0) ? ($edicoes->sum('videos_count').' '.ui_text('ui.common.videos')) : null,
-    ]) : [];
+    $pageBlocks = $pageBlocks ?? collect();
+    $rotaBlocks = [
+        'hero' => $pageBlocks->get('hero'),
+        'about_section' => $pageBlocks->get('about_section'),
+        'territory_section' => $pageBlocks->get('territory_section'),
+        'editions_section' => $pageBlocks->get('editions_section'),
+        'empty_state' => $pageBlocks->get('empty_state'),
+    ];
+    $rotaBlockTranslation = fn (string $key) => $rotaBlocks[$key]?->getAttribute('traducao_resolvida');
+    $aboutTranslation = $rotaBlockTranslation('about_section');
+    $territoryTranslation = $rotaBlockTranslation('territory_section');
+    $editionsTranslation = $rotaBlockTranslation('editions_section');
+    $emptyTranslation = $rotaBlockTranslation('empty_state');
+    $heroBadge = $heroTranslation?->eyebrow ?: ui_text('ui.cocoa_route.title');
+    $heroTitle = $heroTranslation?->titulo ?: $baseTitle;
+    $heroSubtitle = $heroTranslation?->lead ?: ($rota?->descricao ? Str::limit(strip_tags($rota->descricao), 180) : ui_text('ui.cocoa_route.subtitle'));
+    $heroPrimaryLabel = $heroTranslation?->cta_label ?: ($edicaoDestaque ? ui_text('ui.cocoa_route.view_editions') : (Route::has('site.home') ? ui_text('ui.common.back_to_home') : null));
+    $heroPrimaryHref = $heroTranslation?->cta_href ?: ($edicaoDestaque ? '#edicoes-rota' : (Route::has('site.home') ? localized_route('site.home') : null));
+    $aboutEyebrow = $aboutTranslation?->eyebrow ?: ui_text('ui.common.about');
+    $aboutTitle = $aboutTranslation?->titulo ?: ui_text('ui.cocoa_route.about_title');
+    $aboutSubtitle = $aboutTranslation?->lead ?: ui_text('ui.cocoa_route.subtitle');
+    $territoryEyebrow = $territoryTranslation?->eyebrow ?: ui_text('ui.cocoa_route.territory_eyebrow');
+    $territoryTitle = $territoryTranslation?->titulo ?: ui_text('ui.cocoa_route.territory_title');
+    $territorySubtitle = $territoryTranslation?->lead ?: ui_text('ui.cocoa_route.territory_subtitle');
+    $editionsEyebrow = $editionsTranslation?->eyebrow ?: ui_text('ui.cocoa_route.badge');
+    $editionsTitle = $editionsTranslation?->titulo ?: ui_text('ui.cocoa_route.editions_title');
+    $editionsSubtitle = $editionsTranslation?->lead ?: ui_text('ui.cocoa_route.subtitle');
+    $emptyTitle = $emptyTranslation?->titulo ?: ui_text('ui.cocoa_route.empty_title');
+    $emptyCopy = $emptyTranslation?->lead ?: ui_text('ui.cocoa_route.empty_copy');
+    $heroMeta = [];
+    $canManageEditionText = auth()->check() && auth()->user()->can('rota_do_cacau.edicoes.update');
+    $canManageEditionPhotos = auth()->check() && auth()->user()->can('rota_do_cacau.edicoes.fotos.view');
+    $canManageEditionVideos = auth()->check() && auth()->user()->can('rota_do_cacau.edicoes.videos.view');
+    $canManageEditionSponsors = auth()->check() && auth()->user()->can('rota_do_cacau.edicoes.patrocinadores.view');
 @endphp
 
 <div class="site-page site-page-shell site-rota-page site-jogos-page">
@@ -32,33 +63,89 @@
             ['label' => ui_text('ui.common.home'), 'href' => localized_route('site.home')],
             ['label' => ui_text('ui.cocoa_route.title')],
         ],
-        'badge' => ui_text('ui.cocoa_route.title'),
-        'title' => $title,
-        'subtitle' => $rota?->descricao ? Str::limit(strip_tags($rota->descricao), 180) : ui_text('ui.cocoa_route.subtitle'),
+        'badge' => $heroBadge,
+        'title' => $heroTitle,
+        'subtitle' => $heroSubtitle,
         'meta' => $heroMeta,
-        'primaryActionLabel' => $edicaoDestaque ? ui_text('ui.cocoa_route.view_editions') : (Route::has('site.home') ? ui_text('ui.common.back_to_home') : null),
-        'primaryActionHref' => $edicaoDestaque ? '#edicoes-rota' : (Route::has('site.home') ? localized_route('site.home') : null),
+        'primaryActionLabel' => $heroPrimaryLabel,
+        'primaryActionHref' => $heroPrimaryHref,
         'secondaryActionLabel' => Route::has('site.explorar') ? ui_text('ui.events.explore_city') : null,
         'secondaryActionHref' => Route::has('site.explorar') ? localized_route('site.explorar') : null,
         'image' => $image,
-        'imageAlt' => $title,
+        'imageAlt' => $heroTitle,
         'compact' => true,
+        'textEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.rota_do_cacau.index',
+            'key' => 'hero',
+            'label' => 'Texto da capa da Rota do Cacau',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar texto',
+            'fields' => ['eyebrow', 'titulo', 'lead', 'cta_label', 'cta_href'],
+            'translation' => $heroTranslation ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+        ],
+        'imageEditor' => [
+            'title' => $heroTitle,
+            'page' => 'site.rota_do_cacau.index',
+            'key' => 'hero',
+            'label' => 'Imagem da capa da Rota do Cacau',
+            'locale' => route_locale(),
+            'trigger_label' => 'Editar imagem',
+            'translation' => $heroTranslation ?? null,
+            'media' => $heroMedia ?? null,
+            'status' => $heroBlock?->status ?? 'publicado',
+            'media_slot' => 'hero',
+            'media_label' => 'Imagem da capa',
+            'preview_label' => 'imagem atual da capa',
+        ],
     ])
 
     @if(!$rota)
         <section class="site-section">
+            @include('site.partials._content_editor', [
+                'editorTitle' => $emptyTitle,
+                'editorPage' => 'site.rota_do_cacau.index',
+                'editorKey' => 'empty_state',
+                'editorLabel' => 'Estado vazio da Rota do Cacau',
+                'editorLocale' => route_locale(),
+                'editorTriggerVariant' => 'inline',
+                'editableTranslation' => $emptyTranslation,
+                'editableStatus' => $rotaBlocks['empty_state']?->status ?? 'publicado',
+                'editableFallback' => [
+                    'titulo' => ui_text('ui.cocoa_route.empty_title'),
+                    'lead' => ui_text('ui.cocoa_route.empty_copy'),
+                ],
+            ])
             <div class="site-empty-state">
-                <h2 class="site-empty-state-title">{{ ui_text('ui.cocoa_route.empty_title') }}</h2>
-                <p class="site-empty-state-copy">{{ ui_text('ui.cocoa_route.empty_copy') }}</p>
+                <h2 class="site-empty-state-title">{{ $emptyTitle }}</h2>
+                <p class="site-empty-state-copy">{{ $emptyCopy }}</p>
             </div>
         </section>
     @else
         <section class="site-section">
             <section class="site-surface site-content-block">
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $aboutTitle,
+                    'editorPage' => 'site.rota_do_cacau.index',
+                    'editorKey' => 'about_section',
+                    'editorLabel' => 'Seção sobre da Rota do Cacau',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline-compact',
+                    'editorTriggerLabel' => 'Editar texto',
+                    'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                    'editableTranslation' => $aboutTranslation,
+                    'editableStatus' => $rotaBlocks['about_section']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'eyebrow' => ui_text('ui.common.about'),
+                        'titulo' => ui_text('ui.cocoa_route.about_title'),
+                        'lead' => ui_text('ui.cocoa_route.subtitle'),
+                    ],
+                ])
                 <div class="site-detail-profile">
                     <img src="{{ site_image_url($rota->foto_perfil_url ?: theme_asset('logo'), 'avatar') }}" alt="{{ $title }}" class="site-detail-avatar" loading="lazy" decoding="async">
                     <div>
-                        <x-section-head :eyebrow="ui_text('ui.common.about')" :title="ui_text('ui.cocoa_route.about_title')" :subtitle="ui_text('ui.cocoa_route.subtitle')" />
+                        <x-section-head :eyebrow="$aboutEyebrow" :title="$aboutTitle" :subtitle="$aboutSubtitle" />
                     </div>
                 </div>
 
@@ -70,16 +157,50 @@
 
         <section class="site-section">
             <section class="site-surface site-content-block">
-                <x-section-head :eyebrow="ui_text('ui.cocoa_route.territory_eyebrow')" :title="ui_text('ui.cocoa_route.territory_title')" :subtitle="ui_text('ui.cocoa_route.territory_subtitle')" />
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $territoryTitle,
+                    'editorPage' => 'site.rota_do_cacau.index',
+                    'editorKey' => 'territory_section',
+                    'editorLabel' => 'Seção território da Rota do Cacau',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline-compact',
+                    'editorTriggerLabel' => 'Editar texto',
+                    'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                    'editableTranslation' => $territoryTranslation,
+                    'editableStatus' => $rotaBlocks['territory_section']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'eyebrow' => ui_text('ui.cocoa_route.territory_eyebrow'),
+                        'titulo' => ui_text('ui.cocoa_route.territory_title'),
+                        'lead' => ui_text('ui.cocoa_route.territory_subtitle'),
+                    ],
+                ])
+                <x-section-head :eyebrow="$territoryEyebrow" :title="$territoryTitle" :subtitle="$territorySubtitle" />
             </section>
         </section>
 
         @if($edicoes->isNotEmpty())
             <section class="site-section" id="edicoes-rota">
+                @include('site.partials._content_editor', [
+                    'editorTitle' => $editionsTitle,
+                    'editorPage' => 'site.rota_do_cacau.index',
+                    'editorKey' => 'editions_section',
+                    'editorLabel' => 'Seção edições da Rota do Cacau',
+                    'editorLocale' => route_locale(),
+                    'editorTriggerVariant' => 'inline-compact',
+                    'editorTriggerLabel' => 'Editar texto',
+                    'editorFields' => ['eyebrow', 'titulo', 'lead'],
+                    'editableTranslation' => $editionsTranslation,
+                    'editableStatus' => $rotaBlocks['editions_section']?->status ?? 'publicado',
+                    'editableFallback' => [
+                        'eyebrow' => ui_text('ui.cocoa_route.badge'),
+                        'titulo' => ui_text('ui.cocoa_route.editions_title'),
+                        'lead' => ui_text('ui.cocoa_route.subtitle'),
+                    ],
+                ])
                 <x-section-head
-                    :eyebrow="ui_text('ui.cocoa_route.badge')"
-                    :title="ui_text('ui.cocoa_route.editions_title')"
-                    :subtitle="ui_text('ui.cocoa_route.subtitle')"
+                    :eyebrow="$editionsEyebrow"
+                    :title="$editionsTitle"
+                    :subtitle="$editionsSubtitle"
                 />
 
                 <div class="site-jogos-editions">
@@ -153,6 +274,22 @@
 
                             <div class="site-jogos-edition-body">
                                 <div class="site-jogos-edition-head">
+                                    @if($canManageEditionText || $canManageEditionPhotos || $canManageEditionVideos || $canManageEditionSponsors)
+                                        <div class="site-inline-actions">
+                                            @if($canManageEditionText && Route::has('coordenador.rota-do-cacau.edicoes.edit'))
+                                                <a href="{{ route('coordenador.rota-do-cacau.edicoes.edit', [$rota, $edicao]) }}" class="site-button-secondary">Texto e capa</a>
+                                            @endif
+                                            @if($canManageEditionPhotos && Route::has('coordenador.rota-do-cacau.edicoes.fotos.index'))
+                                                <a href="{{ route('coordenador.rota-do-cacau.edicoes.fotos.index', [$rota, $edicao]) }}" class="site-button-secondary">Fotos</a>
+                                            @endif
+                                            @if($canManageEditionVideos && Route::has('coordenador.rota-do-cacau.edicoes.videos.index'))
+                                                <a href="{{ route('coordenador.rota-do-cacau.edicoes.videos.index', [$rota, $edicao]) }}" class="site-button-secondary">Vídeos</a>
+                                            @endif
+                                            @if($canManageEditionSponsors && Route::has('coordenador.rota-do-cacau.edicoes.patrocinadores.index'))
+                                                <a href="{{ route('coordenador.rota-do-cacau.edicoes.patrocinadores.index', [$rota, $edicao]) }}" class="site-button-secondary">Patrocinadores</a>
+                                            @endif
+                                        </div>
+                                    @endif
                                     <span class="site-badge">{{ $edicao->ano }}</span>
                                     <h3 class="site-jogos-edition-title">{{ $edicao->titulo }}</h3>
                                     <p class="site-jogos-edition-summary">{{ Str::limit(strip_tags($edicao->descricao), 220) }}</p>

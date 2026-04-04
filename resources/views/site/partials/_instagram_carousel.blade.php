@@ -1,4 +1,10 @@
-@php $items = collect($instagram ?? [])->values(); @endphp
+@php
+    $items = collect($instagram ?? [])->values();
+    $instagramEyebrow = $eyebrow ?? ui_text('ui.instagram.eyebrow');
+    $instagramTitle = $title ?? '@visitaltamira';
+    $instagramHref = $href ?? 'https://www.instagram.com/visitaltamira/';
+    $instagramEditor = $editor ?? null;
+@endphp
 
 @if($items->isNotEmpty())
     <section class="site-section site-home-instagram-section" x-data="{
@@ -18,11 +24,35 @@
             window.setTimeout(() => this.update(), 220);
         }
     }" x-init="$nextTick(() => update())">
-        <x-section-head
-            :eyebrow="ui_text('ui.instagram.eyebrow')"
-            title="@visitaltamira"
-            href="https://www.instagram.com/visitaltamira/"
-        />
+        <div class="site-section-head">
+            <div>
+                @if($instagramEditor)
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $instagramEditor['title'] ?? $instagramTitle,
+                        'editorPage' => $instagramEditor['page'] ?? 'site.home',
+                        'editorKey' => $instagramEditor['key'] ?? 'instagram_section',
+                        'editorLabel' => $instagramEditor['label'] ?? 'Seção Instagram',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => 'Editar texto',
+                        'editorFields' => ['eyebrow', 'titulo', 'cta_href'],
+                        'editableTranslation' => $instagramEditor['translation'] ?? null,
+                        'editableStatus' => $instagramEditor['status'] ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => $instagramEyebrow,
+                            'titulo' => $instagramTitle,
+                            'cta_href' => $instagramHref,
+                        ],
+                    ])
+                @endif
+                <p class="site-section-head-eyebrow">{{ $instagramEyebrow }}</p>
+                <h2 class="site-section-head-title">{{ $instagramTitle }}</h2>
+            </div>
+
+            <a href="{{ $instagramHref }}" class="site-section-head-link" target="_blank" rel="noopener noreferrer">
+                {{ ui_text('ui.instagram.open') }}
+            </a>
+        </div>
 
         <div class="site-instagram-shell">
             <div class="site-instagram-headerline">
@@ -90,7 +120,6 @@
         </div>
     </section>
 @endif
-
 
 
 

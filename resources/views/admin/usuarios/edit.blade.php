@@ -33,7 +33,7 @@
         </x-slot:actions>
     </x-dashboard.page-header>
 
-    <form method="POST" action="{{ route('admin.usuarios.update', $usuario) }}" class="mt-5 space-y-4">
+    <form id="usuario-edit-form" method="POST" action="{{ route('admin.usuarios.update', $usuario) }}" class="mt-5 space-y-4">
         @csrf
         @method('PUT')
 
@@ -108,6 +108,7 @@
                         'pontos' => 'Pontos Turísticos',
                         'relatorios' => 'Relatórios',
                         'secretaria' => 'Página da Secretaria',
+                        'site' => 'Editor do Site',
                         'usuarios' => 'Usuários',
                     ];
                     return $map[$g] ?? \Illuminate\Support\Str::headline($g);
@@ -189,23 +190,26 @@
 
             <div class="flex items-center gap-3">
                 @if(auth()->id() !== $usuario->id)
-                    <form method="POST" action="{{ route('admin.usuarios.destroy', $usuario) }}" onsubmit="return confirm('Excluir este usuário?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="ui-btn-danger">
-                            Excluir
-                        </button>
-                    </form>
+                    <button type="submit" form="usuario-delete-form" class="ui-btn-danger" onclick="return confirm('Excluir este usuário?');">
+                        Excluir
+                    </button>
                 @else
-                    <button class="ui-btn-secondary opacity-60" disabled>
+                    <button type="button" class="ui-btn-secondary opacity-60" disabled>
                         Excluir
                     </button>
                 @endif
 
-                <button class="ui-btn-primary">Salvar alterações</button>
+                <button type="submit" class="ui-btn-primary">Salvar alterações</button>
             </div>
         </div>
     </form>
+
+    @if(auth()->id() !== $usuario->id)
+        <form id="usuario-delete-form" method="POST" action="{{ route('admin.usuarios.destroy', $usuario) }}" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endif
 </div>
 
 <script>

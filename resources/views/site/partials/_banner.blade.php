@@ -1,5 +1,6 @@
 @include('site.partials._hero_destaque', [
     'banner' => $banner ?? null,
+    'eyebrow' => $eyebrow ?? null,
     'title' => $title ?? null,
     'subtitle' => $subtitle ?? null,
     'ctaLabel' => $ctaLabel ?? null,
@@ -10,4 +11,8 @@
     'overlayImageAlt' => $overlayImageAlt ?? null,
     'overlayOnly' => $overlayOnly ?? false,
     'heroClass' => $heroClass ?? null,
+    'contentVisible' => $contentVisible ?? true,
+    'textEditor' => $textEditor ?? null,
+    'imageEditor' => $imageEditor ?? null,
+    'sectionActions' => $sectionActions ?? [],
 ])

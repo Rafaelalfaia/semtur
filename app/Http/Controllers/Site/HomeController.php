@@ -4,6 +4,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Catalogo\{Categoria, Empresa, PontoTuristico};
 use App\Models\Conteudo\Banner;
 use App\Models\Conteudo\BannerDestaque;
@@ -17,13 +18,17 @@ use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
+    use ResolvesEditableHero;
+
     /** ============================== INDEX ============================== */
     public function index(Request $request, InstagramFeed $instagramFeed)
     {
         $context = $this->makeSearchContext($request->input('q', ''));
+        $editableContent = $this->resolveEditableHero('site.home');
 
         return view('site.home', array_merge(
             $this->buildHomeViewData($context, $instagramFeed),
+            $editableContent,
             ['q' => $context['term']]
         ));
     }
@@ -44,7 +49,10 @@ class HomeController extends Controller
                 ?: Categoria::find($filters['catId']);
         }
 
-        return view('site.explorar', compact('pontos', 'empresas', 'categorias', 'currentCat'));
+        return view('site.explorar', array_merge(
+            compact('pontos', 'empresas', 'categorias', 'currentCat'),
+            $this->resolveEditableHero('site.explorar')
+        ));
     }
 
     /** ======================== HOME COMPOSITION ========================= */

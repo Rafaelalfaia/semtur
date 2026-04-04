@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Site\Concerns\ResolvesEditableHero;
 use App\Models\Catalogo\Categoria;
 use Illuminate\Http\Request;
 
 class MapaController extends Controller
 {
+    use ResolvesEditableHero;
+
     public function index(Request $request)
     {
         $categorias = Categoria::query()
@@ -27,6 +30,9 @@ class MapaController extends Controller
 
         $queryAtual = trim((string) $request->input('q', ''));
 
-        return view('site.mapa.index', compact('categorias', 'categoriaAtual', 'queryAtual'));
+        return view('site.mapa.index', array_merge(
+            compact('categorias', 'categoriaAtual', 'queryAtual'),
+            $this->resolveEditableHero('site.mapa')
+        ));
     }
 }

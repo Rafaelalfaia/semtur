@@ -54,6 +54,7 @@ class PermissionsSeeder extends Seeder
 
             // Gestão de técnicos pelo coordenador
             'tecnicos'          => ['manage'],
+            'site'              => ['manage'],
 
             //ESPAÇO CULTURAL
             'espacos_culturais' => ['view','create','update','delete','publicar','arquivar','rascunho'],
@@ -64,6 +65,9 @@ class PermissionsSeeder extends Seeder
             'onde_ficar' => ['view', 'update', 'publicar', 'arquivar', 'rascunho'],
             'guias' => ['view','create','update','delete','publicar','arquivar','rascunho'],
             'videos' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'cursos' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'cursos.modulos' => ['view','create','update','delete','publicar','arquivar','rascunho'],
+            'cursos.aulas' => ['view','create','update','delete','publicar','arquivar','rascunho'],
             'jogos_indigenas' => ['view','create','update','delete','publicar','arquivar','rascunho'],
             'jogos_indigenas.edicoes' => ['view','create','update','delete','publicar','arquivar','rascunho'],
             'jogos_indigenas.edicoes.fotos' => ['view','create','update','delete'],
@@ -144,6 +148,7 @@ class PermissionsSeeder extends Seeder
             'onde_ficar',
             'guias',
             'videos',
+            'cursos',
             'jogos_indigenas',
             'rota_do_cacau',
             'relatorios',

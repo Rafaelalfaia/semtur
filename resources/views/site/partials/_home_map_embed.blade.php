@@ -2,9 +2,13 @@
     use Illuminate\Support\Facades\Route as R;
 
     $mapCategories = collect($mapCategories ?? []);
-    $homeMapCategories = $mapCategories->take(4)->values();
+    $homeMapCategories = $mapCategories->values();
     $apiFeed = R::has('api.mapa.feed') ? route('api.mapa.feed') : url('/api/mapa/feed');
-    $mapHref = R::has('site.mapa') ? localized_route('site.mapa') : '#';
+    $mapHref = $ctaHref ?? (R::has('site.mapa') ? localized_route('site.mapa') : '#');
+    $mapEyebrow = $eyebrow ?? ui_text('ui.home.map_badge');
+    $mapTitle = $title ?? ui_text('ui.home.map_title');
+    $mapCtaLabel = $ctaLabel ?? ui_text('ui.home.map_open_full');
+    $mapEditor = $editor ?? null;
     $TOK = '__TOKEN__';
 
     $safeUrl = function (string $name, array $params = [], $fallback = null) {
@@ -31,42 +35,70 @@
     <div id="home-map-root" class="site-home-map-shell site-home-map-shell--compact">
         <div class="site-home-map-heading site-home-map-heading--compact">
             <div class="site-home-map-heading-copy">
-                <p class="site-badge">{{ ui_text('ui.home.map_badge') }}</p>
-                <h2 class="site-section-head-title">{{ ui_text('ui.home.map_title') }}</h2>
+                @if($mapEditor)
+                    @include('site.partials._content_editor', [
+                        'editorTitle' => $mapEditor['title'] ?? $mapTitle,
+                        'editorPage' => $mapEditor['page'] ?? 'site.home',
+                        'editorKey' => $mapEditor['key'] ?? 'map_section',
+                        'editorLabel' => $mapEditor['label'] ?? 'Mapa da home',
+                        'editorLocale' => route_locale(),
+                        'editorTriggerVariant' => 'inline-compact',
+                        'editorTriggerLabel' => 'Editar texto',
+                        'editorFields' => ['eyebrow', 'titulo', 'cta_label', 'cta_href'],
+                        'editableTranslation' => $mapEditor['translation'] ?? null,
+                        'editableStatus' => $mapEditor['status'] ?? 'publicado',
+                        'editableFallback' => [
+                            'eyebrow' => $mapEyebrow,
+                            'titulo' => $mapTitle,
+                            'cta_label' => $mapCtaLabel,
+                            'cta_href' => $mapHref,
+                        ],
+                    ])
+                @endif
+                <p class="site-badge">{{ $mapEyebrow }}</p>
+                <h2 class="site-section-head-title">{{ $mapTitle }}</h2>
             </div>
 
-            <a href="{{ $mapHref }}" class="site-button-secondary">{{ ui_text('ui.home.map_open_full') }}</a>
+            <a href="{{ $mapHref }}" class="site-button-secondary">{{ $mapCtaLabel }}</a>
         </div>
 
         @if($homeMapCategories->isNotEmpty())
             <div class="site-home-map-filters site-home-map-filters--compact">
-                <div class="site-chips-shell">
-                    <div class="site-chips-scroll" role="group" aria-label="{{ ui_text('ui.home.map_categories_aria') }}">
-                        <button type="button" class="site-chip site-chip-active" data-home-map-filter data-category="" data-label="{{ ui_text('ui.home.map_all') }}" aria-pressed="true">
-                            {{ ui_text('ui.home.map_all') }}
-                        </button>
+                <div class="site-map-rail-shell site-map-rail-shell--categories">
+                    <div class="site-map-rail-toolbar site-map-rail-toolbar--categories" aria-hidden="true">
+                        <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="home-map-categories-track" data-map-scroll-direction="-1" aria-label="{{ ui_text('ui.map_page.categories_prev') }}">&larr;</button>
+                        <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="home-map-categories-track" data-map-scroll-direction="1" aria-label="{{ ui_text('ui.map_page.categories_next') }}">&rarr;</button>
+                    </div>
+                    <div class="site-map-category-row site-map-category-row--top">
+                        <div class="site-chips-shell">
+                            <div id="home-map-categories-track" class="site-chips-scroll" role="group" aria-label="{{ ui_text('ui.home.map_categories_aria') }}">
+                                <button type="button" class="site-chip site-chip-active" data-home-map-filter data-category="" data-label="{{ ui_text('ui.home.map_all') }}" aria-pressed="true">
+                                    {{ ui_text('ui.home.map_all') }}
+                                </button>
 
-                        @foreach($homeMapCategories as $category)
-                            <button
-                                type="button"
-                                class="site-chip"
-                                data-home-map-filter
-                                data-category="{{ $category->slug }}"
-                                data-label="{{ $category->nome }}"
-                                aria-pressed="false"
-                            >
-                                @if(! empty($category->icone_path))
-                                    <img
-                                        src="{{ \Illuminate\Support\Facades\Storage::url($category->icone_path) }}"
-                                        alt="{{ $category->nome }}"
-                                        loading="lazy"
-                                        decoding="async"
-                                        class="site-chip-icon"
+                                @foreach($homeMapCategories as $category)
+                                    <button
+                                        type="button"
+                                        class="site-chip"
+                                        data-home-map-filter
+                                        data-category="{{ $category->slug }}"
+                                        data-label="{{ $category->nome }}"
+                                        aria-pressed="false"
                                     >
-                                @endif
-                                <span>{{ $category->nome }}</span>
-                            </button>
-                        @endforeach
+                                        @if(! empty($category->icone_path))
+                                            <img
+                                                src="{{ \Illuminate\Support\Facades\Storage::url($category->icone_path) }}"
+                                                alt="{{ $category->nome }}"
+                                                loading="lazy"
+                                                decoding="async"
+                                                class="site-chip-icon"
+                                            >
+                                        @endif
+                                        <span>{{ $category->nome }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -84,10 +116,16 @@
 
             <div class="site-home-map-summary site-home-map-summary--compact">
                 <p id="home-map-status" class="site-home-map-status">{{ ui_text('ui.home.map_loading') }}</p>
-                <a href="{{ $mapHref }}" class="site-link">{{ ui_text('ui.home.map_open_full') }}</a>
+                <a href="{{ $mapHref }}" class="site-link">{{ $mapCtaLabel }}</a>
             </div>
 
-            <div id="home-map-cards" class="site-home-map-results site-home-map-results--compact" aria-label="{{ ui_text('ui.home.map_results_aria') }}"></div>
+            <div class="site-map-rail-shell site-map-rail-shell--cards">
+                <div class="site-map-rail-toolbar site-map-rail-toolbar--cards" aria-hidden="true">
+                    <button type="button" class="site-map-rail-control is-prev" data-map-scroll-target="home-map-cards" data-map-scroll-direction="-1" aria-label="{{ ui_text('ui.map_page.items_prev') }}">&larr;</button>
+                    <button type="button" class="site-map-rail-control is-next" data-map-scroll-target="home-map-cards" data-map-scroll-direction="1" aria-label="{{ ui_text('ui.map_page.items_next') }}">&rarr;</button>
+                </div>
+                <div id="home-map-cards" class="site-home-map-results site-home-map-results--compact" aria-label="{{ ui_text('ui.home.map_results_aria') }}" data-map-autoplay="true"></div>
+            </div>
         </div>
     </div>
 </section>
@@ -110,10 +148,9 @@
             'defaultCenter' => [-3.2049, -52.2176],
             'defaultZoom' => 13,
             'focusedZoom' => 15,
-            'resultLimit' => 3,
+            'resultLimit' => 12,
             'requestLimit' => 60,
             'fitToResultsOnFirstLoad' => false,
-            'useBoundsAfterFirstLoad' => true,
             'useBoundsAfterFirstLoad' => true,
             'readFocusFromUrl' => false,
             'markerSizes' => [

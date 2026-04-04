@@ -101,6 +101,7 @@
                         'pontos' => 'Pontos Turísticos',
                         'relatorios' => 'Relatórios',
                         'secretaria' => 'Página da Secretaria',
+                        'site' => 'Editor do Site',
                         'usuarios' => 'Usuários',
                     ];
                     return $map[$g] ?? \Illuminate\Support\Str::headline($g);
